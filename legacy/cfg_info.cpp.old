@@ -1,0 +1,465 @@
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include "cfg_info.h"
+#include "dvfs_info.h"
+#include "main.h"
+
+using namespace std;
+
+extern float in_alpha;
+extern float in_default_speed;
+
+int Basic_block::get_cycles(int case_t)
+{
+	return execution_cycles[(int) (case_t - 1)];
+}
+
+int Basic_block::get_succ(int succ_index)
+{
+	return succ[succ_index];
+}
+
+int Basic_block::get_index(void)
+{
+	return block_index;
+}
+
+Basic_block::Basic_block(int curr_index, int *succ_index, int *cycles)
+{
+	int SuccNum = 0;
+	int i;
+	
+	for(i = 0; succ_index[i] != 0xFFFFFFFF; i++) SuccNum += 1; 
+	
+	//cout << "SuccNum = " << SuccNum << endl;
+	succ = (int*) malloc( sizeof(int) * (SuccNum + 1));
+	succ[SuccNum] = '\0'; 
+	for(i = 0; i < SuccNum; i++) succ[i] = succ_index[i];
+
+	execution_cycles[0] = cycles[0];
+	execution_cycles[1] = cycles[1];
+	execution_cycles[2] = cycles[2];
+
+	block_index = curr_index;
+	B_checkpoint_en = 0xFFFFFFFF; // Disable itself as checkpoint 
+	L_checkpoint_en[0] = 0xFFFFFFFF;
+	L_checkpoint_en[1] = 0xFFFFFFFF;
+#ifdef DEBUG	
+	cout << "Block_" << block_index << ", ";
+	cout << "WCEC: " << execution_cycles[0] << " ACEC: " << execution_cycles[1] << " BCEC: " << execution_cycles[2] << endl;
+	cout << "Successors: ";
+	for(i = 0; i < SuccNum; i++)
+		cout << succ[i] << " ";
+	cout << endl << endl;
+#endif
+}
+
+Basic_block::~Basic_block(void)
+{
+	free(succ);
+}
+
+Src_CFG::Src_CFG(char *file_name, checkpoints_t *checkpoints_temp)
+{
+	FILE *fp;
+	unsigned int c, i, j, k;
+	unsigned char fsm_state = (unsigned char) ATTRIBUTES_ITEM;
+	unsigned char fsm_state_internal = (unsigned char) TASK_ID;
+	int *succ_conv_temp, size_temp;
+	succ_int_temp = 0;
+	fp = fopen(file_name, "r");
+
+	while(1) {
+		c = fgetc(fp); 
+		if( feof(fp) ) break;
+		else  {
+			if(c == 0x0A || c == ' ') { while( c == 0x0A || c == ' ' ) c = fgetc(fp);  }
+		//	printf("c = %c state:0x%02X 0x%02X\r\n", c, (unsigned char) fsm_state, (unsigned char) fsm_state_internal);	
+			if( c == '{' || c == '}' ) {		
+				switch(c)
+				{
+					case '{': // Identifying 1) Task Attributes or 2) Its successors list
+						fsm_state = (fsm_state == (unsigned char) ATTRIBUTES_ITEM) ? (unsigned char) TASK_ATTRIBUTES : 
+							    (fsm_state == (unsigned char) SUCCESSORS_ITEM) ? (unsigned char) SUCCESSORS      :
+											                             fsm_state;
+						break;
+				
+					case '}': 
+						c = fgetc(fp);
+						if(c == ',') 
+							fsm_state = (unsigned char) SUCCESSORS_ITEM;
+						else if(c == ';') {
+							fsm_state = (unsigned char) ATTRIBUTES_ITEM;
+							fsm_state_internal = (unsigned char) TASK_ID;
+							wcec.push_back(wcec_temp); wcec_temp.clear();
+							acec.push_back(acec_temp); acec_temp.clear();
+							bcec.push_back(bcec_temp); bcec_temp.clear();
+							
+							// After last element, clearing is still needed
+							succ.push_back(succ_int_temp); succ_int_temp = 0; 
+							
+							task_succ.push_back(succ); succ.clear();
+							cout << endl;
+						}
+						else 
+							cout << "Wrong Format, expecting either\",\" or \";\"" << endl;
+						break;
+	
+					default:
+						break;
+				}
+			}
+			else {
+				if(fsm_state == (unsigned char) TASK_ATTRIBUTES && fsm_state_internal == (unsigned char) TASK_ID) {
+					if(c != ',') task_id_temp.push_back(c);
+					else { task_id.push_back(task_id_temp); task_id_temp.clear(); fsm_state_internal += 0x01; } 
+				}
+				else if(fsm_state == (unsigned char) TASK_ATTRIBUTES && fsm_state_internal != (unsigned char) TASK_ID) {
+					if     (fsm_state_internal == (unsigned char) WCEC && c != ',') wcec_temp.push_back(c);
+					else if(fsm_state_internal == (unsigned char) ACEC && c != ',') acec_temp.push_back(c);
+					else if(fsm_state_internal == (unsigned char) BCEC && c != '}') bcec_temp.push_back(c);
+					else fsm_state_internal += 0x01; 
+											   
+				}
+				else { // fsm_state = SUCCESSORS
+					if(c != ',') {
+						succ_int_temp = succ_int_temp * 10;
+						succ_int_temp = (c != '#') ? succ_int_temp + ( c - 48 ) : 0;		
+					}
+					else { // c = ','
+						succ.push_back(succ_int_temp);
+						succ_int_temp = 0;
+					}
+				}
+			}
+		}
+	}
+	fclose(fp);
+
+	for(i = 0; i < task_id.size(); i++) {
+		int id_temp = 0, *cycles_temp;
+
+		for(j=0;j<task_id[i].size();j++) {
+			id_temp *= 10;
+			id_temp += ( task_id[i][j] - 48 );
+		}
+
+		succ_conv_temp = (int*) malloc( sizeof(int) * ( task_succ[i].size() + 1 ) );
+		for(j=0;j<task_succ[i].size();j++)
+			succ_conv_temp[j] = task_succ[i][j];
+		succ_conv_temp[j] = 0xFFFFFFFF;
+
+		cycles_temp = (int*) malloc( sizeof(int) * 3 );
+		cycles_temp[0] = (int) 0; cycles_temp[1] = (int) 0; cycles_temp[2] = (int) 0;
+		for(j=0;j<wcec[i].size();j++) {	
+			cycles_temp[0] *= 10;
+			cycles_temp[0] += ( wcec[i][j] - 48 );
+		}
+		
+		for(j=0;j<acec[i].size();j++) {	
+			cycles_temp[1] *= 10;
+			cycles_temp[1] += ( acec[i][j] - 48 );
+		}
+		
+		for(j=0;j<bcec[i].size();j++) {	
+			cycles_temp[2] *= 10;
+			cycles_temp[2] += ( bcec[i][j] - 48 );
+		}
+		
+		CFG_path.push_back( 
+					Basic_block( 
+						(int ) id_temp, // Task id
+						(int*) succ_conv_temp, // Enumeration of all successors
+						(int*) cycles_temp 
+					) 
+		);
+		//if(i == 0) start_block = &CFG_path[0];
+		free(cycles_temp);
+	}
+
+	// According to the input file
+	//exe_cycle_tracing();
+	
+	// Checkpoints insertion and generating its corresponding mining table
+	//checkpoints_placement(checkpoints_temp); mining_table_gen();
+	
+	// Setting the DVFS-available specification
+	//exe_speed_config();
+	
+	free(succ_conv_temp);
+}
+
+Src_CFG::~Src_CFG(void)
+{
+	int i;
+
+	for(i = 0; i < CFG_path.size(); i++) CFG_path[i].~Basic_block();
+}
+
+void Src_CFG::traverse_all_path(int start_index, int case_t, int accumulation, checkpoints_t *checkpoints_temp)
+{
+	int succ_cnt; int cin_temp;
+        //Basic_block &block_temp;
+	//block_temp = &CFG_path[start_index - 1];
+	
+	// Setting the DVFS-available specification
+	exe_speed_config();
+
+//===================================================================================//
+// Reconfiguring the checkpoints setting from given argument(i.e. int *checkpoint_t)	
+/*	free(B_checkpoints); free(B_mining_table);
+	free(L_checkpoints); free(L_mining_table);
+	
+	// Checkpoints insertion and generating its corresponding mining table
+	checkpoints_placement(checkpoints_temp); mining_table_gen();*/
+//===================================================================================//
+}
+
+void Src_CFG::traverse_spec_path(int *exe_path, int case_t, checkpoints_t *checkpoints_temp)
+{
+	int cur_index, cycles_cnt = 0, i;
+	float jitter_temp = 0.0;
+
+	// Setting the DVFS-available specification
+	exe_speed_config();
+
+	// According to the input file	
+	release_time = 0.0; 
+	start_time = 0.0;
+	Sys_Clk_0.cur_time = start_time;
+
+//===================================================================================//
+// Reconfiguring the checkpoints setting from given argument(i.e. int *checkpoint_t)	
+/*	free(B_checkpoints); free(B_mining_table);
+	free(L_checkpoints); free(L_mining_table);
+	
+	// Checkpoints insertion and generating its corresponding mining table
+	checkpoints_placement(checkpoints_temp); mining_table_gen();*/
+//===================================================================================//
+	printf("Default speed: %.03fHz\r\n", Sys_Clk_0.cur_speed);
+	printf("max: %.03fHz min: %.03f\r\n", max_freq_t, min_freq_t);
+#ifdef DEBUG
+	cout << "Start -> " << endl << endl;
+#endif
+	for(cur_index = 0; exe_path[cur_index] != 0xFFFFFFFF; cur_index++) {
+#ifdef DEBUG
+		cout << "Block_" << CFG_path[ exe_path[cur_index] - 1 ].get_index() << " -> ";
+#endif
+		cycles_cnt += CFG_path[ exe_path[cur_index] - 1 ].get_cycles(case_t);
+
+		Sys_Clk_0.cur_time += CFG_path[ exe_path[cur_index] - 1 ].get_cycles(case_t) / Sys_Clk_0.cur_speed; 
+		printf("Current time: %fs\r\n", Sys_Clk_0.cur_time);
+		// Invoking the operation of checkpoint
+		/*if( CFG_path[ exe_path[cur_index] - 1 ].B_checkpoint_en != 0xFFFFFFFF ) {
+			//checkpoint_operation(1,1);	
+			Intra_task_checkpoint(jitter_config.exe_time_target, exe_path[cur_index], exe_path[cur_index + 1]);
+					
+		}	*/
+	}
+#ifdef DEBUG
+	cout << "End" << endl;
+
+	cout << "Actual Execution Cycles: " << cycles_cnt << " cycles" << endl;
+	printf("Actual Execution Time: %.02f seconds\r\n", Sys_Clk_0.cur_time);
+	printf("Target Execution Time: %.02F seconds\r\n", jitter_config.exe_time_target);
+	jitter_temp = jitter_config.exe_time_target - (Sys_Clk_0.cur_time - start_time);
+	jitter_temp = (jitter_temp < 0) ? jitter_temp * (-1) : jitter_temp;
+	printf("Execution Time Jitter: %.02f seconds.\r\n", jitter_temp);
+	printf("Response Time: %.02f seconds.\r\n", Sys_Clk_0.cur_time - release_time);
+#else
+	char jitter[77];
+	jitter_temp = jitter_config.exe_time_target - (Sys_Clk_0.cur_time - start_time);
+	jitter_temp = (jitter_temp < 0) ? jitter_temp * (-1) : jitter_temp;
+	sprintf(jitter, "echo \"Default_Freq: %.02fHz -> Execution_jitter: %.04f,\" >> test_result%.02f.txt", default_freq_t, jitter_temp, jitter_config.alpha);
+	system(jitter); 
+#endif	
+}
+
+void Src_CFG::exe_speed_config(void)
+{
+	// DVFS setting
+	max_freq_t     = (float) MAX_speed;
+	min_freq_t     = (float) MIN_speed;
+	default_freq_t = (in_default_speed > max_freq_t) ? max_freq_t : (in_default_speed < min_freq_t) ? min_freq_t : in_default_speed;
+	Sys_Clk_0.cur_speed = default_freq_t;
+	
+	// Jitter constraint setting
+	jitter_config.exe_jitter_bound = ((float) (execution_cycles[WORST - 1] / min_freq_t)) - ((float) (execution_cycles[BEST - 1] / max_freq_t));
+	jitter_config.alpha = in_alpha;
+	jitter_config.exe_time_target = (execution_cycles[BEST - 1] / max_freq_t) + jitter_config.exe_jitter_bound * jitter_config.alpha;	
+}
+
+void Src_CFG::exe_speed_scaling(float new_speed)
+{
+	Sys_Clk_0.cur_speed = new_speed;
+#ifdef DEBUG
+	printf("\r\nCurrent speed: %.03f Hz\r\n\r\n", Sys_Clk_0.cur_speed);	
+#endif
+}
+
+float Src_CFG::get_cur_speed(void)
+{
+	return Sys_Clk_0.cur_speed;
+}
+
+
+void Src_CFG::Intra_task_checkpoint(float exe_time_target, int cur_block_index, int succ_block_index)
+{
+/*	float new_freq;
+	float exe_time_expect; // A speculative execution time if keeping current execution speed withou any change
+	float elapsed_time = Sys_Clk_0.cur_time - start_time; // So far the total execution time which have elapsed
+	float target_comparison;
+	int rwcec; // Remaining worst-case execution cycles from current basic block
+
+	if( succ_block_index == mining_table[ CFG_path[cur_block_index - 1].checkpoint_en ].successors[0] )
+		rwcec = mining_table[ CFG_path[cur_block_index - 1].checkpoint_en ].taken_rwcec;
+	else
+		rwcec = mining_table[ CFG_path[cur_block_index - 1].checkpoint_en ].n_taken_rwcec;
+	
+	exe_time_expect = elapsed_time + (rwcec / Sys_Clk_0.cur_speed);
+	target_comparison = ((exe_time_target - exe_time_expect) < 0) ? (exe_time_target - exe_time_expect) * (-1) : (exe_time_target - exe_time_expect);
+	//if(exe_time_target < exe_time_expect)
+	if( (float) target_comparison != 0.0 ) {
+#ifdef DEBUG
+		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
+		printf("Elapsed time = %fs, exe_time_target = %fs, exe_time_expect = %fs, rwcec = %d, ", elapsed_time, exe_time_target, exe_time_expect, rwcec);
+		printf("Scaling_condition: %.05f\r\n", target_comparison);
+#endif
+		new_freq = rwcec / (exe_time_target - elapsed_time);
+		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
+		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
+	}
+	else 
+		new_freq = Sys_Clk_0.cur_speed;
+	
+	exe_speed_scaling(new_freq);*/
+}
+
+/**
+Execution traces obtained via a cycle-level simulation. 
+The results will be given by existing WCET toolsets.
+**/
+void Src_CFG::exe_cycle_tracing(void)
+{
+	execution_cycles[WORST - 1]   = 425;
+	execution_cycles[AVERAGE - 1] = 80; 
+	execution_cycles[BEST - 1]    = 30;
+
+	/*execution_cycles[WORST - 1]   = 470;
+	execution_cycles[AVERAGE - 1] = 80; 
+	execution_cycles[BEST - 1]    = 75;*/
+
+	// According to the Input file
+	loop_cnt = 1; // There is only one loop nest existing in this CFG
+	loop_bound = (int*) malloc(sizeof(int) * 2);
+	loop_bound[0] = 3;
+	loop_bound[1] = 0xFFFFFFFF;
+}
+
+void Src_CFG::mining_table_gen(void)
+{
+	int i, j, index_temp, B_checkpoints_cnt, L_checkpoints_cnt;
+
+// Creating the correspoinding miniing table in order to record the remaining worst-case execution cycles at each basic block (especially every branch)
+// For B-type checkpoints
+	for( B_checkpoints_cnt = 0; B_checkpoints[B_checkpoints_cnt] != 0xFFFFFFFF; B_checkpoints_cnt++); // Counting the number of specified B-type checkpoins
+	B_mining_table = (B_mining_table_t*) malloc( sizeof(B_mining_table_t) * B_checkpoints_cnt);
+	
+	for( i = 0; i < B_checkpoints_cnt; i++ ) {
+		B_mining_table[i].taken_rwcec   = B_RWCEC_t[i][TAKEN]; // The index of its (checkpoint's) correspoinding basic block 
+		B_mining_table[i].n_taken_rwcec = B_RWCEC_t[i][NOT_TAKEN]; // The following remaining worst-case execution cycles
+		B_mining_table[i].successors[0] = B_RWCEC_t[i][0];
+		B_mining_table[i].successors[1] = B_RWCEC_t[i][2];
+	}
+	
+#ifdef DEBUG
+	cout << "B-Type Mining Table" << endl;
+	cout << "------------------------------------------------" << endl;
+	cout << "|WCEC(cycle): " << execution_cycles[WORST - 1] << "\t\t\t\t|" << endl;
+	cout << " -----------------------------------------------" << endl;
+	cout << "| Address\t|" << "\t\tRWCEC(cycle)\t|" << endl;
+	cout << "\t\t -------------------------------" << endl;
+	cout << "|\t\t|\t" << "taken\t|\tn_taken\t|" << endl;
+	cout << " -----------------------------------------------" << endl;
+	for( i = 0; i < B_checkpoints_cnt; i++ ) {
+		cout << "| Branch_" 
+		     << i << "\t|\t" 
+		     << B_mining_table[i].taken_rwcec 
+		     << "(" << B_mining_table[i].successors[0] 
+		     << ")\t|\t" 
+		     << B_mining_table[i].n_taken_rwcec 
+		     << "(" << B_mining_table[i].successors[1]
+	             << ")\t|" << endl; 
+		cout << " -----------------------------------------------" << endl;	
+	}
+	cout << endl;
+#endif 	
+
+// For L-type checkpoints
+	L_mining_table = (L_mining_table_t**) malloc( sizeof(L_mining_table_t*) * loop_cnt );
+	for(index_temp = 0; index_temp < loop_cnt; index_temp++) {
+		for( L_checkpoints_cnt = 0; L_checkpoints[index_temp][L_checkpoints_cnt] != 0xFFFFFFFF; L_checkpoints_cnt++); 
+		L_mining_table[index_temp] = (L_mining_table_t*) malloc(sizeof(L_mining_table_t) * L_checkpoints_cnt);
+		for(i = 0; i < L_checkpoints_cnt; i++) {
+			L_mining_table[index_temp][i].n_taken_rwcec = (int*) malloc(sizeof(int) * loop_bound[index_temp]);
+			L_mining_table[index_temp][i].taken_rwcec   = (int*) malloc(sizeof(int) * loop_bound[index_temp]);
+			for(j = 0; j < loop_bound[index_temp]; j++) {
+				L_mining_table[index_temp][i].taken_rwcec[j]     = L_RWCEC_t[index_temp][i][TAKEN * (j + 1)];  
+				L_mining_table[index_temp][i].n_taken_rwcec[j]   = L_RWCEC_t[index_temp][i][(loop_bound[index_temp] + 2) + j];  
+				L_mining_table[index_temp][i].successors[0] = L_RWCEC_t[index_temp][i][0];
+				L_mining_table[index_temp][i].successors[1] = L_RWCEC_t[index_temp][i][loop_bound[index_temp] + 1];
+			}
+		}		
+	}
+
+#ifdef DEBUG
+for(index_temp = 0; index_temp < loop_cnt; index_temp++) {	
+	for( L_checkpoints_cnt = 0; L_checkpoints[index_temp][L_checkpoints_cnt] != 0xFFFFFFFF; L_checkpoints_cnt++); 
+	cout << "L-Type Mining Table_" << index_temp << endl;
+	cout << "------------------------------------------------" << endl;
+	cout << "Loop Bound(iteration): " << loop_bound[index_temp] << endl;
+	for( i = 0; i < L_checkpoints_cnt; i++ ) {
+		cout << "Branch_" << i << ":" << endl; 
+		for(j = loop_bound[index_temp] - 1; j >= 0; j--) {
+			cout << "taken_" << (j + 1) << ": " 
+		             << L_mining_table[index_temp][i].taken_rwcec[j] << "(" << L_mining_table[index_temp][i].successors[0] <<")\t";
+			cout << "n_taken_" << (j + 1) << ": " 
+		             << L_mining_table[index_temp][i].n_taken_rwcec[j] << "(" << L_mining_table[index_temp][i].successors[1] << ")" << endl;
+		}
+		cout << endl;
+	}
+	cout << "------------------------------------------------" << endl;
+	cout << endl << endl;
+}
+#endif 	
+}
+
+void Src_CFG::checkpoints_placement(checkpoints_t *checkpoints_temp)
+{	
+	int B_cnt, L_cnt, index_temp, i;
+	
+	for(B_cnt = 0; checkpoints_temp -> B_checkpoints[B_cnt] != 0xFFFFFFFF; B_cnt++);
+	B_checkpoints = (int*) malloc( sizeof(int) * ( B_cnt + 1 ) ); B_checkpoints[B_cnt] = 0xFFFFFFFF;	
+	
+	L_checkpoints = (int**) malloc(sizeof(int*) * loop_cnt);
+	for(index_temp = 0; index_temp < loop_cnt; index_temp++) {
+		for(L_cnt = 0; checkpoints_temp -> L_checkpoints[index_temp][L_cnt] != 0xFFFFFFFF; L_cnt++);
+		L_checkpoints[index_temp] = (int*) malloc( sizeof(int) * ( L_cnt + 1 ) ); 
+		L_checkpoints[index_temp][L_cnt] = 0xFFFFFFFF;	
+	}
+
+	for( index_temp = 0; index_temp < B_cnt; index_temp++ ) {
+		B_checkpoints[index_temp] = checkpoints_temp -> B_checkpoints[index_temp];
+		CFG_path[ checkpoints_temp -> B_checkpoints[index_temp] - 1 ].B_checkpoint_en = index_temp; // Enable the corrsponding Basic Block as a checkpoint
+	} 
+	for( index_temp = 0; index_temp < loop_cnt; index_temp++ ) {
+		for(L_cnt = 0; checkpoints_temp -> L_checkpoints[index_temp][L_cnt] != 0xFFFFFFFF; L_cnt++);
+		for(i = 0; i < L_cnt; i++) {
+			L_checkpoints[index_temp][i] = checkpoints_temp -> L_checkpoints[index_temp][i];
+			CFG_path[ checkpoints_temp -> L_checkpoints[index_temp][i] - 1 ].L_checkpoint_en[0] = index_temp;
+			CFG_path[ checkpoints_temp -> L_checkpoints[index_temp][i] - 1 ].L_checkpoint_en[1] = i;
+		}
+	}
+}

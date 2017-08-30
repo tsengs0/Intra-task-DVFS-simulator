@@ -1,0 +1,704 @@
+Loading repository data...
+Warning: Repository 'openSUSE-Leap-42.1-Update' appears to be outdated. Consider using a different mirror or server.
+Reading installed packages...
+
+S | Name                                                   | Summary                                                                            | Type       
+--+--------------------------------------------------------+------------------------------------------------------------------------------------+------------
+  | GTKWave                                                | Display simulation results                                                         | application
+  | Gtkam Digital Camera Browser                           | Browse and download images from an attached digital camera                         | application
+i | PackageKit-gtk3-module                                 | Simple software installation management software                                   | package    
+  | Syncthing GTK                                          | GUI for Syncthing                                                                  | application
+i | Wireshark (GTK) Network Analyzer                       | GTK interface for wireshark network traffic analyzer                               | application
+i | at-spi2-atk-gtk2                                       | Assistive Technology Service Provider Interface - GTK+ 2 Module                    | package    
+  | avahi-utils-gtk                                        | GTK+ Utilities for D-BUS Service for Zeroconf and Bonjour                          | package    
+  | breeze-gtk                                             | GTK+ theme matching KDE's Breeze                                                   | package    
+  | breeze-gtk                                             | GTK+ theme matching KDE's Breeze                                                   | srcpackage 
+i | canberra-gtk-play                                      | Portable sound event library -- Utility                                            | package    
+  | canberra-gtk-play-gnome                                | Portable sound event library -- Utility                                            | package    
+i | caribou-gtk-module-common                              | On-screen Keyboard for GNOME -- Common Files for GTK+ Modules                      | package    
+i | caribou-gtk2-module                                    | On-screen Keyboard for GNOME -- GTK+ 2 Module                                      | package    
+i | caribou-gtk3-module                                    | On-screen Keyboard for GNOME -- GTK+ 3 Module                                      | package    
+i | clutter-gtk-devel                                      | GTK+ integration for Clutter - Development Files                                   | package    
+i | clutter-gtk-lang                                       | Languages for package clutter-gtk                                                  | package    
+  | colord-gtk                                             | System Daemon for Managing Color Devices -- GTK Integration                        | package    
+i | colord-gtk-lang                                        | Languages for package colord-gtk                                                   | package    
+i | fcitx-config-gtk3                                      | GTK GUI Config tool for FCITX                                                      | package    
+i | fcitx-gtk2                                             | Gtk2 IM module for fcitx                                                           | package    
+  | fcitx-gtk2-32bit                                       | Gtk2 IM module for fcitx                                                           | package    
+i | fcitx-gtk3                                             | Gtk3 IM module for fcitx                                                           | package    
+  | fcitx-gtk3-32bit                                       | Gtk3 IM module for fcitx                                                           | package    
+  | freeciv-gtk3                                           | Gtk3 client for freeciv                                                            | package    
+  | gcin-gtk2                                              | Gcin gtk2 immodule                                                                 | package    
+  | gcin-gtk2-32bit                                        | Gcin gtk2 immodule                                                                 | package    
+  | gcin-gtk2-immodule                                     | Gcin gtk2 immodule                                                                 | package    
+  | gcin-gtk2-immodule-32bit                               | Gcin gtk2 immodule                                                                 | package    
+  | gcin-gtk3                                              | Gcin gtk3 immodule                                                                 | package    
+  | gcin-gtk3-32bit                                        | Gcin gtk3 immodule                                                                 | package    
+  | gcin-gtk3-immodule                                     | Gcin gtk3 immodule                                                                 | package    
+  | gcin-gtk3-immodule-32bit                               | Gcin gtk3 immodule                                                                 | package    
+  | ghc-gtk3                                               | Binding to the Gtk+ 3 graphical user interface library                             | package    
+  | ghc-gtk3-devel                                         | Haskell gtk3 library development files                                             | package    
+  | glade-catalog-gtkhtml                                  | Lightweight HTML rendering/printing/editing engine -- Catalog for Glade            | package    
+i | glade-catalog-gtksourceview                            | GTK+ Source Editing Widget -- Catalog for Glade                                    | package    
+  | glade3-catalog-gtksourceview                           | GTK+ Source Editing Widget -- Catalog for Glade                                    | package    
+i | gnome-themes-accessibility-gtk2                        | Accessibility GNOME Themes                                                         | package    
+i | gtk-doc                                                | GTK+ DocBook Documentation Generator                                               | package    
+i | gtk-doc-lang                                           | Languages for package gtk-doc                                                      | package    
+  | gtk-key-theme-ctrluftw                                 | GTK key theme that sets ctrl-u in text entries                                     | package    
+  | gtk-recordMyDesktop                                    | Graphical Frontend for recordMyDesktop                                             | package    
+  | gtk-recordMyDesktop                                    | Frontend for recordMyDesktop                                                       | application
+  | gtk-recordMyDesktop-lang                               | Languages for package gtk-recordMyDesktop                                          | package    
+  | gtk-sharp-beans                                        | Extra Gtk# bindings                                                                | package    
+  | gtk-sharp-beans-devel                                  | Extra Gtk# bindings                                                                | package    
+  | gtk-sharp2                                             | .Net Language Bindings for GTK+                                                    | package    
+  | gtk-sharp2-complete                                    | GTK+ and GNOME bindings for Mono (virtual package)                                 | package    
+  | gtk-sharp2-doc                                         | Monodoc documentation for gtk-sharp2                                               | package    
+  | gtk-sharp2-gapi                                        | C Source Parser and C Generator                                                    | package    
+  | gtk-sharp3                                             | C-Sharp Language Bindings for GTK+                                                 | package    
+  | gtk-sharp3-complete                                    | GTK+ and GNOME bindings for Mono (virtual package)                                 | package    
+  | gtk-sharp3-devel                                       | .NET/C-Sharp Bindings for GIO                                                      | package    
+  | gtk-sharp3-doc                                         | Monodoc documentation for gtk-sharp2                                               | package    
+  | gtk-sharp3-gapi                                        | C Source Parser and C Generator                                                    | package    
+  | gtk-sharp3-gapi-devel                                  | .NET/C-Sharp Bindings for GIO                                                      | package    
+  | gtk-vnc-devel                                          | A GTK widget for VNC clients -- Development Files                                  | package    
+i | gtk-vnc-lang                                           | Languages for package gtk-vnc                                                      | package    
+  | gtk-vnc-tools                                          | VNC Tools based on gtk-vnc                                                         | package    
+  | gtk-vnc2-devel                                         | A GTK widget for VNC clients -- Development Files                                  | package    
+  | gtk-xfce-engine                                        | Xfce GTK+-2.0 Theme Engine                                                         | package    
+  | gtk-xfce-engine-32bit                                  | Xfce GTK+-2.0 Theme Engine                                                         | package    
+  | gtk2                                                   | The GTK+ toolkit library (version 2)                                               | srcpackage 
+  | gtk2-branding-SLED                                     | The GTK+ toolkit library (version 2) -- SLED theme configuration                   | package    
+  | gtk2-branding-SLED                                     | The GTK+ toolkit library (version 2) -- SLED theme configuration                   | srcpackage 
+i | gtk2-branding-openSUSE                                 | The GTK+ toolkit library (version 2) -- openSUSE theme configuration               | package    
+  | gtk2-branding-openSUSE                                 | The GTK+ toolkit library (version 2) -- openSUSE theme configuration               | srcpackage 
+  | gtk2-branding-upstream                                 | The GTK+ toolkit library (version 2) -- Upstream theme configuration               | package    
+i | gtk2-data                                              | The GTK+ toolkit library (version 2) -- Data Files                                 | package    
+i | gtk2-devel                                             | The GTK+ toolkit library (version 2) -- Development Files                          | package    
+  | gtk2-devel-32bit                                       | The GTK+ toolkit library (version 2) -- Development Files                          | package    
+  | gtk2-engine-aurora                                     | Another GTK2 engine theme                                                          | package    
+  | gtk2-engine-cleanice                                   | CleanIce GTK Theme Engine                                                          | package    
+  | gtk2-engine-cleanice-32bit                             | CleanIce GTK Theme Engine                                                          | package    
+  | gtk2-engine-clearlooks                                 | Clearlooks GTK+ 2 Theme Engine                                                     | package    
+  | gtk2-engine-clearlooks-32bit                           | Clearlooks GTK+ 2 Theme Engine                                                     | package    
+  | gtk2-engine-crux                                       | Crux GTK+ 2 Theme Engine                                                           | package    
+  | gtk2-engine-crux-32bit                                 | Crux GTK+ 2 Theme Engine                                                           | package    
+  | gtk2-engine-equinox                                    | Equinox GTK+ Theme Engine                                                          | package    
+  | gtk2-engine-glide                                      | Glide GTK+ 2 Theme Engine                                                          | package    
+  | gtk2-engine-glide-32bit                                | Glide GTK+ 2 Theme Engine                                                          | package    
+i | gtk2-engine-hcengine                                   | HC GTK+ 2 Theme Engine                                                             | package    
+  | gtk2-engine-industrial                                 | Industrial GTK+ 2 Theme Engine                                                     | package    
+  | gtk2-engine-industrial-32bit                           | Industrial GTK+ 2 Theme Engine                                                     | package    
+  | gtk2-engine-mist                                       | Mist GTK+ 2 Theme Engine                                                           | package    
+  | gtk2-engine-mist-32bit                                 | Mist GTK+ 2 Theme Engine                                                           | package    
+  | gtk2-engine-murrine                                    | Murrine GTK Theme Engine                                                           | package    
+  | gtk2-engine-murrine-32bit                              | Murrine GTK Theme Engine                                                           | package    
+  | gtk2-engine-nimbus                                     | Nimbus GTK Theme Engine                                                            | package    
+  | gtk2-engine-nimbus-32bit                               | Nimbus GTK Theme Engine                                                            | package    
+  | gtk2-engine-oxygen                                     | Oxygen GTK 2.x Theme Engine                                                        | package    
+  | gtk2-engine-oxygen-32bit                               | Oxygen GTK 2.x Theme Engine                                                        | package    
+  | gtk2-engine-redmond95                                  | Redmond GTK+ 2 Theme Engine                                                        | package    
+  | gtk2-engine-redmond95-32bit                            | Redmond GTK+ 2 Theme Engine                                                        | package    
+  | gtk2-engine-thinice                                    | ThinIce GTK+ 2 Theme Engine                                                        | package    
+  | gtk2-engine-thinice-32bit                              | ThinIce GTK+ 2 Theme Engine                                                        | package    
+  | gtk2-engines                                           | GTK+ 2 Theme Engines                                                               | package    
+  | gtk2-engines                                           | GTK+ 2 Theme Engines                                                               | srcpackage 
+  | gtk2-engines-devel                                     | Development files for gtk2-engines                                                 | package    
+i | gtk2-immodule-amharic                                  | The GTK+ toolkit library (version 2) -- Amharic Input Method                       | package    
+  | gtk2-immodule-amharic-32bit                            | The GTK+ toolkit library (version 2) -- Amharic Input Method                       | package    
+i | gtk2-immodule-inuktitut                                | The GTK+ toolkit library (version 2) -- Inuktitut Input Method                     | package    
+  | gtk2-immodule-inuktitut-32bit                          | The GTK+ toolkit library (version 2) -- Inuktitut Input Method                     | package    
+  | gtk2-immodule-multipress                               | The GTK+ toolkit library (version 2) -- Multipress Input Method                    | package    
+  | gtk2-immodule-multipress-32bit                         | The GTK+ toolkit library (version 2) -- Multipress Input Method                    | package    
+i | gtk2-immodule-thai                                     | The GTK+ toolkit library (version 2) -- Thai-Lao Input Method                      | package    
+  | gtk2-immodule-thai-32bit                               | The GTK+ toolkit library (version 2) -- Thai-Lao Input Method                      | package    
+i | gtk2-immodule-vietnamese                               | The GTK+ toolkit library (version 2) -- Vietnamese Input Method                    | package    
+  | gtk2-immodule-vietnamese-32bit                         | The GTK+ toolkit library (version 2) -- Vietnamese Input Method                    | package    
+  | gtk2-immodule-xim                                      | The GTK+ toolkit library (version 2) -- X Input Method                             | package    
+  | gtk2-immodule-xim-32bit                                | The GTK+ toolkit library (version 2) -- X Input Method                             | package    
+  | gtk2-immodules-tigrigna                                | The GTK+ toolkit library (version 2) -- Tigrigna Input Methods                     | package    
+  | gtk2-immodules-tigrigna-32bit                          | The GTK+ toolkit library (version 2) -- Tigrigna Input Methods                     | package    
+i | gtk2-lang                                              | Languages for package gtk2                                                         | package    
+i | gtk2-metatheme-adwaita                                 | Adwaita GNOME Theme -- GTK+ 2 Support                                              | package    
+  | gtk2-metatheme-ambiance                                | Ambiance Gtk Theme -- GTK+ 2 Support                                               | package    
+  | gtk2-metatheme-ambiant-mate                            | Ambiant-MATE Gtk Theme -- GTK+ 2 Support                                           | package    
+  | gtk2-metatheme-arc                                     | Arc GTK+2 Theme                                                                    | package    
+  | gtk2-metatheme-bluebird                                | A Clean Minimalistic Theme for GNOME, XFCE, GTK+ 2 and 3 -- GTK+ 2 Support         | package    
+  | gtk2-metatheme-breeze                                  | GTK+ theme matching KDE's Breeze -- GTK+ 2 Support                                 | package    
+  | gtk2-metatheme-elementary                              | The elementary GTK Theme -- GTK+ 2 Support                                         | package    
+  | gtk2-metatheme-equinox                                 | Equinox Metathemes for GTK+                                                        | package    
+  | gtk2-metatheme-gilouche                                | openSUSE themes and metathemes for gtk2 and metacity                               | package    
+  | gtk2-metatheme-greybird                                | A Clean Minimalistic Theme for GNOME, XFCE, GTK+ 2 and 3 -- GTK+ 2 Support         | package    
+  | gtk2-metatheme-industrial                              | Industrial Metatheme for GNOME                                                     | package    
+  | gtk2-metatheme-nimbus                                  | Nimbus Metatheme for GNOME                                                         | package    
+  | gtk2-metatheme-numix                                   | Numix GTK+2 Theme                                                                  | package    
+  | gtk2-metatheme-radiance                                | Radiance Gtk Theme -- GTK+ 2 Support                                               | package    
+  | gtk2-metatheme-radiant-mate                            | Radiant-MATE Gtk Theme -- GTK+ 2 Support                                           | package    
+  | gtk2-metatheme-sonar                                   | GTK+ and Metacity Sonar Theme                                                      | package    
+  | gtk2-metatheme-vertex                                  | Vertex GTK+2 Theme                                                                 | package    
+  | gtk2-metatheme-yuyo                                    | Yuyo Gtk Theme -- GTK+ 2 Support                                                   | package    
+  | gtk2-theme-clearlooks                                  | Clearlooks Theme for GTK+ 2                                                        | package    
+  | gtk2-theme-crux                                        | Crux Theme for GTK+ 2                                                              | package    
+  | gtk2-theme-industrial                                  | Industrial Theme for GTK+ 2                                                        | package    
+  | gtk2-theme-mist                                        | Mist Theme for GTK+ 2                                                              | package    
+  | gtk2-theme-oxygen                                      | Oxygen GTK 2.x Theme                                                               | package    
+  | gtk2-theme-redmond95                                   | Redmond Theme for GTK+ 2                                                           | package    
+  | gtk2-theme-thinice                                     | ThinIce Theme for GTK+ 2                                                           | package    
+  | gtk2-themes                                            | Additional Themes and Engines for GTK2                                             | package    
+i | gtk2-theming-engine-adwaita                            | Adwaita GTK+ Theming Engine                                                        | package    
+  | gtk2-theming-engine-adwaita-32bit                      | Adwaita GTK+ Theming Engine                                                        | package    
+i | gtk2-tools                                             | The GTK+ toolkit library (version 2) -- Tools                                      | package    
+i | gtk2-tools-32bit                                       | The GTK+ toolkit library (version 2) -- Tools                                      | package    
+  | gtk2hs-buildtools                                      | Tools to build the Gtk2Hs suite of User Interface libraries                        | package    
+  | gtk3                                                   | The GTK+ toolkit library (version 3)                                               | srcpackage 
+i | gtk3-branding-openSUSE                                 | The GTK+ toolkit library (version 3) -- openSUSE theme configuration               | package    
+  | gtk3-branding-upstream                                 | The GTK+ toolkit library (version 3) -- Upstream theme configuration               | package    
+i | gtk3-data                                              | The GTK+ toolkit library (version 3) -- Data Files                                 | package    
+i | gtk3-devel                                             | The GTK+ toolkit library (version 3) -- Development Files                          | package    
+  | gtk3-devel-32bit                                       | The GTK+ toolkit library (version 3) -- Development Files                          | package    
+  | gtk3-engine-oxygen                                     | Oxygen GTK 3.x Theme Engine                                                        | package    
+  | gtk3-engine-oxygen-32bit                               | Oxygen GTK 3.x Theme Engine                                                        | package    
+  | gtk3-engine-unico                                      | Gtk3 theming engine                                                                | package    
+i | gtk3-immodule-amharic                                  | The GTK+ toolkit library (version 3) -- Amharic Input Method                       | package    
+  | gtk3-immodule-amharic-32bit                            | The GTK+ toolkit library (version 3) -- Amharic Input Method                       | package    
+  | gtk3-immodule-broadway                                 | The GTK+ toolkit library (version 3) -- Broadway Input Method                      | package    
+i | gtk3-immodule-inuktitut                                | The GTK+ toolkit library (version 3) -- Inuktitut Input Method                     | package    
+  | gtk3-immodule-inuktitut-32bit                          | The GTK+ toolkit library (version 3) -- Inuktitut Input Method                     | package    
+  | gtk3-immodule-multipress                               | The GTK+ toolkit library (version 3) -- Multipress Input Method                    | package    
+  | gtk3-immodule-multipress-32bit                         | The GTK+ toolkit library (version 3) -- Multipress Input Method                    | package    
+i | gtk3-immodule-thai                                     | The GTK+ toolkit library (version 3) -- Thai-Lao Input Method                      | package    
+  | gtk3-immodule-thai-32bit                               | The GTK+ toolkit library (version 3) -- Thai-Lao Input Method                      | package    
+i | gtk3-immodule-vietnamese                               | The GTK+ toolkit library (version 3) -- Vietnamese Input Method                    | package    
+  | gtk3-immodule-vietnamese-32bit                         | The GTK+ toolkit library (version 3) -- Vietnamese Input Method                    | package    
+  | gtk3-immodule-xim                                      | The GTK+ toolkit library (version 3) -- X Input Method                             | package    
+  | gtk3-immodule-xim-32bit                                | The GTK+ toolkit library (version 3) -- X Input Method                             | package    
+  | gtk3-immodules-tigrigna                                | The GTK+ toolkit library (version 3) -- Tigrigna Input Methods                     | package    
+  | gtk3-immodules-tigrigna-32bit                          | The GTK+ toolkit library (version 3) -- Tigrigna Input Methods                     | package    
+i | gtk3-lang                                              | Languages for package gtk3                                                         | package    
+i | gtk3-metatheme-adwaita                                 | Adwaita GNOME Theme -- GTK+ 3 Support                                              | package    
+  | gtk3-metatheme-ambiance                                | Ambiance Gtk Theme -- GTK+ 3 Support                                               | package    
+  | gtk3-metatheme-ambiant-mate                            | Ambiant-MATE Gtk Theme -- GTK+ 3 Support                                           | package    
+  | gtk3-metatheme-arc                                     | Arc GTK+3 Theme                                                                    | package    
+  | gtk3-metatheme-bluebird                                | A Clean Minimalistic Theme for GNOME, XFCE, GTK+ 2 and 3 -- GTK+ 3 Support         | package    
+  | gtk3-metatheme-breeze                                  | GTK+ theme matching KDE's Breeze -- GTK+ 3 Support                                 | package    
+  | gtk3-metatheme-elementary                              | The elementary GTK Theme -- GTK+ 3 Support                                         | package    
+  | gtk3-metatheme-greybird                                | A Clean Minimalistic Theme for GNOME, XFCE, GTK+ 2 and 3 -- GTK+ 3 Support         | package    
+  | gtk3-metatheme-numix                                   | Numix GTK+3 Theme                                                                  | package    
+  | gtk3-metatheme-radiance                                | Radiance Gtk Theme -- GTK+ 3 Support                                               | package    
+  | gtk3-metatheme-radiant-mate                            | Radiant-MATE Gtk Theme -- GTK+ 3 Support                                           | package    
+  | gtk3-metatheme-vertex                                  | Vertex GTK+3 Theme                                                                 | package    
+  | gtk3-metatheme-yuyo                                    | Yuyo Gtk Theme -- GTK+ 3 Support                                                   | package    
+  | gtk3-theme-oxygen                                      | Oxygen GTK 3.x Theme                                                               | package    
+i | gtk3-tools                                             | The GTK+ toolkit library (version 3) -- Tools                                      | package    
+i | gtk3-tools-32bit                                       | The GTK+ toolkit library (version 3) -- Tools                                      | package    
+  | gtkam                                                  | A GTK Digital Camera Tool                                                          | package    
+  | gtkam                                                  | A GTK Digital Camera Tool                                                          | srcpackage 
+  | gtkam-debuginfo                                        | Debug information for package gtkam                                                | package    
+  | gtkam-debugsource                                      | Debug sources for package gtkam                                                    | package    
+  | gtkam-doc                                              | Documentation for gtkcam                                                           | package    
+  | gtkam-lang                                             | Languages for package gtkam                                                        | package    
+  | gtkglarea2                                             | An OpenGL Widget for GTK+                                                          | srcpackage 
+  | gtkglarea2                                             | An OpenGL Widget for GTK+                                                          | package    
+  | gtkglarea2-debugsource                                 | Debug sources for package gtkglarea2                                               | package    
+  | gtkglarea2-devel                                       | Development files for gtkglarea                                                    | package    
+  | gtkglext-devel                                         | OpenGL Extension to GTK                                                            | package    
+  | gtkglext-doc                                           | Documentation of the OpenGL Extension to GTK                                       | package    
+  | gtkhtml                                                | Lightweight HTML rendering/printing/editing engine                                 | srcpackage 
+  | gtkhtml-4_0-lang                                       | Languages for package gtkhtml                                                      | package    
+  | gtkhtml-devel                                          | Lightweight HTML rendering/printing/editing engine -- Development Files            | package    
+  | gtkimageview-devel                                     | Library providing an advanced widget for GdkPixbuf - Development Files             | package    
+  | gtkiterm                                               | Internationalized Terminal Emulator for GTK                                        | package    
+  | gtkmm2-devel                                           | C++ Interface for GTK2 (a GUI library for X)                                       | package    
+  | gtkmm2-tutorial                                        | C++ Bindings for GTK+ -- Tutorial                                                  | package    
+  | gtkmm2-tutorial-lang                                   | Languages for package gtkmm2-documentation                                         | package    
+i | gtkmm3-devel                                           | C++ Interface for GTK3 (a GUI library for X)                                       | package    
+i | gtkmm3-doc                                             | C++ Interface for GTK3 (a GUI Library for X)                                       | package    
+i | gtkmm3-tutorial                                        | C++ Bindings for GTK+ -- Tutorial                                                  | package    
+i | gtkmm3-tutorial-lang                                   | Languages for package gtkmm-documentation                                          | package    
+  | gtkparasite                                            | GTK+ debugging tool similar to Firebug                                             | package    
+  | gtkpod                                                 | A platform independent GUI for the Apple® iPod®                                    | package    
+  | gtkpod                                                 | Manage music, video and photos on an Apple iPod                                    | application
+  | gtkpod-devel                                           | A platform independent GUI for the Apple® iPod® - Development Files                | package    
+  | gtkpod-lang                                            | Languages for package gtkpod                                                       | package    
+i | gtksourceview-devel                                    | GTK+ Source Editing Widget                                                         | package    
+i | gtksourceview-lang                                     | Languages for package gtksourceview                                                | package    
+  | gtksourceview18                                        | GTK+ 2.0 Source Editing Widget                                                     | package    
+  | gtksourceview18-devel                                  | GTK+ 2.0 Source Editing Widget                                                     | package    
+  | gtksourceview18-doc                                    | Additional Package Documentation.                                                  | package    
+  | gtksourceview2-devel                                   | GTK+ Source Editing Widget                                                         | package    
+  | gtksourceview2-lang                                    | Languages for package gtksourceview2                                               | package    
+  | gtksourceview2-sharp                                   | Mono bindings for gtksourceview2                                                   | package    
+  | gtksourceviewmm-devel                                  | C++ interface for gtksourceview -- Development Files                               | package    
+  | gtkspell-devel                                         | Static libraries and header files from gtkspell                                    | package    
+  | gtkspell-doc                                           | GTK2 Spell Checker Interface Library                                               | package    
+  | gtkspell-lang                                          | Languages for package gtkspell                                                     | package    
+  | gtkspell3-devel                                        | GTK3 Spell Checker Interface Library -- Development Files                          | package    
+i | gtkspell3-lang                                         | Languages for package gtkspell3                                                    | package    
+  | gtkterm                                                | It is a "clone" of the famous Hyperterminal                                        | srcpackage 
+i | gtkterm                                                | It is a "clone" of the famous Hyperterminal                                        | package    
+  | gtkterm-lang                                           | Languages for package gtkterm                                                      | package    
+  | gtkwave                                                | Waveform viewer for Ditital Signals                                                | package    
+  | gtkwave-doc                                            | Documentation for GTKWave                                                          | package    
+  | gtkwave-examples                                       | Examples for GTKWave                                                               | package    
+i | ibus-gtk                                               | IBus im module for gtk2                                                            | package    
+i | ibus-gtk-32bit                                         | IBus im module for gtk2                                                            | package    
+i | ibus-gtk3                                              | IBus im module for gtk3                                                            | package    
+i | ibus-gtk3-32bit                                        | IBus im module for gtk3                                                            | package    
+  | kde-gtk-config5                                        | KCM Module to Configure GTK2 and GTK3 Applications Appearance Under KDE            | package    
+  | kde-gtk-config5                                        | KCM Module to Configure GTK2 and GTK3 Applications Appearance Under KDE            | srcpackage 
+  | kde-gtk-config5-lang                                   | Languages for package kde-gtk-config5                                              | package    
+i | libavahi-ui-gtk3-0                                     | D-BUS Service for Zeroconf and Bonjour                                             | package    
+  | libcanberra-gtk-devel                                  | Portable sound event library -- Development files                                  | package    
+i | libcanberra-gtk-module-common                          | Portable sound event library -- Common Files for GTK+ Modules                      | package    
+i | libcanberra-gtk0                                       | Portable sound event library -- GTK+ 2 Library                                     | package    
+i | libcanberra-gtk0-32bit                                 | Portable sound event library -- GTK+ 2 Library                                     | package    
+i | libcanberra-gtk2-module                                | Portable sound event library -- GTK+ 2 Module                                      | package    
+i | libcanberra-gtk2-module-32bit                          | Portable sound event library -- GTK+ 2 Module                                      | package    
+i | libcanberra-gtk3-0                                     | Portable sound event library -- GTK+ 3 Library                                     | package    
+i | libcanberra-gtk3-0-32bit                               | Portable sound event library -- GTK+ 3 Library                                     | package    
+  | libcanberra-gtk3-devel                                 | Portable sound event library -- Development files                                  | package    
+i | libcanberra-gtk3-module                                | Portable sound event library -- GTK+ 3 Module                                      | package    
+i | libcanberra-gtk3-module-32bit                          | Portable sound event library -- GTK+ 3 Module                                      | package    
+i | libcheese-gtk23                                        | Webcam Booth for GNOME - UI Library                                                | package    
+i | libcheese-gtk25                                        | Webcam Booth for GNOME - UI Library                                                | package    
+i | libclutter-gtk-1_0-0                                   | GTK+ integration for Clutter                                                       | package    
+  | libclutter-gtk-1_0-0-32bit                             | GTK+ integration for Clutter                                                       | package    
+  | libcolord-gtk-devel                                    | System Daemon for Managing Color Devices -- GTK Integration Development Files      | package    
+i | libcolord-gtk1                                         | System Daemon for Managing Color Devices -- GTK Integration Library                | package    
+  | libcolord-gtk1-32bit                                   | System Daemon for Managing Color Devices -- GTK Integration Library                | package    
+  | libcxx-gtk-utils-3-2_2-0                               | Lightweight library for GTK+ programs using C++                                    | package    
+  | libcxx-gtk-utils-3-devel                               | Lightweight library for GTK+ programs using C++ -- Development Files               | package    
+  | libdbusmenu-gtk-devel                                  | Development files for libdbusmenu-gtk4                                             | package    
+  | libdbusmenu-gtk-doc                                    | Documentation for libdbusmenu-gtk4 and libdbusmenu-gtk3-4                          | package    
+  | libdbusmenu-gtk3-4                                     | Small library that passes a menu structure across DBus -- GTK+ 3 version           | package    
+  | libdbusmenu-gtk3-devel                                 | Development files for libdbusmenu-gtk3-4                                           | package    
+  | libdbusmenu-gtk4                                       | Small library that passes a menu structure across D-Bus -- GTK+ 2 version          | package    
+  | libexif-gtk                                            | GTK Widgets for Viewing EXIF Information                                           | package    
+  | libexif-gtk-devel                                      | GTK Widgets for Viewing EXIF Information                                           | package    
+  | libexif-gtk5                                           | GTK Widgets for Viewing EXIF Information                                           | package    
+  | libfm-gtk-devel                                        | GTK devel files for libfm                                                          | package    
+  | libfm-gtk4                                             | GTK libfm libraries                                                                | package    
+  | libgirara-gtk3-2                                       | Header files for girara library                                                    | package    
+i | libgtk-2_0-0                                           | The GTK+ toolkit library (version 2)                                               | package    
+i | libgtk-2_0-0-32bit                                     | The GTK+ toolkit library (version 2)                                               | package    
+i | libgtk-3-0                                             | The GTK+ toolkit library (version 3)                                               | package    
+i | libgtk-3-0-32bit                                       | The GTK+ toolkit library (version 3)                                               | package    
+  | libgtk-vnc-1_0-0                                       | A GTK widget for VNC clients                                                       | package    
+i | libgtk-vnc-2_0-0                                       | A GTK widget for VNC clients                                                       | package    
+  | libgtkdatabox-0_9_1-3                                  | GTK+ widget for fast data display                                                  | package    
+  | libgtkdatabox-devel                                    | Development files for GtkDatabox                                                   | package    
+  | libgtkgl-2_0-1                                         | Shared Library of GtkGLArea                                                        | package    
+  | libgtkgl-2_0-1-debuginfo                               | Debug information for package libgtkgl-2_0-1                                       | package    
+  | libgtkglext-x11-1_0-0                                  | OpenGL Extension to GTK                                                            | package    
+  | libgtkglext-x11-1_0-0-32bit                            | OpenGL Extension to GTK                                                            | package    
+  | libgtkhex-3-0                                          | GNOME Binary Editor -- Library                                                     | package    
+  | libgtkhotkey-devel                                     | Platform Independent Hotkey Handling for GTK+ Applications -- Development Files    | package    
+  | libgtkhotkey1                                          | Platform Independent Hotkey Handling for GTK+ Applications                         | package    
+  | libgtkhtml-4_0-0                                       | Lightweight HTML rendering/printing/editing engine                                 | package    
+  | libgtkhtml-4_0-0-32bit                                 | Lightweight HTML rendering/printing/editing engine                                 | package    
+  | libgtkhtml-editor-4_0-0                                | Lightweight HTML rendering/printing/editing engine                                 | package    
+  | libgtkhtml-editor-4_0-0-32bit                          | Lightweight HTML rendering/printing/editing engine                                 | package    
+  | libgtkimageview0                                       | Library providing an advanced widget for GdkPixbuf                                 | package    
+i | libgtkmm-2_4-1                                         | C++ Interface for GTK2 (a GUI library for X)                                       | package    
+  | libgtkmm-2_4-1-32bit                                   | C++ Interface for GTK2 (a GUI library for X)                                       | package    
+i | libgtkmm-3_0-1                                         | C++ Interface for GTK3 (a GUI library for X)                                       | package    
+i | libgtkmm-3_0-1-32bit                                   | C++ Interface for GTK3 (a GUI library for X)                                       | package    
+  | libgtkpod1                                             | A platform independent GUI for the Apple® iPod® - System Library                   | package    
+  | libgtksourceview-2_0-0                                 | GTK+ Source Editing Widget                                                         | package    
+i | libgtksourceview-3_0-1                                 | GTK+ Source Editing Widget                                                         | package    
+  | libgtksourceviewmm-3_0-0                               | C++ interface for gtksourceview                                                    | package    
+  | libgtkspell0                                           | GTK2 Spell Checker Interface Library                                               | package    
+i | libgtkspell3-3-0                                       | GTK3 Spell Checker Interface Library                                               | package    
+  | libgwengui-gtk2-0                                      | Multiplatform Helper Library for Other Libraries -- GTK+ UI Backend                | package    
+i | libjavascriptcoregtk-1_0-0                             | JavaScript Core Engine, GTK+ Port                                                  | package    
+i | libjavascriptcoregtk-1_0-0-32bit                       | JavaScript Core Engine, GTK+ Port                                                  | package    
+i | libjavascriptcoregtk-3_0-0                             | JavaScript Core Engine, GTK+ Port                                                  | package    
+  | libjavascriptcoregtk-3_0-0-32bit                       | JavaScript Core Engine, GTK+ Port                                                  | package    
+i | libjavascriptcoregtk-4_0-18                            | JavaScript Core Engine, GTK+ Port                                                  | package    
+  | libjavascriptcoregtk-4_0-18-32bit                      | JavaScript Core Engine, GTK+ Port                                                  | package    
+  | libnm-gtk-devel                                        | NetworkManager Gtk+ dialogs -- Development Files                                   | package    
+i | libnm-gtk0                                             | NetworkManager Gtk+ dialogs                                                        | package    
+i | libpeas-gtk-1_0-0                                      | GObject-based Plugin Engine                                                        | package    
+  | libpolkit-gtk-mate-1-0                                 | MATE authentification agent shared libraries                                       | package    
+  | libpolkit-gtk-mate-1-0-32bit                           | MATE authentification agent shared libraries                                       | package    
+  | libqt5-qtbase-platformtheme-gtk2                       | Qt 5 gtk2 plugin                                                                   | package    
+i | libreoffice-gtk3                                       | Gtk3 interface for LibreOffice                                                     | package    
+  | libspice-client-gtk-2_0-4                              | Gtk client and libraries for SPICE remote desktop servers                          | package    
+i | libspice-client-gtk-3_0-4                              | Gtk client and libraries for SPICE remote desktop servers                          | package    
+  | libtomoe-gtk0                                          | TOMOE GTK+ library                                                                 | package    
+  | libunity-gtk-parser-devel                              | Development files of libunity-gtk-parser                                           | package    
+  | libunity-gtk2-parser0                                  | GtkMenuShell to GMenuModel parser                                                  | package    
+  | libunity-gtk2-parser0-32bit                            | GtkMenuShell to GMenuModel parser                                                  | package    
+  | libunity-gtk3-parser0                                  | GtkMenuShell to GMenuModel parser                                                  | package    
+  | libunity-gtk3-parser0-32bit                            | GtkMenuShell to GMenuModel parser                                                  | package    
+i | libwebkit2gtk-4_0-37                                   | Library for rendering web content, GTK+ Port                                       | package    
+  | libwebkit2gtk-4_0-37-32bit                             | Library for rendering web content, GTK+ Port                                       | package    
+i | libwebkit2gtk3-lang                                    | Languages for package webkit2gtk3                                                  | package    
+i | libwebkitgtk-1_0-0                                     | Library for rendering web content, GTK+ Port                                       | package    
+i | libwebkitgtk-1_0-0-32bit                               | Library for rendering web content, GTK+ Port                                       | package    
+i | libwebkitgtk-3_0-0                                     | Library for rendering web content, GTK+ Port                                       | package    
+  | libwebkitgtk-3_0-0-32bit                               | Library for rendering web content, GTK+ Port                                       | package    
+i | libwebkitgtk-devel                                     | Library for rendering web content, GTK+ Port                                       | package    
+i | libwebkitgtk2-lang                                     | Languages for package webkitgtk                                                    | package    
+i | libwebkitgtk3-devel                                    | Library for rendering web content, GTK+ Port                                       | package    
+i | libwebkitgtk3-lang                                     | Languages for package webkitgtk3                                                   | package    
+  | libwx_gtk2_adv-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_adv-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_adv-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_aui-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_aui-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_aui-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_core-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_core-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_core-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_fl-2_8-0-compat-lib-wxcontainer             | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_fl-2_8-0-wxcontainer                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_fl-2_8-0-wxcontainer-32bit                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_gizmos-2_8-0-compat-lib-wxcontainer         | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_gizmos-2_8-0-wxcontainer                    | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_gizmos-2_8-0-wxcontainer-32bit              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_gizmos_xrc-2_8-0-compat-lib-wxcontainer     | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_gizmos_xrc-2_8-0-wxcontainer                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_gizmos_xrc-2_8-0-wxcontainer-32bit          | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_gl-2_8-0-compat-lib-wxcontainer             | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_gl-2_8-0-wxcontainer                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_gl-2_8-0-wxcontainer-32bit                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_html-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_html-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_html-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_media-2_8-0-compat-lib-wxcontainer          | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_media-2_8-0-wxcontainer                     | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_media-2_8-0-wxcontainer-32bit               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_mmedia-2_8-0-compat-lib-wxcontainer         | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_mmedia-2_8-0-wxcontainer                    | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_mmedia-2_8-0-wxcontainer-32bit              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_ogl-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_ogl-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_ogl-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_plot-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_plot-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_plot-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_qa-2_8-0-compat-lib-wxcontainer             | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_qa-2_8-0-wxcontainer                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_qa-2_8-0-wxcontainer-32bit                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_richtext-2_8-0-compat-lib-wxcontainer       | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_richtext-2_8-0-wxcontainer                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_richtext-2_8-0-wxcontainer-32bit            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_stc-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_stc-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_stc-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_svg-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_svg-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_svg-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_xrc-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2_xrc-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2_xrc-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-2_8-0-compat-lib-stl                   | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_adv-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_adv-2_8-0-compat-lib-wxcontainer24c        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_adv-2_8-0-stl                              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-2_8-0-stl-32bit                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-2_8-0-wxcontainer24c                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-2_8-0-wxcontainer24c-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-suse-nostl1                            | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_adv-suse1                                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_adv-suse1-32bit                            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-2_8-0-compat-lib-stl                   | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_aui-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_aui-2_8-0-compat-lib-wxcontainer24c        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_aui-2_8-0-stl                              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-2_8-0-stl-32bit                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-2_8-0-wxcontainer24c                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-2_8-0-wxcontainer24c-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-suse-nostl1                            | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_aui-suse1                                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_aui-suse1-32bit                            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-2_8-0-compat-lib-stl                  | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_core-2_8-0-compat-lib-wxcontainer          | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_core-2_8-0-compat-lib-wxcontainer24c       | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_core-2_8-0-stl                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-2_8-0-stl-32bit                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-2_8-0-wxcontainer                     | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-2_8-0-wxcontainer-32bit               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-2_8-0-wxcontainer24c                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-2_8-0-wxcontainer24c-32bit            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-suse-nostl1                           | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_core-suse1                                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_core-suse1-32bit                           | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_fl-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_fl-2_8-0-compat-lib-wxcontainer24c         | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_fl-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_fl-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_fl-2_8-0-wxcontainer24c                    | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_fl-2_8-0-wxcontainer24c-32bit              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos-2_8-0-compat-lib-stl                | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gizmos-2_8-0-compat-lib-wxcontainer        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gizmos-2_8-0-compat-lib-wxcontainer24c     | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gizmos-2_8-0-stl                           | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos-2_8-0-stl-32bit                     | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos-2_8-0-wxcontainer                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos-2_8-0-wxcontainer-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos-2_8-0-wxcontainer24c                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos-2_8-0-wxcontainer24c-32bit          | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-compat-lib-stl            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-compat-lib-wxcontainer    | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-compat-lib-wxcontainer24c | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-stl                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-stl-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-wxcontainer               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-wxcontainer-32bit         | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-wxcontainer24c            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gizmos_xrc-2_8-0-wxcontainer24c-32bit      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-2_8-0-compat-lib-stl                    | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gl-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gl-2_8-0-compat-lib-wxcontainer24c         | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_gl-2_8-0-stl                               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-2_8-0-stl-32bit                         | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-2_8-0-wxcontainer24c                    | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-2_8-0-wxcontainer24c-32bit              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-suse-nostl1                             | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_gl-suse1                                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_gl-suse1-32bit                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-2_8-0-compat-lib-stl                  | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_html-2_8-0-compat-lib-wxcontainer          | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_html-2_8-0-compat-lib-wxcontainer24c       | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_html-2_8-0-stl                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-2_8-0-stl-32bit                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-2_8-0-wxcontainer                     | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-2_8-0-wxcontainer-32bit               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-2_8-0-wxcontainer24c                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-2_8-0-wxcontainer24c-32bit            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-suse-nostl1                           | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_html-suse1                                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_html-suse1-32bit                           | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-2_8-0-compat-lib-stl                 | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_media-2_8-0-compat-lib-wxcontainer         | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_media-2_8-0-compat-lib-wxcontainer24c      | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_media-2_8-0-stl                            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-2_8-0-stl-32bit                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-2_8-0-wxcontainer                    | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-2_8-0-wxcontainer-32bit              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-2_8-0-wxcontainer24c                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-2_8-0-wxcontainer24c-32bit           | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-suse-nostl1                          | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_media-suse1                                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_media-suse1-32bit                          | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_mmedia-2_8-0-compat-lib-stl                | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_mmedia-2_8-0-compat-lib-wxcontainer        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_mmedia-2_8-0-compat-lib-wxcontainer24c     | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_mmedia-2_8-0-stl                           | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_mmedia-2_8-0-stl-32bit                     | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_mmedia-2_8-0-wxcontainer                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_mmedia-2_8-0-wxcontainer-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_mmedia-2_8-0-wxcontainer24c                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_mmedia-2_8-0-wxcontainer24c-32bit          | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ogl-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_ogl-2_8-0-compat-lib-wxcontainer24c        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_ogl-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ogl-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ogl-2_8-0-wxcontainer24c                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ogl-2_8-0-wxcontainer24c-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_plot-2_8-0-compat-lib-stl                  | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_plot-2_8-0-compat-lib-wxcontainer          | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_plot-2_8-0-compat-lib-wxcontainer24c       | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_plot-2_8-0-stl                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_plot-2_8-0-stl-32bit                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_plot-2_8-0-wxcontainer                     | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_plot-2_8-0-wxcontainer-32bit               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_plot-2_8-0-wxcontainer24c                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_plot-2_8-0-wxcontainer24c-32bit            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_propgrid-suse-nostl1                       | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_propgrid-suse1                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_propgrid-suse1-32bit                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-2_8-0-compat-lib-stl                    | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_qa-2_8-0-compat-lib-wxcontainer            | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_qa-2_8-0-compat-lib-wxcontainer24c         | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_qa-2_8-0-stl                               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-2_8-0-stl-32bit                         | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-2_8-0-wxcontainer                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-2_8-0-wxcontainer-32bit                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-2_8-0-wxcontainer24c                    | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-2_8-0-wxcontainer24c-32bit              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-suse-nostl1                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-suse1                                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_qa-suse1-32bit                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ribbon-suse-nostl1                         | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ribbon-suse1                               | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_ribbon-suse1-32bit                         | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-2_8-0-compat-lib-stl              | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_richtext-2_8-0-compat-lib-wxcontainer      | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_richtext-2_8-0-compat-lib-wxcontainer24c   | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_richtext-2_8-0-stl                         | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-2_8-0-stl-32bit                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-2_8-0-wxcontainer                 | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-2_8-0-wxcontainer-32bit           | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-2_8-0-wxcontainer24c              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-2_8-0-wxcontainer24c-32bit        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-suse-nostl1                       | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_richtext-suse1                             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_richtext-suse1-32bit                       | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-2_8-0-compat-lib-stl                   | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_stc-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_stc-2_8-0-compat-lib-wxcontainer24c        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_stc-2_8-0-stl                              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-2_8-0-stl-32bit                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-2_8-0-wxcontainer24c                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-2_8-0-wxcontainer24c-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-suse-nostl1                            | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_stc-suse1                                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_stc-suse1-32bit                            | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_svg-2_8-0-compat-lib-stl                   | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_svg-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_svg-2_8-0-compat-lib-wxcontainer24c        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_svg-2_8-0-stl                              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_svg-2_8-0-stl-32bit                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_svg-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_svg-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_svg-2_8-0-wxcontainer24c                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_svg-2_8-0-wxcontainer24c-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_webview-suse-nostl1                        | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_webview-suse1                              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_webview-suse1-32bit                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-2_8-0-compat-lib-stl                   | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_xrc-2_8-0-compat-lib-wxcontainer           | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_xrc-2_8-0-compat-lib-wxcontainer24c        | wxWidgets Library Compatibility Virtual Package                                    | package    
+  | libwx_gtk2u_xrc-2_8-0-stl                              | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-2_8-0-stl-32bit                        | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-2_8-0-wxcontainer                      | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-2_8-0-wxcontainer-32bit                | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-2_8-0-wxcontainer24c                   | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-2_8-0-wxcontainer24c-32bit             | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-suse-nostl1                            | wxWidgets Library                                                                  | package    
+i | libwx_gtk2u_xrc-suse1                                  | wxWidgets Library                                                                  | package    
+  | libwx_gtk2u_xrc-suse1-32bit                            | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_adv-suse1                                  | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_aui-suse1                                  | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_core-suse1                                 | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_gl-suse1                                   | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_html-suse1                                 | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_media-suse1                                | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_propgrid-suse1                             | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_qa-suse1                                   | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_ribbon-suse1                               | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_richtext-suse1                             | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_stc-suse1                                  | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_webview-suse1                              | wxWidgets Library                                                                  | package    
+i | libwx_gtk3u_xrc-suse1                                  | wxWidgets Library                                                                  | package    
+  | libzbargtk-devel                                       | Development environment for the ZBar Gtk bindings library                          | package    
+  | libzbargtk0                                            | ZBar Gtk bindings                                                                  | package    
+  | libzbargtk0-32bit                                      | ZBar Gtk bindings                                                                  | package    
+  | libzbargtk0-debuginfo                                  | Debug information for package libzbargtk0                                          | package    
+  | lightdm-gtk-greeter                                    | Simple display manager (GTK+ greeter)                                              | package    
+  | lightdm-gtk-greeter-branding-openSUSE                  | openSUSE branding of lightdm-gtk-greeter                                           | package    
+  | lightdm-gtk-greeter-branding-upstream                  | Upstream branding of lightdm-gtk-greeter                                           | package    
+  | lightdm-gtk-greeter-lang                               | Languages for package lightdm-gtk-greeter                                          | package    
+  | mtr-gtk                                                | Ping and Traceroute Network Diagnostic Tool                                        | package    
+  | nemo-extension-gtkhash                                 | Nemo extension for computing checksums and more using gtkhash                      | package    
+  | nemo-extension-gtkhash-lang                            | Languages for package nemo-extensions                                              | package    
+  | ocaml-lablgtk2                                         | An Objective Caml Interface to gtk2+                                               | package    
+  | ocaml-lablgtk2-devel                                   | An Objective Caml interface to gtk2+                                               | package    
+  | paper-gtk-theme                                        | Paper GTK theme                                                                    | package    
+  | pcmanx-gtk2                                            | User-friendly telnet client designed for BBS browsing                              | package    
+  | perl-Gtk2                                              | Perl interface to the 2.x series of the GTK+ library                               | srcpackage 
+  | perl-Gtk2                                              | Perl interface to the 2.x series of the GTK+ library                               | package    
+  | perl-Gtk2-AppIndicator                                 | Perl interface to the libappindicator                                              | srcpackage 
+  | perl-Gtk2-AppIndicator                                 | Perl interface to the libappindicator                                              | package    
+  | perl-Gtk2-Ex-FormFactory                               | Makes building complex GUI's easy                                                  | package    
+  | perl-Gtk2-Ex-FormFactory                               | Makes building complex GUI's easy                                                  | srcpackage 
+  | perl-Gtk2-Ex-PodViewer                                 | Gtk2::Ex::PodViewer - a Gtk2 widget for displaying Plain old Documentation (POD)   | srcpackage 
+  | perl-Gtk2-Ex-PodViewer                                 | Gtk2::Ex::PodViewer - a Gtk2 widget for displaying Plain old Documentation (POD)   | package    
+  | perl-Gtk2-Ex-Simple-List                               | Simple Interface to the Complex MVC List Widget of GTK2                            | srcpackage 
+  | perl-Gtk2-Ex-Simple-List                               | Simple Interface to the Complex MVC List Widget of GTK2                            | package    
+  | perl-Gtk2-GladeXML                                     | Create user interfaces directly from Glade XML files                               | srcpackage 
+  | perl-Gtk2-GladeXML                                     | Create user interfaces directly from Glade XML files                               | package    
+  | perl-Gtk2-ImageView                                    | Perl bindings to the GtkImageView image viewer widget                              | srcpackage 
+  | perl-Gtk2-ImageView                                    | Perl bindings to the GtkImageView image viewer widget                              | package    
+  | perl-Gtk2-Notify                                       | Perl interface to libnotify                                                        | srcpackage 
+  | perl-Gtk2-Notify                                       | Perl interface to libnotify                                                        | package    
+  | perl-Gtk2-SourceView2                                  | Enhanced source code editor widget                                                 | srcpackage 
+  | perl-Gtk2-SourceView2                                  | Enhanced source code editor widget                                                 | package    
+  | perl-Gtk2-TrayIcon                                     | Perl interface to the EggTrayIcon library                                          | srcpackage 
+  | perl-Gtk2-TrayIcon                                     | Perl interface to the EggTrayIcon library                                          | package    
+  | perl-Gtk2-Unique                                       | Perl bindings for the C library "libunique"                                        | srcpackage 
+  | perl-Gtk2-Unique                                       | Perl bindings for the C library "libunique"                                        | package    
+  | perl-Gtk2-WebKit                                       | Web content engine library for Gtk2                                                | srcpackage 
+  | perl-Gtk2-WebKit                                       | Web content engine library for Gtk2                                                | package    
+  | pinentry-gtk2                                          | Collection of Simple PIN or Passphrase Entry Dialogs                               | package    
+  | python-SpiceClientGtk                                  | Gtk client and libraries for SPICE remote desktop servers - python-bindings        | package    
+  | python-avahi-gtk                                       | A set of Avahi utilities written in Python Using python-gtk                        | package    
+i | python-gtk                                             | Python bindings for the GTK+ widget set                                            | package    
+  | python-gtk-devel                                       | Files needed to build wrappers for GTK+ addon libraries                            | package    
+  | python-gtk-doc                                         | Python bindings for the GTK+ widget set                                            | package    
+  | python-gtk-vnc                                         | Python bindings for the gtk-vnc library                                            | package    
+  | python-gtksourceview                                   | Python bindings for the GTK+ source editing widget                                 | package    
+  | python-gtksourceview-devel                             | Python bindings for the GTK+ source editing widget                                 | package    
+  | python-gtkspell                                        | Python bindings for GtkSpell                                                       | package    
+  | python-liblarch_gtk                                    | GTK bindings for liblarch                                                          | package    
+  | python-matplotlib-gtk2                                 | GTK2 backends for python-matplotlib                                                | package    
+  | python-matplotlib-gtk3                                 | GTK3 backends for python-matplotlib                                                | package    
+  | python-slip-gtk                                        | Code to make auto-wrapping gtk labels                                              | package    
+  | python-webkitgtk                                       | Python bindings for WebKit/Gtk                                                     | package    
+  | python-webkitgtk-devel                                 | Python bindings for WebKit/Gtk -- Development Files                                | package    
+  | python-zbar-gtk                                        | ZBar Python-Gtk bindings                                                           | package    
+  | python-zbar-gtk-debuginfo                              | Debug information for package python-zbar-gtk                                      | package    
+  | python3-gr-gtk2                                        | Python visualization framework - gtk2 driver                                       | package    
+  | python3-gr-gtk2-debuginfo                              | Debug information for package python3-gr-gtk2                                      | package    
+  | python3-matplotlib-gtk2                                | GTK2 backends for python3-matplotlib                                               | package    
+  | python3-matplotlib-gtk3                                | GTK3 backends for python3-matplotlib                                               | package    
+  | qtcurve-gtk2                                           | QtCurve style for GTK+ 2                                                           | package    
+  | redshift-gtk                                           | Gtk frontend for redshift                                                          | package    
+  | rep-gtk                                                | GTK+ binding for librep Lisp environment                                           | package    
+  | rep-gtk-devel                                          | GTK+ binding for librep Lisp environment - Development Files                       | package    
+  | spice-gtk                                              | Gtk client and libraries for SPICE remote desktop servers                          | package    
+  | spice-gtk                                              | Gtk client and libraries for SPICE remote desktop servers                          | srcpackage 
+  | spice-gtk-devel                                        | Devel                                                                              | package    
+  | spice-gtk-lang                                         | Languages for package spice-gtk                                                    | package    
+  | syncthing-gtk                                          | Syncthing Gtk-based graphical interface                                            | package    
+  | syncthing-gtk                                          | Syncthing Gtk-based graphical interface                                            | srcpackage 
+  | syncthing-gtk-lang                                     | Languages for package syncthing-gtk                                                | package    
+  | tamil-gtk2im                                           | Tamil99 Keyboard Input module for GTK2                                             | package    
+  | tamil-gtk2im-32bit                                     | Tamil99 Keyboard Input module for GTK2                                             | package    
+  | tomoe-gtk                                              | TOMOE GTK+ library                                                                 | package    
+  | tomoe-gtk-devel                                        | Include Files and Libraries mandatory for Development                              | package    
+  | tomoe-gtk-doc                                          | TOMOE GTK+ library                                                                 | package    
+  | tomoe-gtk-lang                                         | Languages for package tomoe-gtk                                                    | package    
+i | transmission-gtk                                       | Lightweight, yet powerful BitTorrent client                                        | package    
+i | transmission-gtk-lang                                  | Languages for package transmission                                                 | package    
+  | tuned-gtk                                              | Disk and net statistic monitoring systemtap scripts - GTK GUI                      | package    
+  | typelib-1_0-ColordGtk-1_0                              | System Daemon for Managing Color Devices -- GTK Integration Introspection bindings | package    
+  | typelib-1_0-DbusmenuGtk-0_4                            | Small library that passes a menu structure across D-Bus -- Introspection bindings  | package    
+  | typelib-1_0-DbusmenuGtk3-0_4                           | Small library that passes a menu structure across D-Bus -- Introspection bindings  | package    
+i | typelib-1_0-Gtk-2_0                                    | The GTK+ toolkit library (version 2) -- Introspection bindings                     | package    
+i | typelib-1_0-Gtk-3_0                                    | The GTK+ toolkit library (version 3) -- Introspection bindings                     | package    
+i | typelib-1_0-GtkClutter-1_0                             | GTK+ integration for Clutter -- Introspection bindings                             | package    
+i | typelib-1_0-GtkSource-3_0                              | GTK+ Source Editing Widget -- Introspection bindings                               | package    
+  | typelib-1_0-GtkSpell-3_0                               | GTK3 Spell Checker Interface Library -- Introspection bindings                     | package    
+  | typelib-1_0-GtkVnc-1_0                                 | A GTK widget for VNC clients -- Introspection bindings                             | package    
+  | typelib-1_0-GtkVnc-2_0                                 | A GTK widget for VNC clients -- Introspection bindings                             | package    
+i | typelib-1_0-NMGtk-1_0                                  | NetworkManager Gtk+ dialogs -- Introspection bindings                              | package    
+i | typelib-1_0-PeasGtk-1_0                                | GObject-based Plugin Engine -- Introspection bindings                              | package    
+  | typelib-1_0-PolkitGtkMate-1.0                          | The MATE library typelib                                                           | package    
+  | typelib-1_0-SpiceClientGtk-2_0                         | Gtk client and libraries for SPICE remote desktop servers - gi-bindings            | package    
+  | typelib-1_0-SpiceClientGtk-3_0                         | Gtk client and libraries for SPICE remote desktop servers - gi-bindings            | package    
+  | unity-gtk-module-common                                | GTK+ module for exporting old-style menus as GMenuModels -- Common Files           | package    
+  | unity-gtk2-module                                      | GTK+2 module for exporting old-style menus as GMenuModels                          | package    
+  | unity-gtk3-module                                      | GTK+3 module for exporting old-style menus as GMenuModels                          | package    
+i | webkit2gtk-4_0-injected-bundles                        | Library for rendering web content -- Injected bundles                              | package    
+  | webkit2gtk3                                            | Library for rendering web content, GTK+ Port                                       | srcpackage 
+  | webkit2gtk3-devel                                      | Library for rendering web content, GTK+ Port                                       | package    
+  | webkitgtk                                              | Library for rendering web content, GTK+ Port                                       | srcpackage 
+  | webkitgtk-sharp                                        | WebKitGTK bindings for Mono                                                        | package    
+  | webkitgtk-sharp-devel                                  | WebKitGTK bindings for Mono -- Development files                                   | package    
+  | webkitgtk3                                             | Library for rendering web content, GTK+ Port                                       | srcpackage 
+i | wireshark-ui-gtk                                       | A Network Traffic Analyser - GTK+ UI                                               | package    
+i | wxGTK3-3_0-devel                                       | Everything needed for development with wxWidgets                                   | package    
+i | xdg-user-dirs-gtk                                      | xdg-user-dir support for Gnome and Gtk+ applications                               | package    
+i | xdg-user-dirs-gtk-lang                                 | Languages for package xdg-user-dirs-gtk                                            | package    
+  | zlibrary-ui-gtk                                        | GTK+ interface module for ZLibrary                                                 | package    
