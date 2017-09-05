@@ -1,42 +1,58 @@
-UNAME_S:= $(shell uname -s)
-
-CC=g++
-
-# Folders
-SRCDIR:=src Multitask_Env
-BUILDDIR:= build
-TARGETDIR:= bin
-
-# Targets
-EXECUTABLE:= mul
-TARGET:= $(TARGETDIR)/$(EXECUTABLE)
-
-# Code Lists
+CC:= g++
+SRC_DIR:= ./src
+INC_DIR:= ./inc
+OBJ_DIR:= ./obj
+BIN_DIR:= ./bin
+CFLAG:= -std=c++11
 SRCEXT:= cpp
-SOURCES:= $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
-OBJECTS:= $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+#LIB=-lm
 
-# Folder Lists
-INCDIRS:=$(shell find inc/* -name '*.h' -exec dirname {} \; | sort | uniq)
-INCLIST:= $(patsubst inc/%,-I inc/%,$(INCDIRS))
-BUILDLIST:= $(patsubst inc/%,$(BUILDDIR)/%,$(INCDIRS)) 
+APP= mul
 
-# Shared Compiler Flags
-CFLAGS:= -std=c++11 
-INC:= -I inc $(INCLIST) -I
+all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o 
+	
+	g++ $(CFLAG) -g -o $(APP) $(OBJ_DIR)/main.o $(OBJ_DIR)/cfg_info.o $(OBJ_DIR)/inter_bus.o $(OBJ_DIR)/sched.o $(OBJ_DIR)/tick_cfg.o $(OBJ_DIR)/timer.o 
+	mv $(APP) $(BIN_DIR)
+	cd $(BIN_DIR)
 
-$(TARGET): $(OBJECTS)
-	@echo "Linking..."
-	@echo " $(CC) $^ -g -o $(TARGET)"; $(CC) $^ -g -o $(TARGET)
+main.o: $(SRC_DIR)/main.$(SRCEXT) \
+	$(INC_DIR)/cfg_info.h \
+	$(INC_DIR)/main.h \
+	$(INC_DIR)/dvfs_info.h \
+	$(INC_DIR)/sched.h \
+	$(INC_DIR)/timer.h \
+	$(INC_DIR)/inter_bus.h
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
-	@mkdir -p $(OBJDIR)
-	@echo " $(CC) $(CFLAGS) $(INCDIR) -c -o $@ $<"; $(CC) $(CFLAGS) $(INCDIR) -c -o $@ $<
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/main.$(SRCEXT)
+	mv *.o obj/ 	
 
-debug:
-	valgrind --leak-check=full --show-leak-kinds=all $(TARGET) task2.cfg 50 1000
+cfg_info.o: $(SRC_DIR)/cfg_info.$(SRCEXT) $(INC_DIR)/cfg_info.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h 
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/cfg_info.$(SRCEXT)
+	mv *.o obj/
+
+inter_bus.o : $(SRC_DIR)/inter_bus.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/main.h
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/inter_bus.$(SRCEXT)
+	mv *.o obj/
+
+sched.o : $(SRC_DIR)/sched.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/dvfs_info.h
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/sched.$(SRCEXT)
+	mv *.o obj/
+
+tick_cfg.o : $(SRC_DIR)/tick_cfg.$(SRCEXT) $(INC_DIR)/cfg_info.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/tick_cfg.$(SRCEXT)
+	mv *.o obj/
+
+timer.o : $(SRC_DIR)/timer.$(SRCEXT) $(INC_DIR)/timer.h
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/timer.$(SRCEXT)
+	mv *.o obj/
+
 clean:
-	@echo " Cleaning...";
-	@echo " $(RM) -r $(OBJDIR) $(TARGET)"; $(RM) -r $(OBJDIR) $(TARGET) 
-
+	clear
+	rm  obj/*.o
+	rm  bin/*
 

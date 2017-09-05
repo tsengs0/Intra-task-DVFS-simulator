@@ -6,7 +6,10 @@
 #include "../inc/cfg_info.h"
 #include "../inc/main.h"
 #include "../inc/dvfs_info.h"
+//#include "../inc/rt_simulator.h"
+#include "../inc/sched.h"
 #include "../inc/timer.h"
+#include "../inc/inter_bus.h"
 
 using namespace std;
 
@@ -22,7 +25,7 @@ int exe_path_0[] = {1, 5, 7, 0x7FFFFFFF};
 int exe_path_1[] = {1, 2, 3,4,1,5,6,7, 0x7FFFFFFF};
 int exe_path_2[] = {1, 2, 4, 1, 5, 6, 0x7FFFFFFF};
 int exe_path_3[] = {1, 2, 4, 1, 5, 7, 0x7FFFFFFF};
-int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 5, 7, 0x7FFFFFFF};
+int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 2, 4, 1, 5, 6, 7, 0x7FFFFFFF};
 int exe_path_5[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 6, 7, 0x7FFFFFFF};
 int B_checkpoints_1[] = {5, 0x7FFFFFFF};
 int L_checkpoints_1[] = {1, 2, 0x7FFFFFFF};
@@ -52,6 +55,11 @@ int L_RWCEC_2[1][2][8] = {
 	{{5, 75, 75, 75, 2, 190, 305, 420}, {4, 85, 200, 315, 3, 185, 300, 415}}
 };
 RWCEC_Trace_in cycle_trace_1, cycle_trace_2;
+int instance_case[2][3] = {
+	{5, 3, 0},
+	{5, 3, 1}
+};
+int instance_index[2] = {0,0};
 //-----------------------------------------------------------------------------------------//
 //Input parameters
 float in_alpha;
@@ -66,103 +74,78 @@ int sys_mode; // 1) H_RESP, 2) L_POWER
 int test_case_1[] = {0, 5, 0, 5, 0, 5, 0, 5, 0, 5};
 int test_case_2[] = {0, 0, 0, 0, 0, 5, 5, 5, 5, 5};
 sys_clk_t Sys_Clk_0;
-sys_clk_t Sys_Clk_1;
-sys_clk_t Sys_Clk_2;
-sys_clk_t Sys_Clk_3;
-sys_clk_t Sys_Clk_4;
 Time_Management *time_management;
-Time_Management *time_management1;
-Time_Management *time_management2;
-Time_Management *time_management3;
-Time_Management *time_management4;
+Task_State_Bus *inter_intra_bus;
+extern float ISR_TIME_SLICE;
 //-----------------------------------------------------------------------------------------//
 int main(int argc, char **argv)
 {
+//=======================================================================================================================================================//
+// Settings of each task's CFG information
 	float release_time = 0.0, start_time = 0.0;
 
 	system_init();
 
-	in_alpha = ((float) atoi(argv[2])) / 100;
-	in_default_speed = (float) atoi(argv[3]);
-#ifndef DEBUG
-	sprintf(msg, "echo \"alpha = %.02f\" > test_result%.02f_%.01f.txt", in_alpha, in_alpha, in_default_speed);
-	system(msg);
-#endif
-	Src_CFG task1((char*) "task1.cfg", time_management , checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path);  
-	Src_CFG task2((char*) "task1.cfg", time_management1, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path);
-	//Src_CFG task3((char*) "task1.cfg", time_management2, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path);
-	//Src_CFG task4((char*) "task1.cfg", time_management3, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path);
-	Src_CFG task5((char*) "task1.cfg", time_management4, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path);
-	float wcet = task1.wcet, period = task1.wcet * 1.3;
+	in_alpha = (float) 50.0; //((float) atoi(argv[2])) / 100;
+	in_default_speed = (float) 1000.0;//(float) atoi(argv[3]);
+
+	vector<Src_CFG> src_intra;
+	Src_CFG task1((char*) "../cfg/task1.cfg", time_management, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path); 
+	Src_CFG task2((char*) "../cfg/task2.cfg", time_management, checkpoints_1, &cycle_trace_2, task_wcet_info[1], exe_path);
+	src_intra.push_back(task1); src_intra.push_back(task2);
+	alpha_global = 3;
+	cout << "The number of Intra-Source: " << src_intra.size() << endl;
 	
-		for(int i = 0; i < 1; i++) {
-			//int case_t = (i % 2 == 0) ? 0 : 5;
-			int case_t = rand() % 6;
-			//int case_t = (i == 0) ? 0 : 
-			//	     (i == 3) ? 5 : rand() % 6;
-			//int case_t = (rand() % 4) + 1;
-			//int case_t = (i == 0) ? 0 : 
-			//             (i == 1) ? 0 : (rand() % 4) + 1;
-			//int case_t = (i == 0) ? 0 : 
-			//	     (i == 1) ? 5 : 
-			//	     (i == 2) ? 5 : 
-			//	     (i == 3) ? 0 : rand() % 6;
-			float start_offset = rand() % ((int) ((period - wcet) * 1000)); start_offset /= 1000;
-			start_time = release_time + (float) start_offset;
-			
-			cout << "Instance_" << i << " without DVFS" << endl;
-			alpha_global = 1;
-			//simulation_exe_path(task1, case_t, release_time, start_time, DVFS_DISABLE);
-			//task1.traverse_spec_path(case_t, WORST, release_time, start_time, period, (char) DVFS_DISABLE); 
-			//task1.dispatch_cfg(case_t, WORST, release_time, start_time, period, (char) DVFS_DISABLE);
-			
-			cout << "----------------------------------------------------------" << endl;
-			cout << "Instance_" << i << " with approach 1" << endl;
-			alpha_global = 3;
-			//simulation_exe_path(task2, case_t, release_time, start_time, DVFS_ENABLE);
-			//task2.traverse_spec_path(case_t, WORST, release_time, start_time, period, (char) DVFS_ENABLE); 
-			task2.dispatch_cfg(case_t, WORST, release_time, start_time, period, (char) DVFS_ENABLE);
-			/*
-			cout << "----------------------------------------------------------" << endl;
-			cout << "Instance_" << i << " with approach 2" << endl;
-			alpha_global = 4;
-			//simulation_exe_path(task3, case_t, release_time, start_time, DVFS_ENABLE);
-			task3.traverse_spec_path(case_t, WORST, release_time, start_time - (float) start_offset, period, (char) DVFS_ENABLE); 
-			*/
+//=======================================================================================================================================================//
+// Settings of Inter-task
+	vector<task_info_t> src_inter;
+	//sys_clk_t sys_clk;
+	Ready_Queue que;
+	//Time_Management time_management(sys_clk);
+	src_inter.push_back({0.0, /*start_time*/0.0, 1, /*Period: 3.0 us*/3.0, 605, 3.0, false, (char) ZOMBIE});
+	src_inter.push_back({0.0, /*start_time*/0.0, 0, /*Period: 1.0 us*/1.0, 425, 1.0, false, (char) ZOMBIE});
+//=======================================================================================================================================================//
+// Settings of Intra- and Inter-task communication Bus and Task Management
+	inter_intra_bus = new Task_State_Bus(time_management, &src_inter, &src_intra);
 
-			/*
-			cout << "----------------------------------------------------------" << endl;
-			cout << "Instance_" << i << " with approach 3" << endl;
-			alpha_global = 3;
-			//simulation_exe_path(task4, case_t, release_time, start_time, DVFS_ENABLE);
-			task4.traverse_spec_path(case_t, WORST, release_time, start_time, period, (char) DVFS_ENABLE); 
-			*/
-
-			
-			cout << "----------------------------------------------------------" << endl;
-			cout << "Instance_" << i << " with approach 4(Low Power Mode)" << endl;
-			alpha_global = 4;
-			//simulation_exe_path(task5, case_t, release_time, start_time, DVFS_ENABLE);
-			//task5.traverse_spec_path(case_t, WORST, release_time, start_time, period, (char) DVFS_ENABLE); 
-			
-			cout << "----------------------------------------------------------" << endl;
-			release_time += period; 
-			task1.L_loop_iteration.at(0) = 3 + 1;
-			task2.L_loop_iteration.at(0) = 3 + 1;
-			//task3.L_loop_iteration.at(0) = 3 + 1;
-			//task4.L_loop_iteration.at(0) = 3 + 1;
-			task5.L_loop_iteration.at(0) = 3 + 1;
+	Task_Scheduler task_sched(time_management, src_inter, que, (char) RM, inter_intra_bus);
+	cout << "task_list size: " << task_sched.task_list.size() << " " << src_inter.size() << endl;
+//=======================================================================================================================================================//	
+	cout << "==================================================" << endl;
+	cout << "\t\t";
+	for(int i = 0; i < src_inter.size(); i++) cout << "task_" << i << "\t";
+	cout << endl << "--------------------------------------------------" << endl;
+	time_management -> update_cur_time(0.0);
+	task_sched.sched_arbitration(0.000);
+	cout << "0 us - " << endl;
+	float cur_time;
+	for(cur_time = 0.001; time_management -> sys_clk -> cur_time <= 3.0; ) {
+		for(int i = 0; i < src_inter.size(); i++) { 
+			if(task_sched.task_list[i].state == (char) RUN) {
+				inter_intra_bus -> time_driven_cfg(i);
+				for(int j = 0; j < 15; j++) cout << "-"; 
+				for(int j = 0; j < 8*i; j++) cout << "-"; 
+				cout << "|" << i << "|";
+			}
+		} 
+		//time_management -> update_cur_time(cur_time);
+		task_sched.sched_arbitration(cur_time);
+		cout << endl << time_management -> sys_clk -> cur_time << " us*\t\t";
+		//task_sched.list_task_state();
+		cout << endl; // << "--------------------------------------------------" << endl;
+		if(task_sched.IsIdle() == true) {
+			// Extracting decimal point(s) and doing accumulative addition by the number of 0.001 
+			cur_time = (time_management -> sys_clk -> cur_time) + 0.001;
+			cur_time = (int) (cur_time * N_DECIMAL_POINTS_PRECISION);
+			cur_time = (float) ((cur_time + 1.0) / N_DECIMAL_POINTS_PRECISION); 
+			time_management -> update_cur_time(cur_time);
 		}
-#ifndef DEBUG
-		//task1.output_result((char*) "(non-DVFS)");
-		//task2.output_result((char*) "(1)"); // without changing value of alpha
-		//task3.output_result((char*) "(2)"); // changing value of alpha by average case
-		//task4.output_result((char*) "(3)"); // changing value of alpha by approach 3
-		//task5.output_result((char*) "(4)"); // changing value of alpha by approach 4
-#endif
+		else cur_time += 0.001;	
+	}
+	cout << "==================================================" << endl;
 
-		delete time_management;
-
+	delete time_management;
+		
 	return 0;
 }
 
@@ -181,26 +164,6 @@ void system_init(void)
 	Sys_Clk_0.time_unit = (int) US;
 	time_management = new Time_Management(Sys_Clk_0);
 	
-	Sys_Clk_1.cur_freq = 0.0; // Initially none of task is running
-	Sys_Clk_1.cur_time  = 0.0;
-	Sys_Clk_1.time_unit = (int) US;
-	time_management1 = new Time_Management(Sys_Clk_1);
-	
-	Sys_Clk_2.cur_freq = 0.0; // Initially none of task is running
-	Sys_Clk_2.cur_time  = 0.0;
-	Sys_Clk_2.time_unit = (int) US;
-	time_management2 = new Time_Management(Sys_Clk_2);
-	
-	Sys_Clk_3.cur_freq = 0.0; // Initially none of task is running
-	Sys_Clk_3.cur_time  = 0.0;
-	Sys_Clk_3.time_unit = (int) US;
-	time_management3 = new Time_Management(Sys_Clk_3);
-	
-	Sys_Clk_4.cur_freq = 0.0; // Initially none of task is running
-	Sys_Clk_4.cur_time  = 0.0;
-	Sys_Clk_4.time_unit = (int) US;
-	time_management4 = new Time_Management(Sys_Clk_4);
-
 	// Accroding to the Input file
 	//checkpoints_1.B_checkpoints = (int*) malloc(sizeof(int) * 2);
 	//checkpoints_1.B_checkpoints =/&B_checkpoints_1[0];//memcpy(checkpoints_1.B_checkpoints, (int[3]){1, 5, 0x7FFFFFFF}, sizeof(int[3]));
@@ -214,13 +177,13 @@ void system_init(void)
 	checkpoints_1.L_checkpoints.push_back(L_ch_temp); vector<int>().swap(L_ch_temp);
 	checkpoints_1.L_loop_iteration.push_back(3 + 1);
 
-	array_int_cpy(exe_path_temp, exe_path_0); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF);exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_1); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF);exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_2); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF);exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_3); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF);exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_4); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF);exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_5); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF);exe_path_temp.clear();
-	
+	array_int_cpy(exe_path_temp, exe_path_0); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+	array_int_cpy(exe_path_temp, exe_path_1); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+	array_int_cpy(exe_path_temp, exe_path_2); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+	array_int_cpy(exe_path_temp, exe_path_3); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+	array_int_cpy(exe_path_temp, exe_path_4); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+	array_int_cpy(exe_path_temp, exe_path_5); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+
 	for(int i = 0; i < 1; i++) {
 	 for(int j = 0; j < 4; j++) {
 	 	cycle_trace_1.B_RWCEC_t[i][j] = B_RWCEC_1[i][j];
@@ -265,6 +228,5 @@ void simulation_exe_path(Src_CFG &task, int path, float release_time, float star
 			break; 
 		
 	}
-
 }
 */
