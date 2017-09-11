@@ -102,8 +102,8 @@ int main(int argc, char **argv)
 	//sys_clk_t sys_clk;
 	Ready_Queue que;
 	//Time_Management time_management(sys_clk);
-	src_inter.push_back({0.0, /*start_time*/0.0, 1, /*Period: 3.0 us*/3.0, 605, 3.0, false, (char) ZOMBIE});
-	src_inter.push_back({0.0, /*start_time*/0.0, 0, /*Period: 1.0 us*/1.0, 425, 1.0, false, (char) ZOMBIE});
+	src_inter.push_back({0.0, /*start_time*/0.0, 1, /*Period: 3.0 us*/3.0, 605, 3.0, false, (char) ZOMBIE}, task1.wcet);
+	src_inter.push_back({0.0, /*start_time*/0.0, 0, /*Period: 1.0 us*/1.0, 425, 1.0, false, (char) ZOMBIE}, task2.wcet);
 //=======================================================================================================================================================//
 // Settings of Intra- and Inter-task communication Bus and Task Management
 	inter_intra_bus = new Task_State_Bus(time_management, &src_inter, &src_intra);
