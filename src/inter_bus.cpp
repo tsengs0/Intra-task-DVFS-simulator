@@ -19,7 +19,7 @@ Task_State_Bus::Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, 
 		cout << "WCET: " << src_inter[i].wcet << endl;
 		cout << "Period: " << src_inter[i].period << endl;
 		cout << "Operating State: " << (int) src_inter[i].state << endl;
-		cout << "Default WCRT: " << src_inter[i].wcrt << endl;
+		cout << "Default WCRT: " << inter_tasks[i].wcrt << endl;
 		cout << "=====================================================" << endl;
 	}
 	

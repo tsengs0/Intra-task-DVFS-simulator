@@ -92,6 +92,19 @@ typedef struct Preemption_Stack {
 	bool isr_flag;
 } preemption_stack_t;
 
+float ceiling(float x);
+class RT_Analyser {
+	private:
+
+	public:
+		task_info_t *tasks;
+		
+		RT_Analyser(task_info_t *tasks_list);
+		~RT_Analyser(void);
+
+		float RM_Analysis(int task_id, float wcrt_pre);		
+};
+
 class Task_State_Bus;
 class Task_Scheduler {
 	private:		
@@ -111,7 +124,8 @@ class Task_Scheduler {
 
 		Time_Management *time_management;
 		task_info_t *task_list;	
-		Ready_Queue *ready_queue;	
+		Ready_Queue *ready_queue;
+		RT_Analyser *rta;	
 		char sched_policy;
 		float rwcet; // unit: us
 		preemption_stack_t isr_stack;

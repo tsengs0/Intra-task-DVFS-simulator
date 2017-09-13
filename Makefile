@@ -9,9 +9,16 @@ SRCEXT:= cpp
 
 APP= mul
 
-all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o 
+all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o
 	
-	g++ $(CFLAG) -g -o $(APP) $(OBJ_DIR)/main.o $(OBJ_DIR)/cfg_info.o $(OBJ_DIR)/inter_bus.o $(OBJ_DIR)/sched.o $(OBJ_DIR)/tick_cfg.o $(OBJ_DIR)/timer.o 
+	g++ $(CFLAG) -g -o $(APP) \
+			$(OBJ_DIR)/main.o \
+			$(OBJ_DIR)/cfg_info.o \
+			$(OBJ_DIR)/inter_bus.o \
+			$(OBJ_DIR)/sched.o \
+			$(OBJ_DIR)/tick_cfg.o \
+			$(OBJ_DIR)/timer.o 
+
 	mv $(APP) $(BIN_DIR)
 
 main.o: $(SRC_DIR)/main.$(SRCEXT) \
@@ -35,7 +42,7 @@ inter_bus.o : $(SRC_DIR)/inter_bus.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/main.
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/inter_bus.$(SRCEXT)
 	mv *.o obj/
 
-sched.o : $(SRC_DIR)/sched.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/dvfs_info.h
+sched.o : $(SRC_DIR)/sched.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/dvfs_info.h 
 
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/sched.$(SRCEXT)
 	mv *.o obj/
@@ -52,6 +59,6 @@ timer.o : $(SRC_DIR)/timer.$(SRCEXT) $(INC_DIR)/timer.h
 
 clean:
 	clear
-	rm  ./obj/*.o
-	rm  ./bin/*
-	rm  ./inc/*.h.gch
+	rm  obj/*.o
+	rm  bin/*
+	rm  inc/*.h.gch

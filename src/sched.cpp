@@ -163,6 +163,34 @@ void Ready_Queue::list_sched_point(void)
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+float ceiling(float x)
+{
+	return   ((x - (int) x) > 0) ? (int) (x + 1) : (int) x;
+}
+
+RT_Analyser::RT_Analyser(task_info_t *tasks_list) 
+{
+	tasks = tasks_list;	
+}
+
+/**
+ *  @brief Calculating the worst case response time of certain task by recursive function
+ *  @param task_id: the task which is demanded to be analysed
+ *  @param wcrt_cur: passing the WCRT of previous iteration
+**/
+float RT_Analyser::RM_Analysis(int task_id, float wcrt_pre)		
+{
+	float wcrt_t;
+	wcrt_t = tasks[task_id].wcet;
+	for(int i = 0; i < tasks_num; i++) {
+		//Task's priority is greater than analysed task's and current iteration is not equal to indicated task index
+		if(tasks[i].prt < tasks[task_id].prt && i != task_id)
+			wcrt_t += ceiling(wcrt_pre / tasks[i].period) * tasks[i].wcet; 
+	}
+	if(wcrt_t == wcrt_pre) return wcrt_t;
+	return RM_Analysis(task_id, wcrt_t);
+}
+
 Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus)
 {
 	time_management = timer;
@@ -178,6 +206,11 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready
 	isr_stack.rwcet = (float) 0.0;
 	isr_stack.isr_flag = false;	
 	
+	// Creating Response-Time-Analyser module
+	rta = new RT_Analyser(task_list);
+	for(int i = 0; i < tasks_num; i++) 
+	 cout << "Worst-Case Response Time (WCRT) of Task_" << i << ": " << rta -> RM_Analysis(i, task_list[i].wcrt) << " us" << endl;
+
 	// Initially, all tasks' state are set to 'IDLE'
 	for(int i = 0; i < tasks_num; i++) task_list[i].state = (char) IDLE;
 }
