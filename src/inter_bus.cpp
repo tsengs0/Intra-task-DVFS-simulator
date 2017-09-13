@@ -1,37 +1,28 @@
-//#include "../inc/inter_bus.h"
 #include "../inc/sched.h"
 #include "../inc/main.h"
 
-/*class Task_State_Bus {
-	private:
-		vector<task_info_t> &inter_tasks;
-		vector<Src_CFG> &intra_tasks;
-		Time_Management *time_management;
+extern int tasks_num;
 
-	public:
-		void release_time_update(int src_inter, int des_intra); // Updating release time for its corrsponding Intra-task CFG
-		void start_time_update(int src_inter, int des_intra); // Updating start time for its corrsponding Intra-task CFG
-		
-};*/
-
-Task_State_Bus::Task_State_Bus(Time_Management *&timer, vector<task_info_t> *src_inter, vector<Src_CFG> *src_intra)
+Task_State_Bus::Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, vector<Src_CFG> &src_intra)
 {
 	time_management = timer;
 
-	inter_tasks = *src_inter;
-	intra_tasks = *src_intra;
+	inter_tasks = src_inter;
+	intra_tasks = src_intra;
 	
-	for(int i = 0; i < inter_tasks.size(); i++) {
+	for(int i = 0; i < tasks_num; i++) {
 		cout << "=====================================================" << endl;
 		cout << "task_" << i << ":" << endl;
-		cout << "Release time: " << inter_tasks[i].release_time << endl;
-		cout << "Priority: " << inter_tasks[i].prt << endl;
-		cout << "Relative Deadline: " << inter_tasks[i].rel_dline << endl;
-		cout << "WCET: " << inter_tasks[i].wcet << endl;
-		cout << "Period: " << inter_tasks[i].period << endl;
-		cout << "Operating State: " << (int) inter_tasks[i].state << endl;
+		cout << "Release time: " << src_inter[i].release_time << endl;
+		cout << "Priority: " << src_inter[i].prt << endl;
+		cout << "Relative Deadline: " << src_inter[i].rel_dline << endl;
+		cout << "WCET: " << src_inter[i].wcet << endl;
+		cout << "Period: " << src_inter[i].period << endl;
+		cout << "Operating State: " << (int) src_inter[i].state << endl;
+		cout << "Default WCRT: " << src_inter[i].wcrt << endl;
 		cout << "=====================================================" << endl;
-	}	
+	}
+	
 }
 
 Task_State_Bus::~Task_State_Bus(void)

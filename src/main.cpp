@@ -77,50 +77,66 @@ sys_clk_t Sys_Clk_0;
 Time_Management *time_management;
 Task_State_Bus *inter_intra_bus;
 extern float ISR_TIME_SLICE;
+int tasks_num;
 //-----------------------------------------------------------------------------------------//
 int main(int argc, char **argv)
 {
 //=======================================================================================================================================================//
 // Settings of each task's CFG information
 	float release_time = 0.0, start_time = 0.0;
-
 	system_init();
-
+	
 	in_alpha = (float) 50.0; //((float) atoi(argv[2])) / 100;
 	in_default_speed = (float) 1000.0;//(float) atoi(argv[3]);
-
+	
 	vector<Src_CFG> src_intra;
 	Src_CFG task1((char*) "../cfg/task1.cfg", time_management, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path); 
 	Src_CFG task2((char*) "../cfg/task2.cfg", time_management, checkpoints_1, &cycle_trace_2, task_wcet_info[1], exe_path);
 	src_intra.push_back(task1); src_intra.push_back(task2);
 	alpha_global = 3;
 	cout << "The number of Intra-Source: " << src_intra.size() << endl;
-	
 //=======================================================================================================================================================//
 // Settings of Inter-task
-	vector<task_info_t> src_inter;
-	//sys_clk_t sys_clk;
 	Ready_Queue que;
-	//Time_Management time_management(sys_clk);
-	src_inter.push_back({0.0, /*start_time*/0.0, 1, /*Period: 3.0 us*/3.0, 605, 3.0, false, (char) ZOMBIE}, task1.wcet);
-	src_inter.push_back({0.0, /*start_time*/0.0, 0, /*Period: 1.0 us*/1.0, 425, 1.0, false, (char) ZOMBIE}, task2.wcet);
+	task_info_t *src_inter = new task_info_t[tasks_num];
+	src_inter[0] = {
+			     0.0, // Release Time
+			     0.0, // Start Time 
+			     1  , // Priority
+			     3.0, // Relative Deadline
+			     task1.wcet,//task1.wcet, // WCET
+		             3.0, // Period
+			     false, 
+			     (char) ZOMBIE, // Default Task State
+			     task1.wcet // Default WCRT
+	};
+
+	src_inter[1] = {
+			     0.0, // Release Time
+			     0.0, // Start Time 
+			     0  , // Priority
+			     1.0, // Relative Deadline
+			     task2.wcet, // WCET
+		             1.0, // Period
+			     false, 
+			     (char) ZOMBIE, // Default Task State
+			     task2.wcet // Default WCRT
+	};
 //=======================================================================================================================================================//
 // Settings of Intra- and Inter-task communication Bus and Task Management
-	inter_intra_bus = new Task_State_Bus(time_management, &src_inter, &src_intra);
-
+	inter_intra_bus = new Task_State_Bus(time_management, src_inter, src_intra);
 	Task_Scheduler task_sched(time_management, src_inter, que, (char) RM, inter_intra_bus);
-	cout << "task_list size: " << task_sched.task_list.size() << " " << src_inter.size() << endl;
 //=======================================================================================================================================================//	
 	cout << "==================================================" << endl;
 	cout << "\t\t";
-	for(int i = 0; i < src_inter.size(); i++) cout << "task_" << i << "\t";
+	for(int i = 0; i < tasks_num; i++) cout << "task_" << i << "\t";
 	cout << endl << "--------------------------------------------------" << endl;
 	time_management -> update_cur_time(0.0);
 	task_sched.sched_arbitration(0.000);
 	cout << "0 us - " << endl;
 	float cur_time;
 	for(cur_time = 0.001; time_management -> sys_clk -> cur_time <= 3.0; ) {
-		for(int i = 0; i < src_inter.size(); i++) { 
+		for(int i = 0; i < tasks_num; i++) { 
 			if(task_sched.task_list[i].state == (char) RUN) {
 				inter_intra_bus -> time_driven_cfg(i);
 				for(int j = 0; j < 15; j++) cout << "-"; 
@@ -152,6 +168,9 @@ int main(int argc, char **argv)
 void system_init(void)
 {
 	int i;
+	
+	tasks_num = 2;
+	
 	vector<int> L_ch_temp;
 	vector<int> exe_path_temp;
 

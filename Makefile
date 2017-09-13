@@ -5,7 +5,7 @@ OBJ_DIR:= ./obj
 BIN_DIR:= ./bin
 CFLAG:= -std=c++11
 SRCEXT:= cpp
-#LIB=-lm
+#LIB=-lm -H -c -Wall
 
 APP= mul
 
@@ -13,7 +13,6 @@ all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o
 	
 	g++ $(CFLAG) -g -o $(APP) $(OBJ_DIR)/main.o $(OBJ_DIR)/cfg_info.o $(OBJ_DIR)/inter_bus.o $(OBJ_DIR)/sched.o $(OBJ_DIR)/tick_cfg.o $(OBJ_DIR)/timer.o 
 	mv $(APP) $(BIN_DIR)
-	cd $(BIN_DIR)
 
 main.o: $(SRC_DIR)/main.$(SRCEXT) \
 	$(INC_DIR)/cfg_info.h \

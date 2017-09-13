@@ -11,8 +11,12 @@
 
 extern int instance_case[2][3];
 extern int instance_index[2];
+extern int tasks_num;
 
-using namespace std;
+using std::cout;
+using std::cin;
+using std::endl;
+using std::vector;
 
 Ready_Queue::Ready_Queue(void)
 {
@@ -159,7 +163,7 @@ void Ready_Queue::list_sched_point(void)
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-Task_Scheduler::Task_Scheduler(Time_Management *timer, vector<task_info_t> &tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus)
+Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus)
 {
 	time_management = timer;
 	task_list = tasks;
@@ -169,20 +173,13 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, vector<task_info_t> &task
 	pre_task = running_task_id;
 	new_task_start_flag = false;
 	inter_intra_bus = msg_bus;
-#ifdef INTRA_SCHED
-	rwcet = (int) 0;
-	isr_stack.task_id = (int) NO_PREEMPTION;
-	isr_stack.rwcet = (int) 0;
-	isr_stack.isr_flag = false;	
-#else
 	rwcet = (float) 0.0;
 	isr_stack.task_id = (int) NO_PREEMPTION;
 	isr_stack.rwcet = (float) 0.0;
 	isr_stack.isr_flag = false;	
-#endif
 	
 	// Initially, all tasks' state are set to 'IDLE'
-	for(int i = 0; i < task_list.size(); i++) task_list[i].state = (char) IDLE;
+	for(int i = 0; i < tasks_num; i++) task_list[i].state = (char) IDLE;
 }
 
 Task_Scheduler::~Task_Scheduler(void)
@@ -195,12 +192,7 @@ void Task_Scheduler::resume(void)
 	isr_stack.task_id = (int) NO_PREEMPTION;
 	rwcet = isr_stack.rwcet;
 
-#ifdef INTRA_SCHED 
-	isr_stack.rwcet = (int) 0;
-#else	
 	isr_stack.rwcet = (float) 0.0;
-#endif	
-
 	isr_stack.isr_flag = false;
 
 #ifdef DEBUG
@@ -256,7 +248,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 		running_task_id = (int) CPU_IDLE;
 	}
 	else if(IsIdle() != true && inter_intra_bus -> intra_tasks[running_task_id].completion_flag == false) {
-		rwcet = inter_intra_bus -> intra_tasks[running_task_id].rem_wcec;
+		rwcet = (inter_intra_bus -> intra_tasks[running_task_id].rem_wcec) / (time_management -> sys_clk -> cur_freq); // Conservative estimation
 	}
 #else
 	if(IsIdle() != true && rwcet == 1) {
@@ -271,7 +263,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 	// Filling the arrival task in Ready Queue
 	// In the real processor, we only need to deal with the parameter(index of arrival task, etc.) given from interruption,
 	// instead of travesing whole task set to see whether there is a new request for executing a certain task
-	for(int i = 0; i < task_list.size(); i++) {
+	for(int i = 0; i < tasks_num; i++) {
 		if(
 			task_list[i].release_time <= time_management -> sys_clk -> cur_time &&
 			task_list[i].NRT_USED == false
@@ -419,7 +411,7 @@ void Task_Scheduler::list_task_state(void)
 {
         cout << "===================================" << endl;
         cout << "Current Time: " << (int) (time_management -> sys_clk -> cur_time) << " s" << endl;
-        for(int i = 0; i < task_list.size(); i++) {
+        for(int i = 0; i < tasks_num; i++) {
                 switch(task_list[i].state) {
                         case (char) READY:
                                 cout << "Task_" << i << ": " << "READY";

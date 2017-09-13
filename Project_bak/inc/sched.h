@@ -88,12 +88,9 @@ typedef struct Task_Info {
 	float start_time;
 	int prt;
 	float rel_dline;
-#ifdef INTRA_SCHED
-	int wcet; // unit: cycle
-#else
 	float wcet; // unit: us
-#endif
 	float period;
+	bool NRT_USED; // A flag used to label whether the polling of release_time have been detected/used or not
 	char state;
 //	Task_Info(int r, int pr, int rd, int wc, int p, char st)
 //	: release_time(r), prt(pr), rel_dline(rd), wcet(wc), period(p), state(st) {}
@@ -101,11 +98,7 @@ typedef struct Task_Info {
 
 typedef struct Preemption_Stack {
 	int task_id;
-#ifdef INTRA_SCHED
-	int rwcet; // unit: cycle
-#else
 	float rwcet; // unit: us
-#endif
 	bool isr_flag;
 } preemption_stack_t;
 
@@ -114,7 +107,7 @@ class Task_Scheduler {
 	private:		
 
 	public:  
-		Task_Scheduler(Time_Management *timer, vector<task_info_t> &tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus);
+		Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus);
 		~Task_Scheduler(void);
 		
 		void context_switch(int &cur_task, int &new_task);
@@ -127,14 +120,10 @@ class Task_Scheduler {
 		void list_task_state(void);
 
 		Time_Management *time_management;
-		vector<task_info_t> task_list;	
+		task_info_t *task_list;	
 		Ready_Queue *ready_queue;	
 		char sched_policy;
-#ifdef INTRA_SCHED
-		int rwcet; // unit: cycle
-#else
 		float rwcet; // unit: us
-#endif
 		preemption_stack_t isr_stack;
 		int running_task_id; // The identity of currently running task
 		int pre_task; // To record the current task id, whilst a new task arrives and a preemption may occur
@@ -151,7 +140,7 @@ class Task_State_Bus {
 	private:
 
 	public:
-		Task_State_Bus(Time_Management *&timer, vector<task_info_t> *src_inter, vector<Src_CFG> *src_intra);
+		Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, vector<Src_CFG> *src_intra);
 		~Task_State_Bus(void);
 
 		void scheduling_point_assign(int task_id, int case_t, char dvfs_en);
@@ -159,7 +148,7 @@ class Task_State_Bus {
 		// #(Interface)
 		Time_Management *time_management;
 		vector<Src_CFG> intra_tasks;
-		vector<task_info_t> inter_tasks;
+		task_info_t *inter_tasks;
 		
 		// Labelling the communicating task, in order to remark
 		// which task is utilising the communication bus

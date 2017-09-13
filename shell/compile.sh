@@ -8,6 +8,7 @@ run_2="mul"
 debug_1="debug"
 debug_2="debug-run"
 debug_3="gdb"
+result_dir_1=../result/db_log.txt
 
 if [ "$input_1" == "$run_1" ] 
  then
@@ -53,10 +54,12 @@ elif [ "$input_1" == "$debug_1" ]
 				../inc/dvfs_info.h \
 				../inc/jitter_info.h \
 				../inc/rt_simulator.h \
-				../inc/timer.h inc/sched.h
+				../inc/timer.h \
+				../inc/sched.h
 elif [ "$input_1" == "$debug_2" ] 
  then
-	valgrind --leak-check=full --show-leak-kinds=all ../bin/mul task2.cfg 50 1000
+	rm $result_dir_1
+	valgrind --leak-check=full --show-leak-kinds=all ../bin/mul task2.cfg 50 1000 > $result_dir_1
 elif [ "$input_1" == "$debug_3" ] 
  then
 	valgrind --vgdb=yes --vgdb-error=0 bin/mul task2.cfg 15 1000
