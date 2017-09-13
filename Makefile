@@ -52,6 +52,6 @@ timer.o : $(SRC_DIR)/timer.$(SRCEXT) $(INC_DIR)/timer.h
 
 clean:
 	clear
-	rm  obj/*.o
-	rm  bin/*
-
+	rm  ./obj/*.o
+	rm  ./bin/*
+	rm  ./inc/*.h.gch
