@@ -208,9 +208,14 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready
 	
 	// Creating Response-Time-Analyser module
 	rta = new RT_Analyser(task_list);
-	for(int i = 0; i < tasks_num; i++) 
-	 cout << "Worst-Case Response Time (WCRT) of Task_" << i << ": " << rta -> RM_Analysis(i, task_list[i].wcrt) << " us" << endl;
-
+	for(int i = 0; i < tasks_num; i++) {
+		float wcrt_t = rta -> RM_Analysis(i, task_list[i].wcrt);
+		task_list[i].wcrt = wcrt_t;
+		inter_intra_bus -> intra_tasks[i].wcrt = wcrt_t;
+		cout << "Worst-Case Response Time (WCRT) of Task_" 
+		     << i << ": " 
+		     << inter_intra_bus -> intra_tasks[i].wcrt << " us" << endl;
+	}
 	// Initially, all tasks' state are set to 'IDLE'
 	for(int i = 0; i < tasks_num; i++) task_list[i].state = (char) IDLE;
 }

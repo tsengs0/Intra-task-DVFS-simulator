@@ -6,7 +6,7 @@ typedef struct Jitter_constraint {
 	float exe_jitter_bound; // The margin of execution time jitter
 	float fin_jitter_bound; // The margin of finishing time jitter
 	float alpha; // A percentage ranging from 0~100
-	float exe_time_target;
+	float fin_time_target;
 } jitter_constraint;
 
 #endif // __JITTER_INFO_H

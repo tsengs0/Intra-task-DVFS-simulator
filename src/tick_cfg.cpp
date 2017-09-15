@@ -11,7 +11,6 @@ using namespace std;
 extern float in_alpha;
 extern float in_default_speed;
 extern int sim_cnt;
-extern int alpha_global;
 extern int sys_mode;
 extern double energy_ref;
 extern float ISR_TIME_SLICE;
@@ -46,14 +45,14 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			if(dvfs_en == (char) DVFS_ENABLE) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
-					B_Intra_task_checkpoint(
+					B_Intra_task_checkpoint_1(
 						exe_path[cur_case_id][cur_block_index], 
 						exe_path[cur_case_id][cur_block_index + 1]
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
 				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
-					L_Intra_task_checkpoint(
+					L_Intra_task_checkpoint_1(
 						exe_path[cur_case_id][cur_block_index], 
 						exe_path[cur_case_id][cur_block_index + 1]
 					);
@@ -79,14 +78,14 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			if(dvfs_en == (char) DVFS_ENABLE) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
-					B_Intra_task_checkpoint(
+					B_Intra_task_checkpoint_1(
 						exe_path[cur_case_id][cur_block_index], 
 						exe_path[cur_case_id][cur_block_index + 1]
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
 				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
-					L_Intra_task_checkpoint(
+					L_Intra_task_checkpoint_1(
 						exe_path[cur_case_id][cur_block_index], 
 						exe_path[cur_case_id][cur_block_index + 1]
 					);

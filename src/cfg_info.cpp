@@ -11,7 +11,6 @@ using namespace std;
 extern float in_alpha;
 extern float in_default_speed;
 extern int sim_cnt;
-extern int alpha_global;
 extern int sys_mode;
 extern double energy_ref;
 float ISR_TIME_SLICE;
@@ -221,7 +220,7 @@ void Src_CFG::global_param_init(void)
 	exe_speed_config();
 	
 	// Setting the Jitter constraints
-	jitter_init(); 
+	//jitter_init(); 
 	
 	// Initialising some global parameters
 	exe_var = 0.0;
@@ -274,9 +273,9 @@ void Src_CFG::global_param_eval(void)
 	response_case.push_back(response_cur);
 	response_SampleVariance = sample_variance(response_case); 
 
-	tar_diff = jitter_config.exe_time_target - Act_CET;
-	tar_diff = (tar_diff / jitter_config.exe_time_target) * 100;
-	exe_var  = (((exe_acc / exe_case.size()) - bcet) / jitter_config.exe_jitter_bound) * 100;
+	tar_diff = jitter_config.fin_time_target - Act_CET;
+	tar_diff = (tar_diff / jitter_config.fin_time_target) * 100;
+	exe_var  = (((exe_acc / exe_case.size()) - bcet) / jitter_config.fin_jitter_bound) * 100;
 	max_response = (max_response < response_cur) ? response_cur : max_response;
 	min_response = (min_response > response_cur) ? response_cur : min_response;
 	AFJ = max_response - min_response;
@@ -286,8 +285,8 @@ void Src_CFG::global_param_eval(void)
 	printf("Relative Deadline: %.05f us\r\n", rel_dline);
 	printf("Worst Case Execution Time: %.05f us\r\n", wcet);
 	printf("Best Case Execution Time: %.05f us\r\n", bcet);
-	printf("Target Execution Time: %.05f us(%.02f%%)\r\n", jitter_config.exe_time_target, jitter_config.alpha * 100);
-	printf("Actual Execution Time: %.05f us(%.02f%%)\r\n", Act_CET, ((Act_CET - bcet)  / jitter_config.exe_jitter_bound) * 100);  
+	printf("Target Execution Time: %.05f us(%.02f%%)\r\n", jitter_config.fin_time_target, jitter_config.alpha * 100);
+	printf("Actual Execution Time: %.05f us(%.02f%%)\r\n", Act_CET, ((Act_CET - bcet)  / jitter_config.fin_jitter_bound) * 100);  
 	printf("Response Time: %.05f us.\r\n", response_cur);
 	printf("Absolute Deadline: %.05f us\r\n", abs_dline);
 	printf("Completion time: %.05f us\r\n", sys_clk -> cur_time);
@@ -295,13 +294,13 @@ void Src_CFG::global_param_eval(void)
 	//printf("The difference between actual and target execution time: %.02f\% \r\n", tar_diff);
 	printf("The total exeuction cycles: %d cycles\r\n", cycle_acc);
 //	printf("The variation on execution time: %.02f% \r\n", exe_var);
-	printf("Sample Standard Deviation: %.05f us(%.02f%%)\r\n", sqrt(response_SampleVariance), (sqrt(response_SampleVariance) / jitter_config.exe_jitter_bound) * 100);
+	printf("Sample Standard Deviation: %.05f us(%.02f%%)\r\n", sqrt(response_SampleVariance), (sqrt(response_SampleVariance) / jitter_config.fin_jitter_bound) * 100);
 	printf("Relative finishing time jitter(RFJ): %.05f us.\r\n", RFJ);
 	printf("Absolute finishing time jitter(AFJ): %.05f us.\r\n", AFJ);
 	printf("Energy consumption: %.05f uJ(%.02f%% Energy-Saving)\r\n", energy_acc * 1000, ((energy_ref - energy_acc) / energy_ref) * 100);
 #endif	
 		//if(dline_miss != 0) {cout << "# Missing Deadline!" << endl; while(1);}
-		//jitter_config.exe_time_target = exe_acc / exe_case.size();
+		//jitter_config.fin_time_target = exe_acc / exe_case.size();
 		//jitter_config.alpha = exe_var / 100; 	
 		//jitter_init(); // Updating the jitter constraint if it is needed
 }
@@ -312,7 +311,7 @@ void Src_CFG::output_result(char* case_msg) {
 	sprintf(ExeVar_msg, "echo \"%sDefault_Freq: %.02fMHz -> Std_dev(Response):%.02f\%, RFJ:%.02f(us), AFJ:%.02f(us), Response(avg):%.02f\%\" >> test_result%.02f_%.01f.txt", 
 		case_msg,
 		default_freq_t, 
-	        (sqrt(response_SampleVariance) / jitter_config.exe_jitter_bound) * 100,
+	        (sqrt(response_SampleVariance) / jitter_config.fin_jitter_bound) * 100,
 		RFJ,
 		AFJ,
 		exe_var,
@@ -399,11 +398,11 @@ void Src_CFG::traverse_spec_path(int &case_id, int case_t, float release_time_ne
 	if(dvfs_en == (char) DVFS_ENABLE) {
 		// Invoking the operation of B-type checkpoint
 		if(CFG_path[ exe_path[case_id][cur_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
-			B_Intra_task_checkpoint(exe_path[case_id][cur_index], exe_path[case_id][cur_index + 1]);		
+			B_Intra_task_checkpoint_1(exe_path[case_id][cur_index], exe_path[case_id][cur_index + 1]);		
 		}
 		// Invoking the operation of L-type checkpoint
 		else if(CFG_path[ exe_path[case_id][cur_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
-			L_Intra_task_checkpoint(exe_path[case_id][cur_index], exe_path[case_id][cur_index + 1]);
+			L_Intra_task_checkpoint_1(exe_path[case_id][cur_index], exe_path[case_id][cur_index + 1]);
 		}			
 	}	
 #endif
@@ -428,33 +427,26 @@ void Src_CFG::exe_speed_config(void)
 }
 void Src_CFG::constraint_update(void)
 {
-	float bcet_limit, wcet_limit, middle_t;
+	float bcet_limit, wcet_limit;
 
-	if(alpha_global == 1) jitter_config.alpha = in_alpha;
-	else if(alpha_global == 2) jitter_config.alpha = exe_var / 100; 	
-	else if(alpha_global == 3){
-	bcet_limit = ((execution_cycles[BEST  - 1] / min_freq_t) - bcet) / jitter_config.exe_jitter_bound; 
-	wcet_limit = ((execution_cycles[WORST - 1] / max_freq_t) - bcet) / jitter_config.exe_jitter_bound; 
+	bcet_limit = ((execution_cycles[BEST  - 1] / min_freq_t) - bcet) / jitter_config.fin_jitter_bound; 
+	wcet_limit = (wcrt - bcet) / jitter_config.fin_jitter_bound; 
 	jitter_config.alpha = (in_alpha < bcet_limit) ? bcet_limit :
-			      (in_alpha > wcet_limit) ? wcet_limit : in_alpha; 
-	}
-	else {
-		bcet_limit = ((execution_cycles[BEST  - 1] / min_freq_t) - bcet) / jitter_config.exe_jitter_bound;
-		wcet_limit = ((execution_cycles[WORST - 1] / max_freq_t) - bcet) / jitter_config.exe_jitter_bound;
-		middle_t = (sys_mode == (int) H_RESP ) ? wcet_limit / 2 :
-			   (sys_mode == (int) L_POWER) ? (((float) 1.0 - bcet_limit) / 2) + bcet_limit : 0;
-		jitter_config.alpha = ((in_alpha > wcet_limit) && (sys_mode == (int) H_RESP)) ? middle_t :
-				      ((in_alpha < bcet_limit) && (sys_mode == (int) L_POWER)) ? middle_t : in_alpha; 
-	}
-	
+			      (in_alpha > wcet_limit) ? wcet_limit : in_alpha;
+#ifdef DEBUG	
+       cout  << "jitter_config.alpha: " << jitter_config.alpha << "%" << endl
+	     << "bcet_limit: " << bcet_limit << "%" << endl
+	     << "wcet_limit: " << wcet_limit << "%" << endl
+	     << "jitter_config.alpha: " << jitter_config.alpha << "%" << endl; 
+#endif
 }
  
 void Src_CFG::jitter_init(void)
 {
 	// Jitter constraint setting
-	jitter_config.exe_jitter_bound = ((float) (execution_cycles[WORST - 1] / min_freq_t)) - ((float) (execution_cycles[BEST - 1] / max_freq_t));
+	jitter_config.fin_jitter_bound = wcrt - ((float) (execution_cycles[BEST - 1] / max_freq_t));
 	constraint_update();
-	jitter_config.exe_time_target = (execution_cycles[BEST - 1] / max_freq_t) + jitter_config.exe_jitter_bound * jitter_config.alpha;	
+	jitter_config.fin_time_target = (execution_cycles[BEST - 1] / max_freq_t) + jitter_config.fin_jitter_bound * jitter_config.alpha;	
 }
 
 void Src_CFG::exe_speed_scaling(float new_speed)
@@ -499,17 +491,17 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	printf("rwcec = %d, ", rwcec); 
 #endif
 	exe_time_expect = elapsed_time + (rwcec / sys_clk -> cur_freq); 
-	if(elapsed_time > jitter_config.exe_time_target) {
+	if(elapsed_time > jitter_config.fin_time_target) {
 #ifdef DEBUG
 		cout << endl << "Updating Jitter Constraint from " << exe_time_target << "us to " << exe_time_expect << "us" << endl;
 #endif
 		exe_time_target = exe_time_expect;
 	}//
-        else exe_time_target = jitter_config.exe_time_target;	
+        else exe_time_target = jitter_config.fin_time_target;	
 	//target_comparison = ((exe_time_target - exe_time_expect) < 0) ? (exe_time_target - exe_time_expect) * (-1) : (exe_time_target - exe_time_expect);
 	target_comparison = exe_time_target - exe_time_expect;
 
-if(alpha_global == 3) {
+
 	if( (float) target_comparison != 0.0 ) {
 #ifdef DEBUG
 		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
@@ -530,29 +522,6 @@ if(alpha_global == 3) {
 	}
 	else 
 		new_freq = sys_clk -> cur_freq;
-}	
-else if(alpha_global == 4) {
-	//if(exe_time_target < exe_time_expect) {
-#ifdef DEBUG
-		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
-		printf("Current time: %f us, ", sys_clk -> cur_time);
-		printf("Elapsed time = %f us, exe_time_target = %f us, exe_time_expect = %f us, ", 
-					elapsed_time, 
-					exe_time_target, 
-					exe_time_expect
-		);
-		//printf("Difference: %.05f us\r\n", target_comparison);
-#endif
-		new_freq = rwcec / (abs_dline - sys_clk -> cur_time);
-		//new_freq = rwcec / (exe_time_target - elapsed_time);
-		//new_freq = ((float) target_comparison < 0) ? rwcec / (elapsed_time - exe_time_target) : rwcec / (exe_time_target - elapsed_time);
-		//new_freq = ((float) target_comparison < 0) ? max_freq_t : rwcec / (exe_time_target - elapsed_time);
-		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
-		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
-	//}
-	//else 
-	//	new_freq = sys_clk -> cur_freq;
-}	
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
 #endif
@@ -590,16 +559,16 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	printf("rwcec = %d, ", rwcec);
 #endif
 	exe_time_expect = elapsed_time + (rwcec / sys_clk -> cur_freq); 
-	if(elapsed_time > jitter_config.exe_time_target) {
+	if(elapsed_time > jitter_config.fin_time_target) {
 #ifdef DEBUG
 		cout << endl << "Updating Jitter Constraint from " << exe_time_target << "us to " << exe_time_expect << "us" << endl;
 #endif
 		exe_time_target = exe_time_expect;
 	}
-        else exe_time_target = jitter_config.exe_time_target;	
+        else exe_time_target = jitter_config.fin_time_target;	
 	//target_comparison = ((exe_time_target - exe_time_expect) < 0) ? (exe_time_target - exe_time_expect) * (-1) : (exe_time_target - exe_time_expect);
 	target_comparison = exe_time_target - exe_time_expect;
-if(alpha_global == 3) {
+
 	if( (float) target_comparison != 0.0 ) {
 #ifdef DEBUG
 		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
@@ -620,29 +589,148 @@ if(alpha_global == 3) {
 	}
 	else 
 		new_freq = sys_clk -> cur_freq;
+
+
+#ifdef DISCRETE_DVFS
+	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
+#endif
+	exe_speed_scaling(new_freq);
 }
-else if(alpha_global == 4) {
-	//if(exe_time_target < exe_time_expect) {
+
+void Src_CFG::B_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index)
+{
+	float new_freq;
+	float rep_time_target;
+	float rep_time_expect; // A speculative response time if keeping current execution speed withou any change
+	float elapsed_time; 
+	float target_comparison, rem_time, executed_time;
+	int rwcec; // Remaining worst-case execution cycles from current basic block
+
+	if( succ_block_index == B_mining_table[ CFG_path[cur_block_index - 1].B_checkpoint_en].successors[0] ) {
+		rwcec = B_mining_table[ CFG_path[cur_block_index - 1].B_checkpoint_en ].n_taken_rwcec;
+		rem_wcec = rwcec;
+#ifdef DEBUG
+		cout << endl << "not taken" << endl;
+#endif
+	}
+	else {
+		rwcec = B_mining_table[ CFG_path[cur_block_index - 1].B_checkpoint_en ].taken_rwcec;
+		rem_wcec = rwcec;
+#ifdef DEBUG
+		cout << endl << "taken" << endl;
+#endif
+	}
+#ifdef DEBUG
+	printf("rwcec = %d, ", rwcec); 
+#endif
+//====================================================================================================//
+	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
+	if(elapsed_time > jitter_config.fin_time_target) {
+#ifdef DEBUG
+		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
+#endif
+		rep_time_target = rep_time_expect;
+	}//
+        else rep_time_target = jitter_config.fin_time_target;	
+	rem_time = rep_time_target - elapsed_time;
+	executed_time = time_management -> sys_clk -> cur_time - start_time;
+	rep_time_expect = 
+				(wcrt - wcet) + // Preempted Duration 
+				executed_time + // The total time task has spent so far
+				(rwcec / time_management -> sys_clk -> cur_freq); // A future expectation
+	target_comparison = rep_time_target - rep_time_expect;
+//====================================================================================================//
+	if( (float) target_comparison != 0.0 ) {
+#ifdef DEBUG
+		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
+		printf("Current time: %f us, ", sys_clk -> cur_time);
+		printf("Elapsed time = %f us, Target Response Time = %f us, Expected Response Time = %f us, ", 
+					elapsed_time, 
+					rep_time_target, 
+					rep_time_expect
+		);
+		printf("Difference: %.05f us\r\n", target_comparison);
+#endif
+		new_freq = (rem_time <= wcrt - elapsed_time) ?  rwcec / rem_time : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / (wcrt - elapsed_time); // Deadline miss might occur
+		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
+		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
+	}
+	else 
+		new_freq = sys_clk -> cur_freq;	
+#ifdef DISCRETE_DVFS
+	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
+#endif
+	exe_speed_scaling(new_freq);
+}
+
+void Src_CFG::L_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index)
+{
+	float new_freq;
+	float rep_time_target;
+	float rep_time_expect; // A speculative execution time if keeping current execution speed withou any change
+	float elapsed_time;
+	float target_comparison, rem_time, executed_time;;
+	int rwcec; // Remaining worst-case execution cycles from current basic block
+	int loop_index = CFG_path[cur_block_index - 1].L_checkpoint_en[0];
+	int loop_addr  = CFG_path[cur_block_index - 1].L_checkpoint_en[1];
+	
+	if(cur_block_index == L_loop_exit[loop_index]) L_loop_iteration.at(loop_index) = L_loop_iteration[loop_index] - 1;
+	if( succ_block_index == L_mining_table[loop_index][loop_addr].successors[0] ) {
+		int temp = ((L_loop_iteration[loop_index] - 1) == -1) ? 0 : (L_loop_iteration[loop_index] - 1);
+		rwcec = L_mining_table[loop_index][loop_addr].n_taken_rwcec[temp]; 
+		rem_wcec = rwcec;
+#ifdef DEBUG
+		cout << endl << "not taken" << endl; 
+#endif
+	}
+	else {
+		rwcec = L_mining_table[loop_index][loop_addr].taken_rwcec[L_loop_iteration[loop_index] - 1]; 
+		rem_wcec = rwcec;
+#ifdef DEBUG
+		cout << endl << "taken" << endl; 
+#endif
+	}
+#ifdef DEBUG
+	printf("rwcec = %d, ", rwcec);
+#endif
+//====================================================================================================//
+	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
+	if(elapsed_time > jitter_config.fin_time_target) {
+#ifdef DEBUG
+		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
+#endif
+		rep_time_target = rep_time_expect;
+	}//
+        else rep_time_target = jitter_config.fin_time_target;	
+	rem_time = rep_time_target - elapsed_time;
+	executed_time = time_management -> sys_clk -> cur_time - start_time;
+	rep_time_expect = 
+				(wcrt - wcet) + // Preempted Duration 
+				executed_time + // The total time task has spent so far
+				(rwcec / time_management -> sys_clk -> cur_freq); // A future expectation
+	target_comparison = rep_time_target - rep_time_expect;
+//====================================================================================================//
+	if( (float) target_comparison != 0.0 ) {
 #ifdef DEBUG
 		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
 		printf("Current time: %.05f us, ", sys_clk -> cur_time);
-		printf("Elapsed time = %.05f us, exe_time_target = %.05f us, exe_time_expect = %.05f us, ", 
-				elapsed_time, 
-				exe_time_target, 
-				exe_time_expect
+		printf("Elapsed time = %.05f us, Target Response Time = %.05f us, Expected Response Time = %.05f us, ", 
+					elapsed_time, 
+					rep_time_target, 
+					rep_time_expect
 		);
-		//printf("Difference: %.05f us\r\n", target_comparison);
+		printf("Difference: %.05f us\r\n", target_comparison);
 #endif
-		new_freq = rwcec / (abs_dline - sys_clk -> cur_time);
-		//new_freq = rwcec / (exe_time_target - elapsed_time);
-		//new_freq = ((float) target_comparison < 0) ? rwcec / (elapsed_time - exe_time_target) : rwcec / (exe_time_target - elapsed_time);
-		//new_freq = ((float) target_comparison < 0) ? max_freq_t : rwcec / (exe_time_target - elapsed_time);
+		new_freq = (rem_time <= wcrt - elapsed_time) ?  rwcec / rem_time : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / (wcrt - elapsed_time); // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
-	//}
-	//else 
-	//	new_freq = sys_clk -> cur_freq;
-}
+		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
+		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
+	}
+	else 
+		new_freq = sys_clk -> cur_freq;
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
 #endif
@@ -658,27 +746,19 @@ float Src_CFG::discrete_handle(float new_freq, int rwcec)
 #ifdef DEBUG
 	printf("Discrete Bound: %.02f MHz, %.02f MHz, %.02f MHz\r\n", freq_vol[i][0], new_freq, freq_vol[i+1][0]);
 #endif
-	if(alpha_global != 4) {
-		min_diff = new_freq - freq_vol[i][0];
-		max_diff = freq_vol[i+1][0] - new_freq;
-		return (min_diff < max_diff && (sys_clk -> cur_time + rwcec / freq_vol[i][0]) <= abs_dline) ? freq_vol[i][0] : freq_vol[i+1][0];	
-	}
-	else return freq_vol[i+1][0]; // In the case of Low Power Mode
+	min_diff = new_freq - freq_vol[i][0];
+	max_diff = freq_vol[i+1][0] - new_freq;
+	return (min_diff < max_diff && (sys_clk -> cur_time + rwcec / freq_vol[i][0]) <= abs_dline) ? freq_vol[i][0] : freq_vol[i+1][0];	
 }
 
 /**
-Execution traces obtained via a cycle-level simulation. 
-The results will be given by existing WCET toolsets.
+  * @brief Execution traces obtained via a cycle-level simulation. 
 **/
 void Src_CFG::exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_trace_temp)
 {
-/*	execution_cycles[WORST - 1]   = 425;
-	execution_cycles[AVERAGE - 1] = 80; 
-	execution_cycles[BEST - 1]    = 30;
-*/
-	execution_cycles[WORST - 1]   = WCET_INFO[0];//605;
-	execution_cycles[AVERAGE - 1] = WCET_INFO[1];//80; 
-	execution_cycles[BEST - 1]    = WCET_INFO[2];//75;
+	execution_cycles[WORST - 1]   = WCET_INFO[0];
+	execution_cycles[AVERAGE - 1] = WCET_INFO[1];
+	execution_cycles[BEST - 1]    = WCET_INFO[2];
 
 	cycle_trace_in = cycle_trace_temp;
 

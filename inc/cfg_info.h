@@ -116,8 +116,13 @@ class Src_CFG {
 		void checkpoints_placement(checkpoints_t &checkpoints_temp);
 		void mining_table_gen(void);
 		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp);
+		
+		// Checkpoint Operation
 		void B_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		void L_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
+		void B_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index);
+		void L_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index);
+		
 		float discrete_handle(float new_freq, int rwcec);
 		void checkpoint_operation(int block_index, int case_t);
 		void exe_speed_config(void); // For determining all DVFS availability firstly
@@ -182,7 +187,8 @@ class Src_CFG {
 		float abs_dline; // Absolute Deadline
 		float rel_dline; // Relative Deadline
 		int dline_miss;
-		float wcet; 
+		float wcet;
+		float wcrt; 
 		float bcet;
 		bool completion_flag; // True: just completed; False: haven't completed or arrived yet	
 		/*Perhaps no need*/float period;

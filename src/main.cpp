@@ -69,7 +69,6 @@ double energy_ref;
 //-----------------------------------------------------------------------------------------//
 //Parameters for simulation
 int sim_cnt;
-int alpha_global = 3;
 int sys_mode; // 1) H_RESP, 2) L_POWER
 int test_case_1[] = {0, 5, 0, 5, 0, 5, 0, 5, 0, 5};
 int test_case_2[] = {0, 0, 0, 0, 0, 5, 5, 5, 5, 5};
@@ -93,7 +92,6 @@ int main(int argc, char **argv)
 	Src_CFG task1((char*) "../cfg/task1.cfg", time_management, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path); 
 	Src_CFG task2((char*) "../cfg/task2.cfg", time_management, checkpoints_1, &cycle_trace_2, task_wcet_info[1], exe_path);
 	src_intra.push_back(task1); src_intra.push_back(task2);
-	alpha_global = 3;
 	cout << "The number of Intra-Source: " << src_intra.size() << endl;
 //=======================================================================================================================================================//
 // Settings of Inter-task
@@ -126,7 +124,10 @@ int main(int argc, char **argv)
 // Settings of Intra- and Inter-task communication Bus and Task Management
 	inter_intra_bus = new Task_State_Bus(time_management, src_inter, src_intra);
 	Task_Scheduler task_sched(time_management, src_inter, que, (char) RM, inter_intra_bus);
-//=======================================================================================================================================================//	
+//=======================================================================================================================================================//
+// Setting the Jitter constraints
+	for(int i = 0; i < tasks_num; i++) inter_intra_bus -> intra_tasks[i].jitter_init(); 	
+//=======================================================================================================================================================//
 	cout << "==================================================" << endl;
 	cout << "\t\t";
 	for(int i = 0; i < tasks_num; i++) cout << "task_" << i << "\t";

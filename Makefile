@@ -9,7 +9,7 @@ SRCEXT:= cpp
 
 APP= mul
 
-all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o
+all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o 
 	
 	g++ $(CFLAG) -g -o $(APP) \
 			$(OBJ_DIR)/main.o \
@@ -34,7 +34,7 @@ main.o: $(SRC_DIR)/main.$(SRCEXT) \
 
 cfg_info.o: $(SRC_DIR)/cfg_info.$(SRCEXT) $(INC_DIR)/cfg_info.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h 
 
-	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/cfg_info.$(SRCEXT)
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/cfg_info.$(SRCEXT) 
 	mv *.o obj/
 
 inter_bus.o : $(SRC_DIR)/inter_bus.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/main.h
