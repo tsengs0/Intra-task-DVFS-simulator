@@ -59,7 +59,7 @@ elif [ "$input_1" == "$debug_1" ]
 elif [ "$input_1" == "$debug_2" ] 
  then
 	rm $result_dir_1
-	valgrind --leak-check=full --show-leak-kinds=all ../bin/mul task2.cfg 50 1000 > $result_dir_1
+	valgrind --leak-check=full --show-leak-kinds=all ../bin/mul task2.cfg 25 1000 > $result_dir_1
 elif [ "$input_1" == "$debug_3" ] 
  then
 	valgrind --vgdb=yes --vgdb-error=0 bin/mul task2.cfg 15 1000

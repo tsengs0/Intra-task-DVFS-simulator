@@ -85,16 +85,14 @@ int main(int argc, char **argv)
 	float release_time = 0.0, start_time = 0.0;
 	system_init();
 	
-	in_alpha = (float) 50.0; //((float) atoi(argv[2])) / 100;
+	in_alpha = ((float) atoi(argv[2])) / 100;
 	in_default_speed = (float) 1000.0;//(float) atoi(argv[3]);
 	
 	vector<Src_CFG> src_intra;
-	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path); 
-	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, checkpoints_2, &cycle_trace_2, task_wcet_info[1], exe_path);
-	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, checkpoints_3, &cycle_trace_3, task_wcet_info[3], exe_path); 
-	src_intra.push_back(task1); src_intra.push_back(task2); src_intra.push_back(task3);
+	Src_CFG task1((char*) "../cfg/task1.cfg", time_management, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path); 
+	Src_CFG task2((char*) "../cfg/task2.cfg", time_management, checkpoints_1, &cycle_trace_2, task_wcet_info[1], exe_path);
+	src_intra.push_back(task1); src_intra.push_back(task2);
 	cout << "The number of Intra-Source: " << src_intra.size() << endl;
-	tasks_num = src_intra.size();
 //=======================================================================================================================================================//
 // Settings of Inter-task
 	Ready_Queue que;
@@ -102,10 +100,10 @@ int main(int argc, char **argv)
 	src_inter[0] = {
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     0  , // Priority
-			     15.0, // Relative Deadline
+			     1  , // Priority
+			     3.0, // Relative Deadline
 			     task1.wcet,//task1.wcet, // WCET
-		             24.0, // Period
+		             3.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task1.wcet // Default WCRT
@@ -114,25 +112,13 @@ int main(int argc, char **argv)
 	src_inter[1] = {
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     1  , // Priority
-			     25.0, // Relative Deadline
+			     0  , // Priority
+			     1.0, // Relative Deadline
 			     task2.wcet, // WCET
-		             35.0, // Period
+		             1.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task2.wcet // Default WCRT
-	};
-	
-	src_inter[2] = {
-			     0.0, // Release Time
-			     0.0, // Start Time 
-			     2  , // Priority
-			     50.0, // Relative Deadline
-			     task3.wcet, // WCET
-		             55.0, // Period
-			     false, 
-			     (char) ZOMBIE, // Default Task State
-			     task3.wcet // Default WCRT
 	};
 //=======================================================================================================================================================//
 // Settings of Intra- and Inter-task communication Bus and Task Management
@@ -183,6 +169,8 @@ int main(int argc, char **argv)
 void system_init(void)
 {
 	int i;
+	
+	tasks_num = 2;
 	
 	vector<int> L_ch_temp;
 	vector<int> exe_path_temp;

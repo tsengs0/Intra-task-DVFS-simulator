@@ -10,56 +10,18 @@
 #include "../inc/sched.h"
 #include "../inc/timer.h"
 #include "../inc/inter_bus.h"
+#include "../inc/checkpoint_info.h"
 
-using namespace std;
+using std::cout;
+using std::cin;
+using std::endl;
+using std::vector;
 
 //-----------------------------------------------------------------------------------------//
 // Functions
 void system_init(void);
 void array_int_cpy(vector<int> &Dst, int *Src);
 void simulation_exe_path(Src_CFG &task, int path, float release_time, float start_time, int dvfs_en);
-//-----------------------------------------------------------------------------------------//
-//Temporary test cases
-vector< vector<int> > exe_path;
-int exe_path_0[] = {1, 5, 7, 0x7FFFFFFF};
-int exe_path_1[] = {1, 2, 3,4,1,5,6,7, 0x7FFFFFFF};
-int exe_path_2[] = {1, 2, 4, 1, 5, 6, 0x7FFFFFFF};
-int exe_path_3[] = {1, 2, 4, 1, 5, 7, 0x7FFFFFFF};
-int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 2, 4, 1, 5, 6, 7, 0x7FFFFFFF};
-int exe_path_5[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 6, 7, 0x7FFFFFFF};
-int B_checkpoints_1[] = {5, 0x7FFFFFFF};
-int L_checkpoints_1[] = {1, 2, 0x7FFFFFFF};
-checkpoints_t checkpoints_1;
-int task_wcet_info[2][3] = {{605, 80, 75}, {425, 80, 30}};
-
-int B_RWCEC_1[1][4] = {
-	//{2, 190, 5, 75}, // the index of successor, Taken, the index of successor, Not Taken
-	{7, 20, 6, 70}
-};
-int B_RWCEC_2[1][4] = {
-	//{2, 190, 5, 75}, // the index of successor, Taken, the index of successor, Not Taken
-	{7, 20, 6, 70}
-};
-/*static int B_RWCEC_t[2][4] = {
-	{2, 235, 5, 75}, // the index of successor, Taken, the index of successor, Not Taken
-	{6, 70, 7, 20},
-};*/
-
-// One loop nest; one L-type checkpoint indside; 6 informations about RWCEC
-int L_RWCEC_1[1][2][8] = {
-//  entrance or not, successor_1, iteration_1, iteration_2, iteration_3; successor_2, iteration_1, iteration_2, iteration_3	
-	{{5, 75, 75, 75, 2, 235, 395, 555}, {4, 130, 290, 450, 3, 230, 390, 550}}
-};
-int L_RWCEC_2[1][2][8] = {
-//  entrance or not, successor_1, iteration_1, iteration_2, iteration_3; successor_2, iteration_1, iteration_2, iteration_3	
-	{{5, 75, 75, 75, 2, 190, 305, 420}, {4, 85, 200, 315, 3, 185, 300, 415}}
-};
-RWCEC_Trace_in cycle_trace_1, cycle_trace_2;
-int instance_case[2][3] = {
-	{5, 3, 0},
-	{5, 3, 1}
-};
-int instance_index[2] = {0,0};
 //-----------------------------------------------------------------------------------------//
 //Input parameters
 float in_alpha;
@@ -76,7 +38,101 @@ sys_clk_t Sys_Clk_0;
 Time_Management *time_management;
 Task_State_Bus *inter_intra_bus;
 extern float ISR_TIME_SLICE;
-int tasks_num;
+int tasks_num = 3; // The number of tasks 
+//-----------------------------------------------------------------------------------------//
+//Temporary test cases
+vector< vector<int> > exe_path;
+int exe_path_0[] = {1, 5, 7, 0x7FFFFFFF};
+int exe_path_1[] = {1, 2, 3,4,1,5,6,7, 0x7FFFFFFF};
+int exe_path_2[] = {1, 2, 4, 1, 5, 6, 0x7FFFFFFF};
+int exe_path_3[] = {1, 2, 4, 1, 5, 7, 0x7FFFFFFF};
+int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 2, 4, 1, 5, 6, 7, 0x7FFFFFFF};
+int exe_path_5[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 6, 7, 0x7FFFFFFF};
+//-----------------------------------------------------------------------------------------//
+//Checkpoints Objects
+void checkpoint_config();
+int *B_checkpoints_1;
+int *L_checkpoints_1;
+int P_checkpoints_1[] = { // P-type[1] or LaVSP[2]
+	1
+}; 
+checkpoints_t checkpoints_1;
+
+int *B_checkpoints_2;
+int *L_checkpoints_2;
+int P_checkpoints_2[] = {
+	2,
+	4, 
+	6 
+};
+checkpoints_t checkpoints_2;
+
+int B_checkpoints_3[] = {
+	5 
+};
+int *L_checkpoints_3;
+int P_checkpoints_3[] = {
+	1 
+};
+checkpoints_t checkpoints_3;
+
+int task_wcet_info[tasks_num][3] = {
+	{
+	 10450, // The worst-case execution cycle(s)
+	 0    , // The average-case execution cycle(s)
+	 0      // The best-case exeucution cycle(s)
+	},
+	 
+	{
+	 12437, // The worst-case execution cycle(s)
+	 0    , // The average-case execution cycle(s)
+	 0      // The best-case exeucution cycle(s)
+	},
+
+	{
+	 2000, // The worst-case execution cycle(s)
+	 0   , // The average-case execution cycle(s)
+	 0     // The best-case exeucution cycle(s)
+	}
+};
+
+checkpoint_num checkpoint_num_t[tasks_num];
+// All the value = 0 means "No B-type branch instruction exists"
+
+checkpoint_num_t[1] = {
+	0, // Number of B-type checkpoints 
+	0, // Number of L-type checkpoints
+	3  // Number of P-type checkpoints
+};
+
+int P_RWCEC_1[1][1][3] = {
+int P_RWCEC_1[1][1][3] = {
+int B_RWCEC_3[1][4] = {
+	{7, 100, 6, 300}
+};
+int P_RWCEC_3[1][1][3] = {
+ {
+	// Loop_1:
+	// Loop Entry: Basic Block 1
+	{
+	 5,   // Loop Bound
+	 310, // WCEC(cycles) within this loop
+	 400, // Inherent RWCEC(cycles) after current basic block
+	}
+ }
+};
+checkpoint_num_t[2] = {
+	1, // Number of B-type checkpoints 
+	0, // Number of L-type checkpoints
+	1  // Number of P-type checkpoints
+};
+
+RWCEC_Trace_in cycle_trace[tasks_num];
+int instance_case[2][3] = {
+	{5, 3, 0},
+	{5, 3, 1}
+};
+int instance_index[2] = {0,0};
 //-----------------------------------------------------------------------------------------//
 int main(int argc, char **argv)
 {
@@ -85,14 +141,19 @@ int main(int argc, char **argv)
 	float release_time = 0.0, start_time = 0.0;
 	system_init();
 	
-	in_alpha = (float) 50.0; //((float) atoi(argv[2])) / 100;
+	in_alpha = ((float) atoi(argv[2])) / 100;
 	in_default_speed = (float) 1000.0;//(float) atoi(argv[3]);
 	
 	vector<Src_CFG> src_intra;
-	Src_CFG task1((char*) "../cfg/task1.cfg", time_management, checkpoints_1, &cycle_trace_1, task_wcet_info[0], exe_path); 
-	Src_CFG task2((char*) "../cfg/task2.cfg", time_management, checkpoints_1, &cycle_trace_2, task_wcet_info[1], exe_path);
-	src_intra.push_back(task1); src_intra.push_back(task2);
+	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, checkpoints_1, &cycle_trace[0], task_wcet_info[0], exe_path); 
+	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, checkpoints_2, &cycle_trace[1], task_wcet_info[1], exe_path);
+	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, checkpoints_3, &cycle_trace[2], task_wcet_info[3], exe_path); 
+	src_intra.push_back(task1); src_intra.push_back(task2); src_intra.push_back(task3);
 	cout << "The number of Intra-Source: " << src_intra.size() << endl;
+	if(tasks_num != src_intra.size()) {
+		cout << "The initial settings does not match Task-set pattern from input file" << endl;
+		exit(1);	
+	}
 //=======================================================================================================================================================//
 // Settings of Inter-task
 	Ready_Queue que;
@@ -100,10 +161,10 @@ int main(int argc, char **argv)
 	src_inter[0] = {
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     1  , // Priority
-			     3.0, // Relative Deadline
+			     0  , // Priority
+			     15.0, // Relative Deadline
 			     task1.wcet,//task1.wcet, // WCET
-		             3.0, // Period
+		             24.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task1.wcet // Default WCRT
@@ -112,13 +173,25 @@ int main(int argc, char **argv)
 	src_inter[1] = {
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     0  , // Priority
-			     1.0, // Relative Deadline
+			     1  , // Priority
+			     25.0, // Relative Deadline
 			     task2.wcet, // WCET
-		             1.0, // Period
+		             35.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task2.wcet // Default WCRT
+	};
+	
+	src_inter[2] = {
+			     0.0, // Release Time
+			     0.0, // Start Time 
+			     2  , // Priority
+			     50.0, // Relative Deadline
+			     task3.wcet, // WCET
+		             55.0, // Period
+			     false, 
+			     (char) ZOMBIE, // Default Task State
+			     task3.wcet // Default WCRT
 	};
 //=======================================================================================================================================================//
 // Settings of Intra- and Inter-task communication Bus and Task Management
@@ -170,8 +243,6 @@ void system_init(void)
 {
 	int i;
 	
-	tasks_num = 2;
-	
 	vector<int> L_ch_temp;
 	vector<int> exe_path_temp;
 
@@ -184,15 +255,8 @@ void system_init(void)
 	Sys_Clk_0.time_unit = (int) US;
 	time_management = new Time_Management(Sys_Clk_0);
 	
-	// Accroding to the Input file
-	//checkpoints_1.B_checkpoints = (int*) malloc(sizeof(int) * 2);
-	//checkpoints_1.B_checkpoints =/&B_checkpoints_1[0];//memcpy(checkpoints_1.B_checkpoints, (int[3]){1, 5, 0x7FFFFFFF}, sizeof(int[3]));
 	array_int_cpy(checkpoints_1.B_checkpoints, B_checkpoints_1);
 
-	// Accroding to the Input file
-	//checkpoints_1.L_checkpoints = (int**) malloc(sizeof(int*) * 1); // The number of Loop nest is 1  
-	//checkpoints_1.L_checkpoints[0] = (int*) malloc(sizeof(int) * 3); // There are two checkpoints inside current loop nest
-	//checkpoints_1.L_checkpoints[0] = &L_checkpoints_1[0];//memcpy(checkpoints_1.L_checkpoints[0], (int[2])(2, 0x7FFFFFFF), sizeof(int[2]));
 	array_int_cpy(L_ch_temp, L_checkpoints_1);
 	checkpoints_1.L_checkpoints.push_back(L_ch_temp); vector<int>().swap(L_ch_temp);
 	checkpoints_1.L_loop_iteration.push_back(3 + 1);
@@ -204,20 +268,80 @@ void system_init(void)
 	array_int_cpy(exe_path_temp, exe_path_4); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
 	array_int_cpy(exe_path_temp, exe_path_5); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
 
-	for(int i = 0; i < 1; i++) {
-	 for(int j = 0; j < 4; j++) {
-	 	cycle_trace_1.B_RWCEC_t[i][j] = B_RWCEC_1[i][j];
-	 	cycle_trace_2.B_RWCEC_t[i][j] = B_RWCEC_2[i][j];
-	 }
-	}
-	for(int i = 0; i < 1; i++) 
-	 for(int j = 0; j < 2; j++)
-	  for(int k = 0; k < 8; k++) {
-	  	cycle_trace_1.L_RWCEC_t[i][j][k] = L_RWCEC_1[i][j][k];
-	  	cycle_trace_2.L_RWCEC_t[i][j][k] = L_RWCEC_2[i][j][k];
-	  }
+	checkpoint_config();
+
 }
 
+void checkpoint_config() {
+
+int *B_RWCEC_1;
+int ***L_RWCEC_1;
+int P_RWCEC_1[1][1][3] = {
+ {
+	// Loop_1: 
+	// Loop Entry: Basic Block 1 
+	{
+	 7,    // Loop Bound
+	 1350, // WCEC(cycles) within this loop 
+	 800   // Inherent RWCEC(cycles) after current basic block
+	}
+ }
+};
+checkpoint_num_t[0] = {
+	0, // Number of B-type checkpoints 
+	0, // Number of L-type checkpoints
+	1  // Number of P-type checkpoints
+};
+
+int *B_RWCEC_2;
+int ***L_RWCEC_2;
+int P_RWCEC_2[1][3][3] = {
+ {
+	// Loop_1:
+	// Loop Entry: Basic Block 2
+	// Function Call: my_cos()
+	{
+	 150,  // Loop Bound
+	 30,   // WCEC(cycles) within this loop
+	 7934, // Inherent RWCEC(cycles) after current basic block
+	},
+	
+	// Loop_2:
+	// Loop Entry: Basic Block 4
+	// Function Call: encode()
+	{
+	 100,  // Loop Bound
+	 40,   // WCEC(cycles) within this loop
+	 3919, // Inherent RWCEC(cycles) after current basic block
+	},
+	
+	// Loop_3:
+	// Loop Entry: Basic Block 6
+	// Function Call: decode()
+	{
+	 130, // Loop Bound
+	 30,  // WCEC(cycles) within this loop
+	 12,  // Inherent RWCEC(cycles) after current basic block
+	}
+ }
+};
+	for(int i = 0; i < tasks_num; i++) {
+		if(checkpoint_num[i].B_ch != 0) {
+			cycle_trace[i].B_RWCEC_1[0] = B_RWCEC_1[0];
+			cycle_trace[i].B_RWCEC_1[1] = B_RWCEC_1[1];
+			cycle_trace[i].B_RWCEC_1[2] = B_RWCEC_1[2];
+			cycle_trace[i].B_RWCEC_1[3] = B_RWCEC_1[3];
+		}
+		
+		if(checkpoint_num[i].L_ch != 0) {
+			cycle_trace[]
+		}
+		
+		if(checkpoint_num[i].P_ch != 0) {
+
+		}
+	}
+}
 void array_int_cpy(vector<int> &Dst, int *Src)
 {
 	int a = 0;
