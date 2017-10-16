@@ -11,20 +11,15 @@ const string checkpoint_id_5("L");
 const string checkpoint_id_6("P");
 const string checkpoint_id_end("#");
 
-checkpoint_num *checkpoint_numbers;
-RWCEC_Trace_in *cycle_trace;
-
 Parser::Parser(void)
 {
-	checkpoint();
 }
 
 Parser::~Parser(void)
 {
-
 }
 
-void Parser::checkpoint(void)
+void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_t *checkpoint_BlockID)
 {
 	int fsm = (int) TSK_NUM;
 	string path(checkpoint_file);
@@ -70,8 +65,19 @@ void Parser::checkpoint(void)
 				if(!read_id.compare(checkpoint_id_1)) {
 					read_content >> read_int;
 					tasks_num = char_int(read_int.c_str());
-					cycle_trace = new RWCEC_Trace_in[tasks_num];
-					checkpoint_numbers = new checkpoint_num[tasks_num];
+					if(tasks_num == tsk_num_in) {
+						cycle_trace = new RWCEC_Trace_in[tasks_num];
+						checkpoint_numbers = new checkpoint_num[tasks_num];
+						checkpoint_BlockID = new checkpoints_t[tasks_num];
+		
+					}
+					else {
+						cout << "According to the Task-set-defined file, the number of tasks suppose be " 
+						     << tsk_num_in << "." << endl 
+						     << "However, there are only " 
+						     << tasks_num << " number of tasks defined in Checkpoint-defined file." << endl;
+						exit(1);
+					}
 				}
 				else {
 					cout << "Wrong syntax \"" << read_id << "\"" << endl;
@@ -140,6 +146,8 @@ void Parser::checkpoint(void)
 						}
 						else B_id -= 1; 
 						read_content >> read_int; 
+						checkpoint_BlockID[task_id - 1].B_checkpoints.push_back(char_int(read_int.c_str())); 
+						read_content >> read_int; 
 						cycle_trace[task_id - 1].B_RWCEC_t[B_id][0] = char_int(read_int.c_str()); 
 						read_content >> read_int; 
 						cycle_trace[task_id - 1].B_RWCEC_t[B_id][1] = char_int(read_int.c_str()); 
@@ -178,6 +186,8 @@ void Parser::checkpoint(void)
 						}
 						else P_id -= 1; 
 						read_content >> read_int; 
+						checkpoint_BlockID[task_id - 1].P_checkpoints.push_back(char_int(read_int.c_str())); 
+						read_content >> read_int; 
 						cycle_trace[task_id - 1].P_RWCEC_t[P_id][0] = char_int(read_int.c_str()); 
 						read_content >> read_int; 
 						cycle_trace[task_id - 1].P_RWCEC_t[P_id][1] = char_int(read_int.c_str()); 
@@ -211,7 +221,8 @@ void Parser::checkpoint(void)
 		if(checkpoint_numbers[cnt].B_ch == 0) cout << "    No B-type Checkpoint is inserted in this Task" << endl;
 		else {
 		 for(int i = 0; i < checkpoint_numbers[cnt].B_ch; i++) 
-			cout << "B" << i + 1 << ": " << cycle_trace[cnt].B_RWCEC_t[i][0] << " " 
+			cout << "B" << i + 1 << "(" << checkpoint_BlockID[cnt].B_checkpoints[i] << "): " 
+						     << cycle_trace[cnt].B_RWCEC_t[i][0] << " " 
 						     << cycle_trace[cnt].B_RWCEC_t[i][1] << " "
 		 				     << cycle_trace[cnt].B_RWCEC_t[i][2] << " "
 		 				     << cycle_trace[cnt].B_RWCEC_t[i][3] << endl;
@@ -228,7 +239,8 @@ void Parser::checkpoint(void)
 		if(checkpoint_numbers[cnt].P_ch == 0) cout << "    No P-type Checkpoint is inserted in this Task" << endl;
 		else {
 		 for(int i = 0; i < checkpoint_numbers[cnt].P_ch; i++) 
-			cout << "P" << i + 1 << ": " << cycle_trace[cnt].P_RWCEC_t[i][0] << " " 
+			cout << "P" << i + 1 << "("  << checkpoint_BlockID[cnt].P_checkpoints[i] << "): "
+						     << cycle_trace[cnt].P_RWCEC_t[i][0] << " " 
 						     << cycle_trace[cnt].P_RWCEC_t[i][1] << " "
 						     << cycle_trace[cnt].P_RWCEC_t[i][2] << endl;
 		}
