@@ -4,14 +4,14 @@
 typedef vector<int> B_checkpoints_label;
 typedef vector< vector<int> > L_checkpoints_label;
 typedef vector<int> P_checkpoints_label;
-typedef vector<int> L_loop_iteration_t;
-typedef vector<int> P_loop_iteration_t;
+typedef vector<int> L_loop_bound_t;
+typedef vector<int> P_loop_bound_t;
 typedef struct Checkpoints_Label {
 	B_checkpoints_label B_checkpoints;
 	L_checkpoints_label L_checkpoints;
 	P_checkpoints_label P_checkpoints;
-	L_loop_iteration_t L_loop_iteration; // Recording the number of iteration every loop nest have run so far
-	P_loop_iteration_t P_loop_iteration;
+	L_loop_bound_t L_loop_bound; // Recording the number of iteration every loop nest have run so far
+	P_loop_bound_t P_loop_bound;
 } checkpoints_label;
 
 typedef int B_type[4];

@@ -96,9 +96,9 @@ class Src_CFG {
 		float get_cur_speed(void);
 
 		// Intra-task DVFS attributes
-		void checkpoints_placement(checkpoints_label &checkpoint_label_temp);
+		void checkpoints_placement(checkpoints_label *&checkpoint_label_temp);
 		void mining_table_gen(void);
-		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp);
+		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp, checkpoint_num *checkpointNum_temp);
 		
 		// Checkpoint Operation
 		void B_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
@@ -144,21 +144,19 @@ class Src_CFG {
 		Src_CFG(
 			char *file_name, 
 			Time_Management *&timer, 
-			checkpoints_label *&checkpoint_label_t, 
-			RWCEC_Trace_in *cycle_in_temp,
-			int *WCET_INFO, 
+			checkpoints_label *&checkpoint_label_temp, 
+			RWCEC_Trace_in *&cycle_in_temp,
+			checkpoint_num *&checkpointNum_temp,
+			int *&WCET_INFO, 
 			vector< vector<int> > exe_path
 		);
 		~Src_CFG(void);
 
-		B_checkpoints_t B_checkpoints;
-		L_checkpoints_t L_checkpoints;
-		P_checkpoints_t P_checkpoints;
+		checkpoints_label *checkpointLabel;
 		RWCEC_Trace_in *cycle_trace_in;
-		int L_loop_cnt;
-		int P_loop_cnt;
-		vector<int> loop_bound;
-		vector<int> L_loop_iteration;
+		checkpoint_num *checkpointNum;
+		vector<int> L_loop_iteration; // The counter of L-type iteration
+		vector<int> P_loop_iteration; // The counter of P-type iteration
 		P_loop_iteration_t P_loop_iteration;
 		vector<int> L_loop_exit;
 

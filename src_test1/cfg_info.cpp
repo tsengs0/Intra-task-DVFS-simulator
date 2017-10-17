@@ -68,7 +68,8 @@ Src_CFG::Src_CFG(
 	Time_Management *&timer, 
 	checkpoints_label *&checkpoint_label_temp, 
 	RWCEC_Trace_in *&cycle_trace_temp,
-	int *WCET_INFO, 
+	checkpoint_num *&checkpointNum_temp,
+	int *&WCET_INFO, 
 	vector< vector<int> > test_case
 )
 {
@@ -185,7 +186,7 @@ Src_CFG::Src_CFG(
 	}
 
 	// According to the input file
-	exe_cycle_tracing(WCET_INFO, cycle_trace_temp);
+	exe_cycle_tracing(WCET_INFO, cycle_trace_temp, checkpointNum_temp);
 	
 	// Checkpoints insertion and generating its corresponding mining table
 	checkpoints_placement(checkpoint_label_temp); mining_table_gen();
@@ -754,8 +755,11 @@ float Src_CFG::discrete_handle(float new_freq, int rwcec)
 
 /**
   * @brief Execution traces obtained via a cycle-level simulation.
+
+  * @procedure
 	   1) Assign task's worst-/average-/best-case execution cycles
 	   2) Configure data structure of  remaining execution cycles for each defined checkpoint
+	   3) Configure data structure of each B-/L-/P-type checkpoints' numbers
 **/
 void Src_CFG::exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_trace_temp, checkpoint_num *checkpointNum_temp)
 {
@@ -767,9 +771,8 @@ void Src_CFG::exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_trace_temp
 	// Procedure_2: configure data structure of  remaining execution cycles for each defined checkpoint
 	cycle_trace_in = cycle_trace_temp;
 
-	L_loop_cnt = 
-	L_loop_cnt = 1; // There is only one loop nest existing in this CFG
-	loop_bound.push_back(3);
+	// Procedure_3: configure data structure of each B-/L-/P-type checkpoints' numbers
+	checkpointNum = checkpointNum_temp;
 }
 
 void Src_CFG::mining_table_gen(void)
@@ -857,16 +860,33 @@ for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {
 #endif 	
 }
 
-void Src_CFG::checkpoints_placement(checkpoints_label &checkpoint_label_temp)
+/**
+  * @brief According to the given checkpoint labels from input file,
+	   enabling certain basic blocks as B-/L-/P-type checkpoints
+	   which have been designated as checkpoints.
+
+  * @procedure
+	   1) Preload/setup value of the given loop bound to each L- and P-type checkpoints' counter
+	   2) Enable the corresponding Basic Block as B-/L-/P-type checkpoint
+**/
+void Src_CFG::checkpoints_placement(checkpoints_label *&checkpoint_label_temp)
 {	
-	int B_cnt, L_cnt, index_temp, i;
+	int B_cnt, L_cnt, P_cnt, index_temp;
 	
-	B_cnt = checkpoint_label_temp.B_checkpoints.size();
+	// Preload/setup the counter of L- and P-type iteration
+	for(int i = 0; i < L_cnt; i++) L_loop_iteration.push_back(checkpointLabel -> L_loop_bound[i]);
+	for(int i = 0; i < P_cnt; i++) P_loop_iteration.push_back(checkpointLabel -> P_loop_bound[i]);
 	
-	for( index_temp = 0; index_temp < B_cnt; index_temp++ ) {
-		B_checkpoints.push_back( checkpoint_label_temp.B_checkpoints[index_temp] );
-		CFG_path[ checkpoint_label_temp.B_checkpoints[index_temp] - 1 ].B_checkpoint_en = index_temp; // Enable the corrsponding Basic Block as a checkpoint
-	} 
+	// Enable the corresponding Basic Block as B-/L-/P-type checkpoint
+	checkpointLabel = checkpoint_label_temp;
+	B_cnt = checkpointLabel -> B_checkpoints.size();
+	L_cnt = checkpointLabel -> L_checkpoints.size();
+	P_cnt = checkpointLabel -> P_checkpoints.size();
+	for(int i = 0; i < B_cnt; i++ ) CFG_path[ checkpointLabel.B_checkpoints[i] - 1 ].B_checkpoint_en = i; 
+	for(int i = 0; i < L_cnt; i++ ) CFG_path[ checkpointLabel.L_checkpoints[i] - 1 ].L_checkpoint_en = i; 
+	for(int i = 0; i < P_cnt; i++ ) CFG_path[ checkpointLabel.P_checkpoints[i] - 1 ].P_checkpoint_en = i; 
+	
+/*
 	for( index_temp = 0; index_temp < L_loop_cnt; index_temp++ ) {
 		L_cnt = checkpoint_label_temp.L_checkpoints[index_temp].size();
 		L_checkpoints.push_back( checkpoint_label_temp.L_checkpoints[index_temp] );
@@ -877,4 +897,5 @@ void Src_CFG::checkpoints_placement(checkpoints_label &checkpoint_label_temp)
 	 	L_loop_iteration.push_back(checkpoint_label_temp.L_loop_iteration[index_temp]);
 		L_loop_exit.push_back(checkpoint_label_temp.L_checkpoints[index_temp].front()); 
 	}
+*/
 }
