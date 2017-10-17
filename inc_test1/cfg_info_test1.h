@@ -96,7 +96,7 @@ class Src_CFG {
 		float get_cur_speed(void);
 
 		// Intra-task DVFS attributes
-		void checkpoints_placement(checkpoints_t &checkpoints_temp);
+		void checkpoints_placement(checkpoints_label &checkpoint_label_temp);
 		void mining_table_gen(void);
 		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp);
 		
@@ -144,7 +144,7 @@ class Src_CFG {
 		Src_CFG(
 			char *file_name, 
 			Time_Management *&timer, 
-			checkpoints_t &checkpoints_t, 
+			checkpoints_label *&checkpoint_label_t, 
 			RWCEC_Trace_in *cycle_in_temp,
 			int *WCET_INFO, 
 			vector< vector<int> > exe_path

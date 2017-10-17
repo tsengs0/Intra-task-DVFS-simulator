@@ -44,9 +44,10 @@ Basic_block::Basic_block(int curr_index, vector<int> &succ_index, vector<int> &c
 	execution_cycles[2] = cycles[2];
 
 	block_index = curr_index;
-	B_checkpoint_en = 0x7FFFFFFF; // Disable itself as checkpoint 
+	B_checkpoint_en = 0x7FFFFFFF; // Disable itself as non-checkpoint 
 	L_checkpoint_en[0] = 0x7FFFFFFF;
 	L_checkpoint_en[1] = 0x7FFFFFFF;
+	P_checkpoint_en = 0x7FFFFFFF;  
 #ifdef DEBUG	
 	cout << "Block_" << block_index << ", ";
 	cout << "WCEC: " << execution_cycles[0] << " ACEC: " << execution_cycles[1] << " BCEC: " << execution_cycles[2] << endl;
@@ -65,8 +66,8 @@ Basic_block::~Basic_block(void)
 Src_CFG::Src_CFG(
 	char *file_name, 
 	Time_Management *&timer, 
-	checkpoints_t &checkpoints_temp, 
-	RWCEC_Trace_in *cycle_trace_temp,
+	checkpoints_label *&checkpoint_label_temp, 
+	RWCEC_Trace_in *&cycle_trace_temp,
 	int *WCET_INFO, 
 	vector< vector<int> > test_case
 )
@@ -187,7 +188,7 @@ Src_CFG::Src_CFG(
 	exe_cycle_tracing(WCET_INFO, cycle_trace_temp);
 	
 	// Checkpoints insertion and generating its corresponding mining table
-	checkpoints_placement(checkpoints_temp); mining_table_gen();
+	checkpoints_placement(checkpoint_label_temp); mining_table_gen();
 	
 	// Designating the system-clock/timer source
 	timer_config(timer);
@@ -752,17 +753,21 @@ float Src_CFG::discrete_handle(float new_freq, int rwcec)
 }
 
 /**
-  * @brief Execution traces obtained via a cycle-level simulation. 
+  * @brief Execution traces obtained via a cycle-level simulation.
+	   1) Assign task's worst-/average-/best-case execution cycles
+	   2) Configure data structure of  remaining execution cycles for each defined checkpoint
 **/
-void Src_CFG::exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_trace_temp)
+void Src_CFG::exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_trace_temp, checkpoint_num *checkpointNum_temp)
 {
+	// Procedure_1: assign task's worst-/average-/best-case execution cycles
 	execution_cycles[WORST - 1]   = WCET_INFO[0];
 	execution_cycles[AVERAGE - 1] = WCET_INFO[1];
 	execution_cycles[BEST - 1]    = WCET_INFO[2];
 
+	// Procedure_2: configure data structure of  remaining execution cycles for each defined checkpoint
 	cycle_trace_in = cycle_trace_temp;
 
-	// According to the Input file
+	L_loop_cnt = 
 	L_loop_cnt = 1; // There is only one loop nest existing in this CFG
 	loop_bound.push_back(3);
 }
@@ -850,70 +855,26 @@ for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {
 	cout << endl << endl;
 }
 #endif 	
-
-// For P-type checkpoints
-/*	for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) { // The #th yLoop-nest
-		vector<L_mining_table_t> loop_t;
-		L_checkpoints_cnt = L_checkpoints[index_temp].size();
-		for(i = 0; i < L_checkpoints_cnt; i++) { // The checkpoints inside #th Loop-nest
-			vector<int> n_taken_t, taken_t;
-			for(j = 0; j < loop_bound[index_temp]; j++) { // The #th iteration of each checkpoint inside each Loop-nest
-				n_taken_t.push_back(L_RWCEC_t[index_temp][i][NOT_TAKEN * (j + 1)]);
-				taken_t.push_back(L_RWCEC_t[index_temp][i][(loop_bound[index_temp] + 2) + j]);
-			}
-			loop_t.push_back( 
-				{
-					n_taken_t,
-					taken_t,
-					L_RWCEC_t[index_temp][i][0], // Not Taken
-					L_RWCEC_t[index_temp][i][loop_bound[index_temp] + 1], // Taken
-				} 
-			);
-			vector<int>().swap(n_taken_t); vector<int>().swap(taken_t);
-		}
-		L_mining_table.push_back(loop_t);
-		vector<L_mining_table_t>().swap(loop_t);		
-	}
-
-for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {	
-	L_checkpoints_cnt = L_checkpoints[index_temp].size(); 
-	cout << "L-Type Mining Table_" << index_temp << endl;
-	cout << "------------------------------------------------" << endl;
-	cout << "Loop Bound(iteration): " << loop_bound[index_temp] << endl;
-	for( i = 0; i < L_checkpoints_cnt; i++ ) {
-		cout << "Branch_" << i << ":" << endl; 
-		for(j = loop_bound[index_temp] - 1; j >= 0; j--) {
-			cout << "n_taken_" << (j + 1) << ": " 
-		             << L_mining_table[index_temp][i].n_taken_rwcec[j] << "(" << L_mining_table[index_temp][i].successors[0] <<")\t";
-			cout << "taken_" << (j + 1) << ": " 
-		             << L_mining_table[index_temp][i].taken_rwcec[j] << "(" << L_mining_table[index_temp][i].successors[1] << ")" << endl;
-		}
-		cout << endl;
-	}
-	cout << "------------------------------------------------" << endl;
-	cout << endl << endl;
-}
-*/
 }
 
-void Src_CFG::checkpoints_placement(checkpoints_t &checkpoints_temp)
+void Src_CFG::checkpoints_placement(checkpoints_label &checkpoint_label_temp)
 {	
 	int B_cnt, L_cnt, index_temp, i;
 	
-	B_cnt = checkpoints_temp.B_checkpoints.size();
+	B_cnt = checkpoint_label_temp.B_checkpoints.size();
 	
 	for( index_temp = 0; index_temp < B_cnt; index_temp++ ) {
-		B_checkpoints.push_back( checkpoints_temp.B_checkpoints[index_temp] );
-		CFG_path[ checkpoints_temp.B_checkpoints[index_temp] - 1 ].B_checkpoint_en = index_temp; // Enable the corrsponding Basic Block as a checkpoint
+		B_checkpoints.push_back( checkpoint_label_temp.B_checkpoints[index_temp] );
+		CFG_path[ checkpoint_label_temp.B_checkpoints[index_temp] - 1 ].B_checkpoint_en = index_temp; // Enable the corrsponding Basic Block as a checkpoint
 	} 
 	for( index_temp = 0; index_temp < L_loop_cnt; index_temp++ ) {
-		L_cnt = checkpoints_temp.L_checkpoints[index_temp].size();
-		L_checkpoints.push_back( checkpoints_temp.L_checkpoints[index_temp] );
+		L_cnt = checkpoint_label_temp.L_checkpoints[index_temp].size();
+		L_checkpoints.push_back( checkpoint_label_temp.L_checkpoints[index_temp] );
 		for(i = 0; i < L_cnt; i++) {
-			CFG_path[ checkpoints_temp.L_checkpoints[index_temp][i] - 1 ].L_checkpoint_en[0] = index_temp;
-			CFG_path[ checkpoints_temp.L_checkpoints[index_temp][i] - 1 ].L_checkpoint_en[1] = i;
+			CFG_path[ checkpoint_label_temp.L_checkpoints[index_temp][i] - 1 ].L_checkpoint_en[0] = index_temp;
+			CFG_path[ checkpoint_label_temp.L_checkpoints[index_temp][i] - 1 ].L_checkpoint_en[1] = i;
 		}
-	 	L_loop_iteration.push_back(checkpoints_temp.L_loop_iteration[index_temp]);
-		L_loop_exit.push_back(checkpoints_temp.L_checkpoints[index_temp].front()); 
+	 	L_loop_iteration.push_back(checkpoint_label_temp.L_loop_iteration[index_temp]);
+		L_loop_exit.push_back(checkpoint_label_temp.L_checkpoints[index_temp].front()); 
 	}
 }
