@@ -33,19 +33,6 @@ class Basic_block {
 		~Basic_block(void);
 };	
 
-// The tuple of mining tablele
-typedef struct B_Mining_table {
-		int n_taken_rwcec; // The remaining worst-case executin cycles from current checkpoint, if the branch instruction was not taken
-		int taken_rwcec; // The remaining worst-case executin cycles from current checkpoint, if the branch instruction was taken
-		int successors[2];
-} B_mining_table_t;
-
-typedef struct L_Mining_table {
-	vector<int> n_taken_rwcec;
-	vector<int> taken_rwcec;
-	int successors[2];
-} L_mining_table_t;
-
 typedef struct isr_context{
 	float act_exe_time;
 	int act_cycles;

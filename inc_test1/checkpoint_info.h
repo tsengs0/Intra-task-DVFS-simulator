@@ -29,4 +29,25 @@ typedef struct Checkpoint_Num {
 	int P_ch;
 } checkpoint_num; 
 
+// The tuple of mining tablele
+typedef struct B_Mining_table {
+	int block_id; // Labelling which Basic Block it belongs to
+	int n_taken_rwcec; // The remaining worst-case executin cycles from current checkpoint, if the branch instruction was not taken
+	int taken_rwcec; // The remaining worst-case executin cycles from current checkpoint, if the branch instruction was taken
+	int successors[2];
+} B_mining_table_t;
+
+typedef struct L_Mining_table {
+	vector<int> n_taken_rwcec;
+	vector<int> taken_rwcec;
+	int successors[2];
+} L_mining_table_t;
+
+typedef struct P_Mining_table {
+	int block_id;   // Labelling which Basic Block it belongs to
+	int loop_bound; // Loop Bound
+	int iteration_wcec; // The worst-case execution cycles (WCECs) of one loop iteration
+	int rwcec; // The remaining worst-case execution cycles (RWCECs) after this loop
+} P_mining_table_t;
+
 #endif // __CHECKPOINT_INFO_H
