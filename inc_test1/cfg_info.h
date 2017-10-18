@@ -77,6 +77,7 @@ class Src_CFG {
 		jitter_constraint jitter_config;
 		vector<B_mining_table_t> B_mining_table;
 		vector< vector<L_mining_table_t> > L_mining_table;
+		vector<P_mining_table_t> P_mining_table;
 
 	//public:
 		void traverse_spec_path(int &case_id, int case_t, float releast_time_new, float start_time_new, float Deadline, char DVFS_en);
@@ -90,8 +91,7 @@ class Src_CFG {
 		// Checkpoint Operation
 		void B_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		void L_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
-		void B_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index);
-		void L_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index);
+		void P_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		
 		float discrete_handle(float new_freq, int rwcec);
 		void checkpoint_operation(int block_index, int case_t);
@@ -144,7 +144,6 @@ class Src_CFG {
 		checkpoint_num *checkpointNum;
 		vector<int> L_loop_iteration; // The counter of L-type iteration
 		vector<int> P_loop_iteration; // The counter of P-type iteration
-		P_loop_iteration_t P_loop_iteration;
 		vector<int> L_loop_exit;
 
 // Multitask scheduling information

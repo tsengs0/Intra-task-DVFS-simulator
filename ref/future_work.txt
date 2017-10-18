@@ -1,1 +1,6 @@
 1. Write a XML-based input file for hardware specification, e.g., DVFS ability (supply voltage, operating frequency, power cons-   umption), caching, pipelining, thermal dissipation, etc.
+
+2. In the Src_CFG::traverse_spec_path() and Src_CFG::isr_driven_cfg(), the first parameter of invoking P_Intra_task_checkpoint()   is actually ahead loop iteration(s). Currently, I only cast a random value ranging from 0 to its Loop Bound, however it 
+   should also be designated by every test pattern in the future.
+
+
