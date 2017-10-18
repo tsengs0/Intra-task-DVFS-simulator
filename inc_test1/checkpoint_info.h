@@ -47,7 +47,7 @@ typedef struct P_Mining_table {
 	int block_id;   // Labelling which Basic Block it belongs to
 	int loop_bound; // Loop Bound
 	int iteration_wcec; // The worst-case execution cycles (WCECs) of one loop iteration
-	int rwcec; // The remaining worst-case execution cycles (RWCECs) after this loop
+	int succ_rwcec; // The remaining worst-case execution cycles (RWCECs) after this loop
 } P_mining_table_t;
 
 #endif // __CHECKPOINT_INFO_H

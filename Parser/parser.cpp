@@ -19,7 +19,7 @@ Parser::~Parser(void)
 {
 }
 
-void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_t *checkpoint_BlockID)
+void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_label *checkpoint_BlockID)
 {
 	int fsm = (int) TSK_NUM;
 	string path(checkpoint_file);
@@ -68,7 +68,7 @@ void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoi
 					if(tasks_num == tsk_num_in) {
 						cycle_trace = new RWCEC_Trace_in[tasks_num];
 						checkpoint_numbers = new checkpoint_num[tasks_num];
-						checkpoint_BlockID = new checkpoints_t[tasks_num];
+						checkpoint_BlockID = new checkpoints_label[tasks_num];
 		
 					}
 					else {

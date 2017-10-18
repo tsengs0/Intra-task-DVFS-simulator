@@ -31,7 +31,7 @@ class Parser {
 		Parser(void);
 		~Parser(void);
 	
-		void checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_t *checkpoint_BlockID);
+		void checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_label *checkpoint_BlockID);
 }; 
 
 
