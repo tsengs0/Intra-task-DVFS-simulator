@@ -1,0 +1,1 @@
+1. Write a XML-based input file for hardware specification, e.g., DVFS ability (supply voltage, operating frequency, power cons-   umption), caching, pipelining, thermal dissipation, etc.

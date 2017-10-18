@@ -1,0 +1,50 @@
+int B_RWCEC_3[1][4] = {
+	{7, 100, 6, 300}
+};
+int P_RWCEC_3[1][1][3] = {
+ {
+	// Loop_1:
+	// Loop Entry: Basic Block 1
+	{
+	 5,   // Loop Bound
+	 310, // WCEC(cycles) within this loop
+	 400, // Inherent RWCEC(cycles) after current basic block
+	}
+ }
+
+int P_RWCEC_2[1][3][3] = {
+ {
+	// Loop_1:
+	// Loop Entry: Basic Block 2
+	// Function Call: my_cos()
+	{
+	 150,  // Loop Bound
+	 30,   // WCEC(cycles) within this loop
+	 7934, // Inherent RWCEC(cycles) after current basic block
+	},
+	
+	// Loop_2:
+	// Loop Entry: Basic Block 4
+	// Function Call: encode()
+	{
+	 100,  // Loop Bound
+	 40,   // WCEC(cycles) within this loop
+	 3919, // Inherent RWCEC(cycles) after current basic block
+	},
+	
+	// Loop_3:
+	// Loop Entry: Basic Block 6
+	// Function Call: decode()
+	{
+	 130, // Loop Bound
+	 30,  // WCEC(cycles) within this loop
+	 12,  // Inherent RWCEC(cycles) after current basic block
+	}
+ }
+};
+
+checkpoint_num_t[0] = {
+	0, // Number of B-type checkpoints 
+	0, // Number of L-type checkpoints
+	1  // Number of P-type checkpoints
+};

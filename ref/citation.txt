@@ -1,0 +1,6 @@
+[1] Walsh, Burt, et al. "Parametric intra-task dynamic voltage scheduling." Proceedings of the Workshop 
+    on Compilers and Operating Systems for Lower Power (COLP 2003). 2003.
+
+[2] Shin, Dongkun, and Jihong Kim. "Optimizing intratask voltage scheduling using profile and data-flow 
+    information." IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 26.2 
+    (2007): 369-385.

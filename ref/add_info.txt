@@ -1,0 +1,12 @@
+1. cfg_info_test1.h:
+
+	a) In "class Basic_block" =>
+		Adding new int-type variable called "P_checkpoint_en", in order to label whether the current basic block
+		is P-type checkpoint or not
+
+	b) Move all checkpoints' data structures to checkpoint_info.h
+
+	c) Move all mining tables' data structures to checkpoint_info.h
+
+	d) Add P-type mining table and modify original generation at Src_CFG::mining_table_gen(void)
+
