@@ -7,6 +7,7 @@
 #include "jitter_info.h"
 #include "main.h"
 #include "timer.h"
+#include "checkpoint_info.h"
 
 using namespace std;
 
@@ -27,41 +28,10 @@ class Basic_block {
 		int B_checkpoint_en; // For normally branch instruction
 		int L_checkpoint_en[2]; // For loop nest, first element means the index of loop nest; 
 					// Second element means the address of minining table
+		int P_checkpoint_en; // For labelling P-type checkpoint (Lookahead checkpoint)
 		Basic_block(int curr_index, vector<int> &succ_index, vector<int> &cycles);
 		~Basic_block(void);
 };	
-
-// The tuple of mining tablele
-typedef struct B_Mining_table {
-		int n_taken_rwcec; // The remaining worst-case executin cycles from current checkpoint, if the branch instruction was not taken
-		int taken_rwcec; // The remaining worst-case executin cycles from current checkpoint, if the branch instruction was taken
-		int successors[2];
-} B_mining_table_t;
-
-typedef struct L_Mining_table {
-	vector<int> n_taken_rwcec;
-	vector<int> taken_rwcec;
-	int successors[2];
-} L_mining_table_t;
-
-typedef vector< vector<int> > L_checkpoints_t;
-typedef vector<int> B_checkpoints_t;
-typedef vector<L_checkpoints_t> P_checkpoints_t;
-typedef vector<int> L_loop_iteration_t;
-typedef vector< vector<int> > P_loop_iteration_t;
-// The set of various types of Checkpoints
-typedef struct Checkpoints {
-	B_checkpoints_t B_checkpoints;
-	L_checkpoints_t L_checkpoints;
-	P_checkpoints_t P_checkpoints;
-	L_loop_iteration_t L_loop_iteration; // Recording the number of iteration every loop nest have run so far
-	P_loop_iteration_t P_loop_iteration;
-} checkpoints_t;
-
-typedef struct RWCEC_Trace {
-	int B_RWCEC_t[1][4];
-	int L_RWCEC_t[1][2][8];
-} RWCEC_Trace_in;
 
 typedef struct isr_context{
 	float act_exe_time;
@@ -107,21 +77,21 @@ class Src_CFG {
 		jitter_constraint jitter_config;
 		vector<B_mining_table_t> B_mining_table;
 		vector< vector<L_mining_table_t> > L_mining_table;
+		vector<P_mining_table_t> P_mining_table;
 
 	//public:
 		void traverse_spec_path(int &case_id, int case_t, float releast_time_new, float start_time_new, float Deadline, char DVFS_en);
 		float get_cur_speed(void);
 
 		// Intra-task DVFS attributes
-		void checkpoints_placement(checkpoints_t &checkpoints_temp);
+		void checkpoints_placement(checkpoints_label *&checkpoint_label_temp);
 		void mining_table_gen(void);
-		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp);
+		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp, checkpoint_num *checkpointNum_temp);
 		
 		// Checkpoint Operation
 		void B_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		void L_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
-		void B_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index);
-		void L_Intra_task_checkpoint_1(int cur_block_index, int succ_block_index);
+		void P_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		
 		float discrete_handle(float new_freq, int rwcec);
 		void checkpoint_operation(int block_index, int case_t);
@@ -161,22 +131,19 @@ class Src_CFG {
 		Src_CFG(
 			char *file_name, 
 			Time_Management *&timer, 
-			checkpoints_t &checkpoints_t, 
-			RWCEC_Trace_in *cycle_in_temp,
-			int *WCET_INFO, 
+			checkpoints_label *&checkpoint_label_temp, 
+			RWCEC_Trace_in *&cycle_in_temp,
+			checkpoint_num *&checkpointNum_temp,
+			int *&WCET_INFO, 
 			vector< vector<int> > exe_path
 		);
 		~Src_CFG(void);
 
-		B_checkpoints_t B_checkpoints;
-		L_checkpoints_t L_checkpoints;
-		P_checkpoints_t P_checkpoints;
+		checkpoints_label *checkpointLabel;
 		RWCEC_Trace_in *cycle_trace_in;
-		int L_loop_cnt;
-		int P_loop_cnt;
-		vector<int> loop_bound;
-		vector<int> L_loop_iteration;
-		P_loop_iteration_t P_loop_iteration;
+		checkpoint_num *checkpointNum;
+		vector<int> L_loop_iteration; // The counter of L-type iteration
+		vector<int> P_loop_iteration; // The counter of P-type iteration
 		vector<int> L_loop_exit;
 
 // Multitask scheduling information

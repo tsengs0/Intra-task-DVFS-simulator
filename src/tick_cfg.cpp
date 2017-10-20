@@ -6,7 +6,10 @@
 #include "../inc/dvfs_info.h"
 #include "../inc/main.h"
 
-using namespace std;
+using std::cin;
+using std::cout;
+using std::endl;
+using std::vector;
 
 extern float in_alpha;
 extern float in_default_speed;
@@ -45,18 +48,28 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			if(dvfs_en == (char) DVFS_ENABLE) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
-					B_Intra_task_checkpoint_1(
-						exe_path[cur_case_id][cur_block_index], 
-						exe_path[cur_case_id][cur_block_index + 1]
+					B_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
 				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
-					L_Intra_task_checkpoint_1(
-						exe_path[cur_case_id][cur_block_index], 
-						exe_path[cur_case_id][cur_block_index + 1]
+					L_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according ot the indicated execution path case
 					);
 				}			
+				// Invoking the operation of P-type checkpoint
+				else {
+					int temp = exe_path[cur_case_id][cur_block_index];
+					int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
+					P_Intra_task_checkpoint(
+						rand() % (P_mining_table[loop_addr].loop_bound + 1), // Randomly give actual ahead loop iteration(s)
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
+					);		
+				}
 			}	
 #endif 
 		cur_block_index += 1;			
@@ -78,18 +91,28 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			if(dvfs_en == (char) DVFS_ENABLE) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
-					B_Intra_task_checkpoint_1(
-						exe_path[cur_case_id][cur_block_index], 
-						exe_path[cur_case_id][cur_block_index + 1]
+					B_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
 				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
-					L_Intra_task_checkpoint_1(
-						exe_path[cur_case_id][cur_block_index], 
-						exe_path[cur_case_id][cur_block_index + 1]
+					L_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 					);
 				}			
+				// Invoking the operation of P-type checkpoint
+				else {
+					int temp = exe_path[cur_case_id][cur_block_index];
+					int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
+					P_Intra_task_checkpoint(
+						rand() % (P_mining_table[loop_addr].loop_bound + 1), // Randomly give actual ahead loop iteration(s)
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
+					);		
+				}
 			}	
 #endif	
 		cur_block_index += 1;
