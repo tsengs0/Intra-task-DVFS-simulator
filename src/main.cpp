@@ -43,13 +43,15 @@ extern float ISR_TIME_SLICE;
 int tasks_num = 3; // The number of tasks 
 //-----------------------------------------------------------------------------------------//
 //Temporary test cases
-vector< vector<int> > exe_path;
+typedef vector<int> exe_path_case;
+vector<exe_path_case> exe_path_set;
 int exe_path_0[] = {1, 5, 7, 0x7FFFFFFF};
 int exe_path_1[] = {1, 2, 3,4,1,5,6,7, 0x7FFFFFFF};
 int exe_path_2[] = {1, 2, 4, 1, 5, 6, 0x7FFFFFFF};
 int exe_path_3[] = {1, 2, 4, 1, 5, 7, 0x7FFFFFFF};
 int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 2, 4, 1, 5, 6, 7, 0x7FFFFFFF};
 int exe_path_5[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 6, 7, 0x7FFFFFFF};
+void rand_ExePath_gen(vecot<Basic_block> &cfg_in, vector<exe_path> &path_set, int &pattern_num);
 //-----------------------------------------------------------------------------------------//
 //Checkpoints Objects
 void checkpoint_config();
@@ -77,9 +79,10 @@ exeTime_info *task_wcet_info;
 checkpoint_num *checkpoint_num_t; // The size will be known after parsing
 RWCEC_Trace_in *cycle_trace; // The real size will be defined after parsing
 checkpoints_label *checkpointLabel; // The label of checkpoints at each task's Basic Block(s)
+// Three instaneces for each of those two tasks
 int instance_case[2][3] = {
-	{5, 3, 0},
-	{5, 3, 1}
+	{5, 3, 0}, // Task 1: exe_path_5(first instance), exe_path_3(second instance), exe_path_0(third instance)
+	{5, 3, 1}  // Task 2: exe_path_5(first instance), exe_path_3(second instance), exe_path_1(third instance) 
 };
 int instance_index[2] = {0,0};
 //-----------------------------------------------------------------------------------------//
@@ -194,7 +197,7 @@ void system_init(void)
 	int i;
 	
 	vector<int> L_ch_temp;
-	vector<int> exe_path_temp;
+	exe_path_case exe_path_temp;
 
 	srand((unsigned) time(0));
 	energy_ref = 0.0;
@@ -205,44 +208,62 @@ void system_init(void)
 	Sys_Clk_0.time_unit = (int) US;
 	time_management = new Time_Management(Sys_Clk_0);
 	
-	array_int_cpy(checkpoints_1.B_checkpoints, B_checkpoints_1);
-
-	array_int_cpy(L_ch_temp, L_checkpoints_1);
-	checkpoints_1.L_checkpoints.push_back(L_ch_temp); vector<int>().swap(L_ch_temp);
 	checkpoints_1.L_loop_iteration.push_back(3 + 1);
 
-	array_int_cpy(exe_path_temp, exe_path_0); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_1); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_2); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_3); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_4); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
-	array_int_cpy(exe_path_temp, exe_path_5); exe_path.push_back(exe_path_temp); exe_path.back().push_back(0x7FFFFFFF); exe_path_temp.clear();
+	array_int_cpy(exe_path_temp, exe_path_0); exe_path_set.push_back(exe_path_temp); vector<int>().swap(exe_path_temp);
+	array_int_cpy(exe_path_temp, exe_path_1); exe_path_set.push_back(exe_path_temp); vector<int>().swap(exe_path_temp);
 	
 	checkpoint_config();
 	wcet_info_config();
 }
 
+void rand_ExePath_gen(vecot<Basic_block> &cfg_in, vector<exe_path> &path_set, int &pattern_num)
+{
+	int cnt = patten_num;
+	int cur_NodeID = cfg_in.front().get_index; // Let any test pattern of execution path start from start node of its CFG
+	do {
+		
+		if( // If current node is loop entry
+			cfg_in[cur_NodeID].succ.size() == 1 &&   // Make sure there is only one successive path from current node (only reagarding the notion of for-loop and while-loop)
+			cfg_in[cfg_NodeID].succ[0] < cur_NodeID  // Check next node from current node is a return of loop entry, i.e., current node is loop exit
+		) { 
+					
+		}
+		
+		if(cfg_in[cur_NodeID].get_succ[0] != 0)  {// If current node is a branch
+			int i = cfg_in[cur_NodeID].succ.size(); // Get the number of current node's successors
+			// Randomly choose a branch among all current node's successors
+			// Case 1: loop entry
+			// Case 2: Multiple successive execution pahts, none of them is loop entry 
+			int j = rand() % i; 
+			cur_NodeID = cfg_in[cur_NodeID].succ[j]; 
+		}
+		else if(cfg_in[cur_NodeID].get_succ[0] == 0) { // If current node is sink node	
+		//else(cfg_in[cur_NodeID].get_index() == cfg_in.back().get_index()) { // If current node is sink node	
+			cur_NodeID = cfg_in.front().get_index(); // Reset current node ID to start node for next test-pattern generation	
+			cnt--;
+		}
+	}while(cnt != 0); 
+}
+
 void checkpoint_config() {
-	
 	parsing.checkpoint_in(
 			tasks_num,        // The number of tasks 
 			cycle_trace,      // The cycle tracing information for building Mining Table
 			checkpoint_num_t, // The number of eacc type heckpoints 
 			checkpointLabel   // The label of checkpoints at each task's Basic Block(s)
 	);
-
 }
 
 void wcet_info_config() {
-
 	task_wcet_info = new exeTime_info[tasks_num];
 	memcpy(task_wcet_info, task_wcet_info_t, tasks_num * 3 * sizeof(int));
-
 }
+
 void array_int_cpy(vector<int> &Dst, int *Src)
 {
 	int a = 0;
-	for(a = 0; Src[a] != 0x7FFFFFFF; a++) Dst.push_back( Src[a] );
+	for(a = 0; Src[a] != 0x7FFFFFFF; a++) Dst.push_back(Src[a]);
 }
 
 /*
