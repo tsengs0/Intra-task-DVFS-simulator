@@ -9,10 +9,10 @@
 #include "timer.h"
 #include "checkpoint_info.h"
 
-using namespace std;
-
-typedef vector<char> char_str;
-typedef vector<int> array_int_element;
+typedef std::vector<char> char_str;
+typedef std::vector<int> array_int_element;
+typedef std::vector<int> ExePath_case;
+typedef std::vector<ExePath_case> ExePath_set;
 
 class Basic_block {
 	private:
@@ -20,7 +20,7 @@ class Basic_block {
 		int execution_cycles[3]; // index_0 : WCEC, index_1 : ACEC, index_3 : BCEC
 
 	public:
-		vector<int> succ;
+		std::vector<int> succ;
 		//unsigned char loop_exit;
 		int get_index(void);
 		int get_cycles(int case_t);
@@ -29,7 +29,7 @@ class Basic_block {
 		int L_checkpoint_en[2]; // For loop nest, first element means the index of loop nest; 
 					// Second element means the address of minining table
 		int P_checkpoint_en; // For labelling P-type checkpoint (Lookahead checkpoint)
-		Basic_block(int curr_index, vector<int> &succ_index, vector<int> &cycles);
+		Basic_block(int curr_index, std::vector<int> &succ_index, std::vector<int> &cycles);
 		~Basic_block(void);
 };	
 
@@ -40,17 +40,17 @@ typedef struct isr_context{
 
 class Src_CFG {
 	private:
-		vector<char_str> task_id;
+		std::vector<char_str> task_id;
 		char_str task_id_temp;
-		vector<char_str> wcec, acec, bcec;
+		std::vector<char_str> wcec, acec, bcec;
 		char_str wcec_temp, acec_temp, bcec_temp;
 
-		vector<array_int_element> task_succ;
-		vector<int> succ;
+		std::vector<array_int_element> task_succ;
+		std::vector<int> succ;
 		int succ_int_temp;
 	
 	public:
-		vector<Basic_block> CFG_path;
+		std::vector<Basic_block> CFG_path;
 		int execution_cycles[3]; // index_0 : WCEC, index_1 : ACEC, index_3 : BCEC
 		float max_freq_t;
 		float min_freq_t;
@@ -65,28 +65,28 @@ class Src_CFG {
 		double exe_acc;      // For evaluating the finish time jitter 	
 		Src_CFG *next_task;
 		Src_CFG *pre_task;
-		vector< vector<int> > exe_path;
+		ExePath_set exe_path;
 		
 		int cycle_acc;
-		vector<float> exe_case;
-		vector<float> response_case;
+		std::vector<float> exe_case;
+		std::vector<float> response_case;
 		float response_SampleVariance;
 		float RFJ, AFJ; // Relative finishing time jitter; Absolute finishing time jitter
 		float exe_var;  // Recording variation on actual execution time
 		float tar_diff; // The difference between actual execution time and target execution time
 		jitter_constraint jitter_config;
-		vector<B_mining_table_t> B_mining_table;
-		vector< vector<L_mining_table_t> > L_mining_table;
-		vector<P_mining_table_t> P_mining_table;
+		std::vector<B_mining_table_t> B_mining_table;
+		std::vector< vector<L_mining_table_t> > L_mining_table;
+		std::vector<P_mining_table_t> P_mining_table;
 
 	//public:
-		void traverse_spec_path(int &case_id, int case_t, float releast_time_new, float start_time_new, float Deadline, char DVFS_en);
+		void traverse_spec_path(int case_id, int case_t, float releast_time_new, float start_time_new, float Deadline, char DVFS_en);
 		float get_cur_speed(void);
 
 		// Intra-task DVFS attributes
 		void checkpoints_placement(checkpoints_label *&checkpoint_label_temp);
 		void mining_table_gen(void);
-		void exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_in_temp, checkpoint_num *checkpointNum_temp);
+		void exe_cycle_tracing(exeTime_info WCET_INFO, RWCEC_Trace_in *cycle_in_temp, checkpoint_num *checkpointNum_temp);
 		
 		// Checkpoint Operation
 		void B_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
@@ -108,13 +108,15 @@ class Src_CFG {
 		void output_result(char *case_msg);
 		int cycles_cnt;
 		
+
 		//Configuration of Time Management 
 		sys_clk_t *sys_clk;
 		Time_Management *time_management; // Designate which time-management rules this task
 		void timer_config(Time_Management *&timer);		
 
 		// Test Case
-		void pattern_init(vector< vector<int> > test_case);
+		void pattern_init(ExePath_set test_case);
+		int *P_loop_LaIteration;
 
 		// Interrupt Timer and Preemption
 		// Context register for interrupt timer and preemption
@@ -130,29 +132,23 @@ class Src_CFG {
 		// target control flow information
 		Src_CFG(
 			char *file_name, 
-			Time_Management *&timer, 
-			checkpoints_label *&checkpoint_label_temp, 
-			RWCEC_Trace_in *&cycle_in_temp,
-			checkpoint_num *&checkpointNum_temp,
-			int *&WCET_INFO, 
-			vector< vector<int> > exe_path
-		);
-		Src_CFG(
-			char *file_name, 
-			Time_Management *&timer, 
-			checkpoints_label *&checkpoint_label_temp, 
-			RWCEC_Trace_in *&cycle_in_temp,
-			checkpoint_num *&checkpointNum_temp,
-			int *&WCET_INFO, 
+			Time_Management *timer, 
+			checkpoints_label *checkpoint_label_temp, 
+			RWCEC_Trace_in *cycle_in_temp,
+			checkpoint_num *checkpointNum_temp,
+			exeTime_info WCET_INFO//, 
+			//ExePath_set exe_path
 		);
 		~Src_CFG(void);
 
 		checkpoints_label *checkpointLabel;
 		RWCEC_Trace_in *cycle_trace_in;
 		checkpoint_num *checkpointNum;
-		vector<int> L_loop_iteration; // The counter of L-type iteration
-		vector<int> P_loop_iteration; // The counter of P-type iteration
-		vector<int> L_loop_exit;
+	
+	/*Since Lookahead Actual Loop iteration have been declared, so this two variables maybe no need*/	
+	/*Note*/	std::vector<int> L_loop_iteration; // The counter of L-type iteration
+	/*Note*/	std::vector<int> P_loop_iteration; // The counter of P-type iteration
+		std::vector<int> L_loop_exit;
 
 // Multitask scheduling information
 		void completion_config(void);

@@ -1,0 +1,431 @@
+Task_Numbers: 3
+Task_ID: 1
+Checkpoint_Numbers: B(0) L(0) P(1)
+Task_ID: 2
+Checkpoint_Numbers: B(0) L(0) P(3)
+Task_ID: 3
+Checkpoint_Numbers: B(1) L(0) P(1)
+========================================
+
+Task_1
+B-type Checkpoint:
+    No B-type Checkpoint is inserted in this Task
+L-type Checkpoint:
+    No L-type Checkpoint is inserted in this Task
+P-type Checkpoint:
+P1(1): 7 1350 800
+========================================
+
+Task_2
+B-type Checkpoint:
+    No B-type Checkpoint is inserted in this Task
+L-type Checkpoint:
+    No L-type Checkpoint is inserted in this Task
+P-type Checkpoint:
+P1(1): 150 30 7934
+P2(4): 100 40 3919
+P3(6): 130 30 12
+========================================
+
+Task_3
+B-type Checkpoint:
+B1(5): 6 300 7 100
+L-type Checkpoint:
+    No L-type Checkpoint is inserted in this Task
+P-type Checkpoint:
+P1(1): 5 310 400
+========================================
+
+
+
+
+
+
+
+
+
+Block_1, WCEC: 200 ACEC: 0 BCEC: 0
+Successors: 2 9 
+
+Block_2, WCEC: 100 ACEC: 0 BCEC: 0
+Successors: 3 4 
+
+Block_3, WCEC: 500 ACEC: 0 BCEC: 0
+Successors: 8 
+
+Block_4, WCEC: 200 ACEC: 0 BCEC: 0
+Successors: 5 6 
+
+Block_5, WCEC: 100 ACEC: 0 BCEC: 0
+Successors: 7 
+
+Block_6, WCEC: 350 ACEC: 0 BCEC: 0
+Successors: 7 
+
+Block_7, WCEC: 50 ACEC: 0 BCEC: 0
+Successors: 8 
+
+Block_8, WCEC: 450 ACEC: 0 BCEC: 0
+Successors: 1 
+
+Block_9, WCEC: 800 ACEC: 0 BCEC: 0
+Successors: 0 
+
+B-Type Mining Table
+------------------------------------------------
+|WCEC(cycle): 10450				|
+ -----------------------------------------------
+| Address	|		RWCEC(cycle)	|
+		 -------------------------------
+|		|	n_taken	|	taken	|
+ -----------------------------------------------
+
+P-Type Mining Table
+ ------------------------------------------------------------------------------
+|WCEC(cycle): 10450				|
+ ------------------------------------------------------------------------------
+| Address	|	Loop Bound	|	WCEC fo each iteratoin	|	WCEC after Loop	|
+ ------------------------------------------------------------------------------
+| Loop_0(Block 1)	|	7	|	1350	|	800	|
+ ------------------------------------------------------------------------------
+Input value of alpha: 1
+jitter_config.alpha: 2.35024e-39%
+bcet_limit: -3.33333%
+wcet_limit: 2.35024e-39%
+jitter_config.alpha: 2.35024e-39%
+
+
+
+
+
+
+
+
+Block_1, WCEC: 15 ACEC: 0 BCEC: 0
+Successors: 2 
+
+Block_2, WCEC: 3 ACEC: 0 BCEC: 0
+Successors: 3 4 
+
+Block_3, WCEC: 27 ACEC: 0 BCEC: 0
+Successors: 2 
+
+Block_4, WCEC: 15 ACEC: 0 BCEC: 0
+Successors: 5 6 
+
+Block_5, WCEC: 25 ACEC: 0 BCEC: 0
+Successors: 4 
+
+Block_6, WCEC: 7 ACEC: 0 BCEC: 0
+Successors: 7 8 
+
+Block_7, WCEC: 23 ACEC: 0 BCEC: 0
+Successors: 6 
+
+Block_8, WCEC: 12 ACEC: 0 BCEC: 0
+Successors: 0 
+
+B-Type Mining Table
+------------------------------------------------
+|WCEC(cycle): 12437				|
+ -----------------------------------------------
+| Address	|		RWCEC(cycle)	|
+		 -------------------------------
+|		|	n_taken	|	taken	|
+ -----------------------------------------------
+
+P-Type Mining Table
+ ------------------------------------------------------------------------------
+|WCEC(cycle): 12437				|
+ ------------------------------------------------------------------------------
+| Address	|	Loop Bound	|	WCEC fo each iteratoin	|	WCEC after Loop	|
+ ------------------------------------------------------------------------------
+| Loop_0(Block 1)	|	150	|	30	|	7934	|
+ ------------------------------------------------------------------------------
+| Loop_1(Block 4)	|	100	|	40	|	3919	|
+ ------------------------------------------------------------------------------
+| Loop_2(Block 6)	|	130	|	30	|	12	|
+ ------------------------------------------------------------------------------
+Input value of alpha: 1
+jitter_config.alpha: 1.16581e-33%
+bcet_limit: -3.33333%
+wcet_limit: 1.16581e-33%
+jitter_config.alpha: 1.16581e-33%
+
+
+
+
+
+
+
+Block_1, WCEC: 50 ACEC: 0 BCEC: 0
+Successors: 2 5 
+
+Block_2, WCEC: 10 ACEC: 0 BCEC: 0
+Successors: 3 4 
+
+Block_3, WCEC: 200 ACEC: 0 BCEC: 0
+Successors: 4 
+
+Block_4, WCEC: 50 ACEC: 0 BCEC: 0
+Successors: 1 
+
+Block_5, WCEC: 100 ACEC: 0 BCEC: 0
+Successors: 6 7 
+
+Block_6, WCEC: 200 ACEC: 20 BCEC: 120
+Successors: 7 
+
+Block_7, WCEC: 100 ACEC: 10 BCEC: 50
+Successors: 0 
+
+B-Type Mining Table
+------------------------------------------------
+|WCEC(cycle): 29816				|
+ -----------------------------------------------
+| Address	|		RWCEC(cycle)	|
+		 -------------------------------
+|		|	n_taken	|	taken	|
+ -----------------------------------------------
+| Branch_0(Block 5)	|	300(6)	|	100(7)	|
+ -----------------------------------------------
+
+P-Type Mining Table
+ ------------------------------------------------------------------------------
+|WCEC(cycle): 29816				|
+ ------------------------------------------------------------------------------
+| Address	|	Loop Bound	|	WCEC fo each iteratoin	|	WCEC after Loop	|
+ ------------------------------------------------------------------------------
+| Loop_0(Block 1)	|	5	|	310	|	400	|
+ ------------------------------------------------------------------------------
+Input value of alpha: 1
+jitter_config.alpha: 1%
+bcet_limit: -nan%
+wcet_limit: -nan%
+jitter_config.alpha: 1%
+The number of Intra-Source: 3
+Task 's test pattern:
+Test Case 1: 
+Block_1
+Block_2
+Block_3
+Block_8
+Block_1
+Block_2
+Block_4
+Block_6
+Block_7
+Block_8
+Block_1
+Block_9
+Test Case 2: 
+Block_1
+Block_2
+Block_4
+Block_5
+Block_7
+Block_8
+Block_1
+Block_2
+Block_3
+Block_8
+Block_1
+Block_2
+Block_3
+Block_8
+Block_1
+Block_2
+Block_4
+Block_6
+Block_7
+Block_8
+Block_1
+Block_9
+Task 's test pattern:
+Test Case 1: 
+Block_1
+Block_2
+Block_4
+Block_5
+Block_4
+Block_6
+Block_7
+Block_6
+Block_8
+Test Case 2: 
+Block_1
+Block_2
+Block_4
+Block_6
+Block_8
+Task 's test pattern:
+Test Case 1: 
+Block_1
+Block_2
+Block_4
+Block_1
+Block_2
+Block_4
+Block_1
+Block_2
+Block_3
+Block_4
+Block_1
+Block_2
+Block_4
+Block_1
+Block_2
+Block_3
+Block_4
+Block_1
+Block_2
+Block_4
+Block_1
+Block_2
+Block_4
+Block_1
+Block_2
+Block_4
+Block_1
+Block_2
+Block_4
+Block_1
+Block_5
+Block_6
+Block_7
+Test Case 2: 
+Block_1
+Block_5
+Block_6
+Block_7
+==================================================================
+#	Release time: 0.00000 us, Start time: 0.00000 us
+#	max: 1000.00 MHz, min: 300.00 MHz, Default speed: 1000.00 MHz
+#	Jitter constraint: BCET + (WCET - BCET) * 0.00%
+==================================================================
+Start -> 
+current time: 0us
+Block_1 -> P-type checkpoint: 
+rwcec = 6200, cur_block: 1, succ_block: 2
+Current time: 0.200000 us, Elapsed time = 0.200000 us, Target Response Time = 1.000000 us, Expected Response Time = -4.050000 us, Difference: 5.05000 us
+current time: 0.2us
+Block_2 -> P-type checkpoint: 
+rwcec = 6200, cur_block: 1, succ_block: 2
+Current time: 0.533333 us, Elapsed time = 0.533333 us, Target Response Time = 1.000000 us, Expected Response Time = 10.750000 us, Difference: -9.75000 us
+current time: 0.533333us
+Block_4 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 1.200000 us, Elapsed time = 1.200000 us, Target Response Time = 0.000000 us, Expected Response Time = 11.416666 us, Difference: -11.41667 us
+current time: 1.2us
+Block_5 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 1.533333 us, Elapsed time = 1.533333 us, Target Response Time = 0.000000 us, Expected Response Time = 11.750000 us, Difference: -11.75000 us
+current time: 1.53333us
+Block_7 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 1.700000 us, Elapsed time = 1.700000 us, Target Response Time = 0.000000 us, Expected Response Time = 11.916666 us, Difference: -11.91667 us
+current time: 1.7us
+Block_8 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 3.200000 us, Elapsed time = 3.200000 us, Target Response Time = 0.000000 us, Expected Response Time = 13.416666 us, Difference: -13.41667 us
+current time: 3.2us
+Block_1 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 3.866667 us, Elapsed time = 3.866667 us, Target Response Time = 0.000000 us, Expected Response Time = 14.083333 us, Difference: -14.08333 us
+current time: 3.86667us
+Block_2 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 4.200000 us, Elapsed time = 4.200000 us, Target Response Time = 0.000000 us, Expected Response Time = 14.416666 us, Difference: -14.41667 us
+current time: 4.2us
+Block_3 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 5.866667 us, Elapsed time = 5.866667 us, Target Response Time = 0.000000 us, Expected Response Time = 16.083332 us, Difference: -16.08333 us
+current time: 5.86667us
+Block_8 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 7.366667 us, Elapsed time = 7.366667 us, Target Response Time = 0.000000 us, Expected Response Time = 17.583332 us, Difference: -17.58333 us
+current time: 7.36667us
+Block_1 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 8.033334 us, Elapsed time = 8.033334 us, Target Response Time = 0.000000 us, Expected Response Time = 18.250000 us, Difference: -18.25000 us
+current time: 8.03333us
+Block_2 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 8.366667 us, Elapsed time = 8.366667 us, Target Response Time = 0.000000 us, Expected Response Time = 18.583332 us, Difference: -18.58333 us
+current time: 8.36667us
+Block_3 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 10.033334 us, Elapsed time = 10.033334 us, Target Response Time = 0.000000 us, Expected Response Time = 20.250000 us, Difference: -20.25000 us
+current time: 10.0333us
+Block_8 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 11.533334 us, Elapsed time = 11.533334 us, Target Response Time = 0.000000 us, Expected Response Time = 21.750000 us, Difference: -21.75000 us
+current time: 11.5333us
+Block_1 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 12.200001 us, Elapsed time = 12.200001 us, Target Response Time = 0.000000 us, Expected Response Time = 22.416668 us, Difference: -22.41667 us
+current time: 12.2us
+Block_2 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 12.533334 us, Elapsed time = 12.533334 us, Target Response Time = 0.000000 us, Expected Response Time = 22.750000 us, Difference: -22.75000 us
+current time: 12.5333us
+Block_4 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 13.200001 us, Elapsed time = 13.200001 us, Target Response Time = 0.000000 us, Expected Response Time = 23.416668 us, Difference: -23.41667 us
+current time: 13.2us
+Block_6 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 14.366668 us, Elapsed time = 14.366668 us, Target Response Time = 0.000000 us, Expected Response Time = 24.583334 us, Difference: -24.58333 us
+current time: 14.3667us
+Block_7 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 14.533335 us, Elapsed time = 14.533335 us, Target Response Time = 0.000000 us, Expected Response Time = 24.750000 us, Difference: -24.75000 us
+current time: 14.5333us
+Block_8 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 16.033335 us, Elapsed time = 16.033335 us, Target Response Time = 0.000000 us, Expected Response Time = 26.250000 us, Difference: -26.25000 us
+current time: 16.0333us
+Block_1 -> P-type checkpoint: 
+rwcec = 6200, 
+Updating Jitter Constraint from 9.90823e-39us to 0us
+cur_block: 1, succ_block: 2
+Current time: 16.700001 us, Elapsed time = 16.700001 us, Target Response Time = 0.000000 us, Expected Response Time = 26.916668 us, Difference: -26.91667 us
+current time: 16.7us
+Block_9 -> End at 19.3667us
+

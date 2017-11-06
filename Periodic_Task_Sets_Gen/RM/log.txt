@@ -1,0 +1,63 @@
+Designate the number of Tasks
+Task_ID            WCET(us)        Deadline(us)          Period(us)
+------------------------------------------------------------------------------
+0                2403                4989                4989
+1                4367               24865               24865
+2                4172               66750               66750
+3                4504              691297              691297
+4                1013              284934              284934
+
+Utilisation bound for RM scheduler with periodic task-sets: 0.743492
+Utilisation: 0.729836
+Schedulable!
+
+Task 0's CFG: 
+The number of branches: 4
+The number of loops: 9
+The upper bound of Basic Block inside every loop:15
+The upper bound of brnaches inside every loop: 5
+The worst-case execution cycles (WCECs): 2403000
+The number of Basic Blocks: 9
+BB_max: 267000
+BB_min: 5
+
+Task 1's CFG: 
+The number of branches: 17
+The number of loops: 5
+The upper bound of Basic Block inside every loop:12
+The upper bound of brnaches inside every loop: 4
+The worst-case execution cycles (WCECs): 4367000
+The number of Basic Blocks: 13
+BB_max: 335923
+BB_min: 5
+
+Task 2's CFG: 
+The number of branches: 12
+The number of loops: 1
+The upper bound of Basic Block inside every loop:12
+The upper bound of brnaches inside every loop: 4
+The worst-case execution cycles (WCECs): 4172000
+The number of Basic Blocks: 15
+BB_max: 278133
+BB_min: 5
+
+Task 3's CFG: 
+The number of branches: 19
+The number of loops: 19
+The upper bound of Basic Block inside every loop:12
+The upper bound of brnaches inside every loop: 4
+The worst-case execution cycles (WCECs): 4504000
+The number of Basic Blocks: 18
+BB_max: 250222
+BB_min: 5
+
+Task 4's CFG: 
+The number of branches: 3
+The number of loops: 1
+The upper bound of Basic Block inside every loop:15
+The upper bound of brnaches inside every loop: 5
+The worst-case execution cycles (WCECs): 1013000
+The number of Basic Blocks: 17
+BB_max: 59588
+BB_min: 5
+

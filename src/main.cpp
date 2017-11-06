@@ -43,15 +43,15 @@ extern float ISR_TIME_SLICE;
 int tasks_num = 3; // The number of tasks 
 //-----------------------------------------------------------------------------------------//
 //Temporary test cases
-typedef vector<int> exe_path_case;
-vector<exe_path_case> exe_path_set;
+typedef vector<int> ExePath_case;
+typedef vector<ExePath_case> ExePath_set;
 int exe_path_0[] = {1, 5, 7, 0x7FFFFFFF};
 int exe_path_1[] = {1, 2, 3,4,1,5,6,7, 0x7FFFFFFF};
 int exe_path_2[] = {1, 2, 4, 1, 5, 6, 0x7FFFFFFF};
 int exe_path_3[] = {1, 2, 4, 1, 5, 7, 0x7FFFFFFF};
 int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 2, 4, 1, 5, 6, 7, 0x7FFFFFFF};
 int exe_path_5[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 6, 7, 0x7FFFFFFF};
-void rand_ExePath_gen(vecot<Basic_block> &cfg_in, vector<exe_path> &path_set, int &pattern_num);
+void rand_ExePath_gen(int &pattern_num);
 //-----------------------------------------------------------------------------------------//
 //Checkpoints Objects
 void checkpoint_config();
@@ -209,39 +209,65 @@ void system_init(void)
 	time_management = new Time_Management(Sys_Clk_0);
 	
 	checkpoints_1.L_loop_iteration.push_back(3 + 1);
-
-	array_int_cpy(exe_path_temp, exe_path_0); exe_path_set.push_back(exe_path_temp); vector<int>().swap(exe_path_temp);
-	array_int_cpy(exe_path_temp, exe_path_1); exe_path_set.push_back(exe_path_temp); vector<int>().swap(exe_path_temp);
 	
 	checkpoint_config();
 	wcet_info_config();
 }
 
-void rand_ExePath_gen(vecot<Basic_block> &cfg_in, vector<exe_path> &path_set, int &pattern_num)
+/**
+  * @brief Randomly generate an execution path as test pattern(s) for indeicate Control Flow Graph 
+
+  * @param CFG_path: target Control Flow Graph, i.e., target task
+  * @param pattern_num: the number of test patterns which are required
+  * @param TestPattern_inout: given memory space for filling generated set of test pattern
+**/
+void rand_ExePath_gen(vector<Basic_block> &CFG_path, int &pattern_num, void *TestPattern_inout)
 {
-	int cnt = patten_num;
-	int cur_NodeID = cfg_in.front().get_index; // Let any test pattern of execution path start from start node of its CFG
+	ExePath_case path_temp;
+	ExePath_set &TestPattern_set = *(ExePath_set*) TestPattern_inout;
+	vector<int> ActLoop_iteration;
+	int cnt = patten_num, loop_enty;
+	int cur_NodeID = CFG_path.front().get_index; // Let any test pattern of execution path start from start node of its CFG
 	do {
+		// Add current node's ID into current test pattern
+		path_temp.push_back(cur_NodeID); 
 		
-		if( // If current node is loop entry
-			cfg_in[cur_NodeID].succ.size() == 1 &&   // Make sure there is only one successive path from current node (only reagarding the notion of for-loop and while-loop)
-			cfg_in[cfg_NodeID].succ[0] < cur_NodeID  // Check next node from current node is a return of loop entry, i.e., current node is loop exit
-		) { 
-					
-		}
-		
-		if(cfg_in[cur_NodeID].get_succ[0] != 0)  {// If current node is a branch
-			int i = cfg_in[cur_NodeID].succ.size(); // Get the number of current node's successors
+		// Randomly give actual loop iteration(s) for all loops
+		for(int i = 0; i < P_loop_iteration.size(); i++)
+			ActLoop_iteration.push_back(rand() % P_loop_iteration[i]);
+
+		if(CFG_path[cur_NodeID].get_succ[0] != 0)  { // If current node is a branch
+			int i = CFG_path[cur_NodeID].succ.size(); // Get the number of current node's successors
 			// Randomly choose a branch among all current node's successors
 			// Case 1: loop entry
-			// Case 2: Multiple successive execution pahts, none of them is loop entry 
-			int j = rand() % i; 
-			cur_NodeID = cfg_in[cur_NodeID].succ[j]; 
+			// Case 2: Multiple successive execution paths, none of them is loop entry 
+			int j = rand() % i; // Randomly choose one of branches 
+			cur_NodeID = CFG_path[cur_NodeID].succ[j]; 
 		}
-		else if(cfg_in[cur_NodeID].get_succ[0] == 0) { // If current node is sink node	
-		//else(cfg_in[cur_NodeID].get_index() == cfg_in.back().get_index()) { // If current node is sink node	
-			cur_NodeID = cfg_in.front().get_index(); // Reset current node ID to start node for next test-pattern generation	
-			cnt--;
+		else if( // If current node is loop entry, conducting a recursion of randomly generating sub-execution path inside every iteration, 
+			 // in addition, avoiding such recursion being run over given "actual loop iteration(s)" 
+			
+			// Make sure there is only one successive path from current node (only reagarding the notion of for-loop and while-loop)
+			CFG_path[cur_NodeID].succ.size() == 1 &&   
+			// Check next node from current node is a return of loop entry, i.e., current node is loop exit
+			CFG_path[cfg_NodeID].succ[0] < cur_NodeID 
+		) {
+			cur_NodeID = CFG_path[cfg_NodeID].succ[0]; // Return back to its loop entry
+			path_temp.push_back(cur_NodeID);
+			
+			int i = rand() % (CFG_path[cur_NodeID].succ.size()); // Randomly choose one of branches from loop entry
+			// Identify currently reaching node belongs to which loop entry (the label of P-checkpoint)
+			for(loop_entry = 0; checkpointLabel -> P_checkpoints[loop_entry] != CFG_path[cfg_NodeID].succ[0]; loop_entry++); 
+			j = (ActLoop_iteration.)
+			cur_NodeID = CFG_path[cur_NodeID].succ[j]; 
+		} 
+		else if(CFG_path[cur_NodeID].get_succ[0] == 0) { // If current node is sink node	
+		//else(CFG_path[cur_NodeID].get_index() == CFG_path.back().get_index()) { // If current node is sink node	
+			cur_NodeID = CFG_path.front().get_index(); // Reset current node ID to start node for next test-pattern generation	
+			path_temp.push_back(cur_NodeID); // Add sink node to cuurent test pattern as ending point 
+			TestPattern_set.push_back(path_temp); // Finish generating a test pattern (one execution path)
+			vector<int>().swap(path_temp); // Free memory space
+			cnt--; // One pattern-number budget has been used
 		}
 	}while(cnt != 0); 
 }
