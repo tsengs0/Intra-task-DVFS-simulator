@@ -13,6 +13,6 @@ void rand_ExePath_gen(
 	void *Lookahead_LoopIteration_inout
 );
 	
-int search_LoopEntry(int cur_NodeID, vector<Basic_block> &CFG_path, checkpoints_label &checkpointLabel);
+int isLoopEntry(int cur_NodeID, vector<Basic_block> &CFG_path, checkpoints_label &checkpointLabel);
 
 #endif // __PATTERN_GEN_H
