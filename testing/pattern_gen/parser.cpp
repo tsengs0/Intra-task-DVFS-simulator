@@ -191,6 +191,8 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 						read_content >> read_int; 
 						checkpoint_BlockID[task_id - 1].P_checkpoints.push_back(char_int(read_int.c_str())); 
 						read_content >> read_int; 
+						checkpoint_BlockID[task_id - 1].P_loop_entry.push_back(char_int(read_int.c_str())); 
+						read_content >> read_int; 
 						cycle_trace[task_id - 1].P_RWCEC_t[P_id][0] = char_int(read_int.c_str());
 						checkpoint_BlockID[task_id - 1].P_loop_bound.push_back(char_int(read_int.c_str())); 
 						read_content >> read_int; 

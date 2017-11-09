@@ -76,6 +76,12 @@ int main(int argc, char **argv)
 	testbench *tb;
 	srand(time(NULL));
 
+
+	if(argc != 2) {
+		cout << "The name of output file ought to be given, for instance, \"set.txt\"" << endl;
+		exit(1);
+	}
+
 	// Create the generated Periodic task set's text file
 	sprintf(txt, "echo \"Scheduler: RM\" > %s", argv[1]);
 	system(txt); 

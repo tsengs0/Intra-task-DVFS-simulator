@@ -24,17 +24,27 @@ void rand_ExePath_gen(
 {
 	ExePath_case path_temp;
 	ExePath_set &TestPattern_set = *(ExePath_set*) TestPattern_inout;
-	int *ActLoop_iteration = (int*) Lookahead_LoopIteration_inout;
+	int **ActLoop_iteration = (int**) Lookahead_LoopIteration_inout;
+	int ActLoop_iteration_cnt[checkpointLabel.P_checkpoints.size()][pattern_num];
 	int LoopID, cur_NodeID, succ_NodeID;
 	int cnt = pattern_num;
 	while(cnt != 0) {
 		cur_NodeID = CFG_path.front().get_index(); // Let any test pattern of execution path start from start node of its CFG
 		path_temp.push_back(cur_NodeID); // Add current node's ID into current test pattern
-		for(int i = 0; i < checkpointLabel.P_loop_bound.size(); i++) // Randomly give actual loop iteration(s) for all loops
-			ActLoop_iteration[i] = rand() % checkpointLabel.P_loop_bound[i];
+		for(int i = 0; i < checkpointLabel.P_loop_bound.size(); i++) { // Randomly give actual loop iteration(s) for all loops
+			ActLoop_iteration[i][pattern_num - cnt] = rand() % checkpointLabel.P_loop_bound[i];
+			ActLoop_iteration_cnt[i][pattern_num - cnt] = ActLoop_iteration[i][pattern_num - cnt];
+			cout << "ActLoop_iteration[" << i << "][" << pattern_num - cnt << "]" << endl;
+			cout << "[" << i << "][" << pattern_num - cnt << "]: " << ActLoop_iteration[i][pattern_num - cnt] 
+			     << "(cnt: " << ActLoop_iteration_cnt[i][pattern_num - cnt] << ",Loop Bound: " 
+			     <<  checkpointLabel.P_loop_bound[i] << ")" << endl; 
+		}
 		do {
 			/*Basic_block *curTemp = &CFG_path[cur_NodeID - 1];*/
-			if(CFG_path[cur_NodeID].succ.size() != 0)  { // If current node is a branch
+			if( // If current node is a branch
+			   CFG_path[cur_NodeID - 1].succ.size() != 0 && 
+			   CFG_path[cur_NodeID - 1].get_index() < CFG_path[ CFG_path[cur_NodeID - 1].succ[0] - 1 ].get_index()
+			)  {cout << "Block" << cur_NodeID << endl; 
 				int i = CFG_path[cur_NodeID - 1].succ.size(); // Get the number of current node's successors
 				// Randomly choose a branch among all current node's successors
 				// Case 1: loop entry
@@ -49,25 +59,26 @@ void rand_ExePath_gen(
 				CFG_path[cur_NodeID - 1].succ.size() == 1 &&   
 				// Check next node from current node is a return of loop entry, i.e., current node is loop exit
 				CFG_path[cur_NodeID - 1].get_index() > CFG_path[ CFG_path[cur_NodeID - 1].succ[0] - 1 ].get_index()
-			) {
+			) {cout << "Block" << cur_NodeID << endl;
 				cur_NodeID = CFG_path[cur_NodeID - 1].succ[0]; // Go to its corrsponding Loop Entry
+				cout << "Block" << cur_NodeID << endl;
 				LoopID = search_LoopEntry(cur_NodeID, CFG_path, checkpointLabel);
 				path_temp.push_back(cur_NodeID);	
-
+				
 				// Run out the budget of "Randomly generated actual loop iteration(s), so forcing to leave the loop"
-				if(ActLoop_iteration[LoopID] == 1) { 
+				if(ActLoop_iteration_cnt[LoopID][pattern_num - cnt] == 1) { 
 					int i = CFG_path[cur_NodeID - 1].succ.size() - 1; // Assume that only index_0 branch goes into loop
 					int j = rand() % i + 1; // Thus, only select a branch among index_1 to its index_max
 					succ_NodeID = CFG_path[cur_NodeID - 1].succ[j];
 				}
 				else { // Still can branch into the loop
-					ActLoop_iteration[LoopID] -= 1;
+					ActLoop_iteration_cnt[LoopID][pattern_num -cnt] -= 1;
 					succ_NodeID = CFG_path[cur_NodeID - 1].succ[0];
 				}
 			}
 			else { // For exception case that current node is neither branch nor Loop Entry
 				// Just go down to next Basic Block (note that there suppose be only one successor)
-				succ_NodeID = CFG_path[cur_NodeID - 1].succ[0]; 
+				succ_NodeID = CFG_path[cur_NodeID - 1].succ[0]; cout << "Block" << cur_NodeID << endl;
 			}
 			cur_NodeID = succ_NodeID;
 			path_temp.push_back(cur_NodeID);
@@ -90,8 +101,12 @@ int search_LoopEntry(int cur_NodeID, vector<Basic_block> &CFG_path, checkpoints_
 {
 	int i;
 	// Identify currently reaching node belongs to which loop entry (the label of P-checkpoint)
-	for(i = 0; checkpointLabel.P_checkpoints[i] != CFG_path[cur_NodeID - 1].succ[0]; i++);
-	if(i == 0 || i >= CFG_path.size()) {cout << "Couldn't find out Basic Block " << cur_NodeID << "'s Loop Entry index" << endl; exit(1);}
+	for(i = 0; checkpointLabel.P_loop_entry[i] != CFG_path[cur_NodeID - 1].get_index(); i++) {
+	  if(i >= checkpointLabel.P_loop_entry.size()) {
+	    cout << "Couldn't find out Basic Block " << cur_NodeID << "'s Loop Entry index" << endl; 
+	    exit(1);
+	  }
+	}
 	return i; 
 }
 

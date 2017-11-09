@@ -126,8 +126,8 @@ void testbench::param_show()
 	  cout << "Task " << i << "'s CFG: " << endl
 	       << "The number of branches: " << TaskCfg_param[i].N_branch << endl
 	       << "The number of loops: " << TaskCfg_param[i].N_loop << endl
-	       << "The upper bound of Basic Block inside every loop:" << TaskCfg_param[i].N_BB_loop << endl
-	       << "The upper bound of brnaches inside every loop: " << TaskCfg_param[i].N_Branch_loop << endl 
+	       << "The maximal number of Basic Blocks inside every loop:" << TaskCfg_param[i].N_BB_loop << endl
+	       << "The maximal number of brnaches inside every loop: " << TaskCfg_param[i].N_Branch_loop << endl 
 	       << "The worst-case execution cycles (WCECs): " << wcec[i] << endl
 	       << "The number of Basic Blocks: " << N_init[i] << endl
 	       << "BB_max: " << BB_max[i] << endl

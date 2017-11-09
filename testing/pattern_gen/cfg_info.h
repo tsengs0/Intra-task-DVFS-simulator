@@ -116,7 +116,7 @@ class Src_CFG {
 
 		// Test Case
 		void pattern_init(ExePath_set test_case);
-		int *P_loop_LaIteration;
+		int **P_loop_LaIteration;
 
 		// Interrupt Timer and Preemption
 		// Context register for interrupt timer and preemption

@@ -17,6 +17,7 @@ extern int sim_cnt;
 extern int sys_mode;
 extern double energy_ref;
 float ISR_TIME_SLICE;
+int ExePathSet_caseID;
 
 int Basic_block::get_cycles(int case_t)
 {
@@ -386,6 +387,7 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 	float time_temp;
 	dvfs_en = DVFS_en;
 	exe_speed_config();
+	ExePathSet_caseID = case_id; // Information for Lookahead P-type checkpoint test pattern 
 //--------------------------------------------------------------------------------//
 // Setting the release time, start time, absolute deadline and relative deadline
 	// The release time of current(new) instance 
@@ -437,7 +439,7 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 			);
 		}			
 		// Invoking the operation of P-type checkpoint
-		else {
+		else if(CFG_path[ exe_path[case_id][cur_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) {
 			int temp = exe_path[cur_case_id][cur_block_index];
 			int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
 			P_Intra_task_checkpoint(
@@ -445,6 +447,9 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 				exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 			);		
 		}
+		else {
+			
+		}	
 	}	
 		cout << "current time: " << sys_clk -> cur_time << "us" << endl;
 #endif
@@ -497,7 +502,7 @@ void Src_CFG::exe_speed_scaling(float new_speed)
 {
 	time_management -> cur_freq_config(new_speed);
 	ISR_TIME_SLICE = INST_UNIT / time_management -> sys_clk -> cur_freq;
-#ifndef DEBUG
+#ifdef DEBUG
 	printf("Current speed: %.02f MHz\r\n\r\n", time_management -> sys_clk -> cur_freq);
 	printf("The period of interrupt timer has been changed to %.08f us\r\n", ISR_TIME_SLICE);	
 #endif
@@ -669,9 +674,9 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 // Look up the remaining worst-case exeuction cycles (RWCEC) from P-type mining table
 	// Since actual loop iteration(s) have been known ahead of task really reach that loop in the near future,
 	// the calculation of the remaining worst-case execution cycles is: RWCEC = iteration x Iteration_WCEC + WCEC_after_Loop
-	rwcec = P_loop_LaIteration[loop_addr] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
+	rwcec = P_loop_LaIteration[loop_addr][ExePathSet_caseID] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
 #ifdef DEBUG
-	printf("P-type checkpoint: \r\nrwcec = %d, ", rwcec); 
+	printf("\r\n\r\nP-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][ExePathSet_caseID]); 
 #endif
 //===============================================================================================================//
 	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
@@ -856,7 +861,7 @@ for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {
 	cout << " ------------------------------------------------------------------------------" << endl;
 	cout << "|WCEC(cycle): " << execution_cycles[WORST - 1] << "\t\t\t\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
-	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC fo each iteratoin\t|\tWCEC after Loop\t|" << endl;
+	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC of each iteratoin\t|\tWCEC after Loop\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
 	for(int i = 0; i < P_checkpoints_cnt; i++) {
 		cout << "| Loop_" 

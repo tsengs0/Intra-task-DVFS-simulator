@@ -52,7 +52,7 @@ typedef struct BB_t {
 	int execution_cycle_b;
 	std::vector<int> succ;
 	BB_t(int a, int b, int c, int d, std::vector<int> e)
-	: block_index(a), execution_cycle_w(b), execution_cycle_a(c), execution_cycle(d), succ(e) {}
+	: block_index(a), execution_cycle_w(b), execution_cycle_a(c), execution_cycle_b(d), succ(e) {}
 } BB;
 class testbench {
 	private:
