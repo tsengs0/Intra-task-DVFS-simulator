@@ -115,11 +115,12 @@ int main(int argc, char **argv)
 //	 }
 //	}
 //=======================================================================================================================================================//
+	for(int tmp = 0; tmp < tasks_num; tmp++)
 	for(int i = 0; i < patterns_num; i++) {
-		src_intra[0].traverse_spec_path(i, (int) WORST, 0.0, 0.0, 24.0, (char) DVFS_ENABLE);
+		src_intra[tmp].traverse_spec_path(i, (int) WORST, 0.0, 0.0, 50.0, (char) DVFS_ENABLE);
 		cout << "==================================================================" << endl << endl;
 	}
-
+	
 	return 0;
 }
 

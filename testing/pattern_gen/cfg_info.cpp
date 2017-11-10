@@ -425,7 +425,7 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 #ifdef DVFS_EN 
 	if(dvfs_en == (char) DVFS_ENABLE) {
 		// Invoking the operation of B-type checkpoint
-		if(CFG_path[ exe_path[case_id][cur_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
+		if(CFG_path[ exe_path[case_id][cur_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) { 
 			B_Intra_task_checkpoint(
 				exe_path[case_id][cur_index],    // Cast current Basic Block ID 
 				exe_path[case_id][cur_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
@@ -439,16 +439,13 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 			);
 		}			
 		// Invoking the operation of P-type checkpoint
-		else if(CFG_path[ exe_path[case_id][cur_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) {
-			int temp = exe_path[cur_case_id][cur_block_index];
-			int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
+		else if(CFG_path[ exe_path[case_id][cur_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) { 
 			P_Intra_task_checkpoint(
-				exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
-				exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
+				exe_path[case_id][cur_index],    // Cast current Basic Block ID 
+				exe_path[case_id][cur_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 			);		
 		}
 		else {
-			
 		}	
 	}	
 		cout << "current time: " << sys_clk -> cur_time << "us" << endl;
@@ -549,7 +546,7 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
 #endif
 		rep_time_target = rep_time_expect;
-	}//
+	}
         else rep_time_target = jitter_config.fin_time_target;	
 	rem_time = rep_time_target - elapsed_time;
 	executed_time = time_management -> sys_clk -> cur_time - start_time;
@@ -676,7 +673,9 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	// the calculation of the remaining worst-case execution cycles is: RWCEC = iteration x Iteration_WCEC + WCEC_after_Loop
 	rwcec = P_loop_LaIteration[loop_addr][ExePathSet_caseID] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
 #ifdef DEBUG
-	printf("\r\n\r\nP-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][ExePathSet_caseID]); 
+	cout << endl << endl << "============================================" << endl;
+	printf("P-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][ExePathSet_caseID]); 
+	cout << endl << endl << "============================================" << endl;
 #endif
 //===============================================================================================================//
 	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
@@ -685,7 +684,7 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
 #endif
 		rep_time_target = rep_time_expect;
-	}//
+	}
         else rep_time_target = jitter_config.fin_time_target;	
 	rem_time = rep_time_target - elapsed_time;
 	executed_time = time_management -> sys_clk -> cur_time - start_time;
