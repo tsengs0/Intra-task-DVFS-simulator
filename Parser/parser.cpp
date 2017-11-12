@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const char *checkpoint_file = "checkpoint.txt";
+const char *checkpoint_file = "../checkpoint/checkpoint.txt";
 const string checkpoint_id_1("Task_Numbers:");
 const string checkpoint_id_2("Task_ID:");
 const string checkpoint_id_3("Checkpoint_Numbers:");
@@ -19,7 +19,7 @@ Parser::~Parser(void)
 {
 }
 
-void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_label *checkpoint_BlockID)
+void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkpoint_numbers_inout, void *checkpoint_BlockID_inout)
 {
 	int fsm = (int) TSK_NUM;
 	string path(checkpoint_file);
@@ -30,6 +30,9 @@ void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoi
 	int tasks_num, TaskNum_check = 0, BNum_check, LNum_check, PNum_check;
 	int task_id;
 	char *cstr;
+	RWCEC_Trace_in *cycle_trace = (RWCEC_Trace_in*) cycle_trace_inout;
+	checkpoint_num *checkpoint_numbers = (checkpoint_num*) checkpoint_numbers_inout; 
+	checkpoints_label *checkpoint_BlockID = (checkpoints_label*) checkpoint_BlockID_inout;
 	ifstream file_in(path);
 
 	if(!file_in) {
@@ -66,9 +69,9 @@ void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoi
 					read_content >> read_int;
 					tasks_num = char_int(read_int.c_str());
 					if(tasks_num == tsk_num_in) {
-						cycle_trace = new RWCEC_Trace_in[tasks_num];
-						checkpoint_numbers = new checkpoint_num[tasks_num];
-						checkpoint_BlockID = new checkpoints_label[tasks_num];
+					//	cycle_trace = new RWCEC_Trace_in[tasks_num];
+					//	checkpoint_numbers = new checkpoint_num[tasks_num];
+					//	checkpoint_BlockID = new checkpoints_label[tasks_num];
 		
 					}
 					else {
@@ -188,7 +191,10 @@ void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoi
 						read_content >> read_int; 
 						checkpoint_BlockID[task_id - 1].P_checkpoints.push_back(char_int(read_int.c_str())); 
 						read_content >> read_int; 
-						cycle_trace[task_id - 1].P_RWCEC_t[P_id][0] = char_int(read_int.c_str()); 
+						checkpoint_BlockID[task_id - 1].P_loop_entry.push_back(char_int(read_int.c_str())); 
+						read_content >> read_int; 
+						cycle_trace[task_id - 1].P_RWCEC_t[P_id][0] = char_int(read_int.c_str());
+						checkpoint_BlockID[task_id - 1].P_loop_bound.push_back(char_int(read_int.c_str())); 
 						read_content >> read_int; 
 						cycle_trace[task_id - 1].P_RWCEC_t[P_id][1] = char_int(read_int.c_str()); 
 						read_content >> read_int;  
@@ -240,7 +246,7 @@ void Parser::checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoi
 		else {
 		 for(int i = 0; i < checkpoint_numbers[cnt].P_ch; i++) 
 			cout << "P" << i + 1 << "("  << checkpoint_BlockID[cnt].P_checkpoints[i] << "): "
-						     << cycle_trace[cnt].P_RWCEC_t[i][0] << " " 
+						     << checkpoint_BlockID[cnt].P_loop_bound[i] << " " 
 						     << cycle_trace[cnt].P_RWCEC_t[i][1] << " "
 						     << cycle_trace[cnt].P_RWCEC_t[i][2] << endl;
 		}

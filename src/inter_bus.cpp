@@ -1,7 +1,7 @@
 #include "../inc/sched.h"
 #include "../inc/main.h"
 
-extern int tasks_num;
+//extern int tasks_num;
 
 Task_State_Bus::Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, vector<Src_CFG> &src_intra)
 {
@@ -100,9 +100,9 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 	int case_id = intra_tasks[new_task_id].cur_case_id;
 	int cur_block_index = intra_tasks[new_task_id].cur_block_index;
 
-	if(intra_tasks[new_task_id].exe_path[case_id][cur_block_index] != 0x7FFFFFFF) {
+	if(intra_tasks[new_task_id].exe_path[case_id][cur_block_index] != intra_tasks[new_task_id].exe_path[case_id].back()) {
 #ifdef DEBUG
-		printf("Cur_Freq: %.01f MHz\r\n", time_management -> sys_clk -> cur_freq);
+		printf("(Cur_Freq: %.01f MHz)", time_management -> sys_clk -> cur_freq);
 		cout << "Block_" << intra_tasks[new_task_id].CFG_path[ 
 						intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1 
 						].get_index() << " -> ";
@@ -127,6 +127,19 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 		intra_tasks[new_task_id].power_eval();
 	}
 	else {
+#ifdef DEBUG
+		printf("\(Cur_Freq: %.01f MHz\)  ", time_management -> sys_clk -> cur_freq);
+		cout << "Block_" << intra_tasks[new_task_id].CFG_path[ 
+						intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1 
+						].get_index() << " -> ";
+#endif
+		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, (char) DVFS_ENABLE);
+		time_temp = time_management -> time_unit_config(
+			intra_tasks[new_task_id].context_reg.act_exe_time
+		); 
+		intra_tasks[new_task_id].cycles_cnt += intra_tasks[new_task_id].context_reg.act_cycles; 
+		time_management -> update_cur_time(time_temp + time_management -> sys_clk -> cur_time);
+		intra_tasks[new_task_id].power_eval();
 #ifdef DEBUG
 	cout << "End" << endl << endl;
 #endif

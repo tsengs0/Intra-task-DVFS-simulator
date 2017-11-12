@@ -60,16 +60,14 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according ot the indicated execution path case
 					);
 				}			
-				// Invoking the operation of P-type checkpoint
-				else {
-					int temp = exe_path[cur_case_id][cur_block_index];
-					int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) { 
 					P_Intra_task_checkpoint(
-						rand() % (P_mining_table[loop_addr].loop_bound + 1), // Randomly give actual ahead loop iteration(s)
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 					);		
 				}
+				else {
+				}	
 			}	
 #endif 
 		cur_block_index += 1;			
@@ -104,15 +102,14 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 					);
 				}			
 				// Invoking the operation of P-type checkpoint
-				else {
-					int temp = exe_path[cur_case_id][cur_block_index];
-					int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) { 
 					P_Intra_task_checkpoint(
-						rand() % (P_mining_table[loop_addr].loop_bound + 1), // Randomly give actual ahead loop iteration(s)
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 					);		
 				}
+				else {
+				}	
 			}	
 #endif	
 		cur_block_index += 1;

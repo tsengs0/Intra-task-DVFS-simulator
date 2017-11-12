@@ -4,14 +4,15 @@
 #include <cstdlib>
 #include "../inc/sched.h"
 #include "../inc/dvfs_info.h"
+#include "../inc/main.h"
 
 #ifdef INTRA_SCHED
 	extern Task_State_Bus *inter_intra_bus;
 #endif
 
-extern int instance_case[2][3];
-extern int instance_index[2];
-extern int tasks_num;
+//extern int instance_case[2][3];
+//extern int instance_index[2];
+//extern int tasks_num;
 
 using std::cout;
 using std::cin;
@@ -407,7 +408,7 @@ void Task_Scheduler::dispatcher(void)
 		new_task_start_flag = true;
 		inter_intra_bus -> start_new_task_config(
 					running_task_id, 
-					instance_case[running_task_id][instance_index[running_task_id]++], //rand() % 6, 
+					rand() % ((int) patterns_num),
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
 					task_list[running_task_id].start_time, 
@@ -426,7 +427,7 @@ void Task_Scheduler::dispatcher(void)
 		new_task_start_flag = true;
 		inter_intra_bus -> start_new_task_config(
 					running_task_id, 
-					instance_case[running_task_id][instance_index[running_task_id]++], //rand() % 6, 
+					rand() % ((int) patterns_num), 
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
 					task_list[running_task_id].start_time, 

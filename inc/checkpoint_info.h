@@ -1,17 +1,20 @@
 #ifndef __CHECKPOINT_INFO_H
 #define __CHECKPOINT_INFO_H
+#include <vector>
 
-typedef vector<int> B_checkpoints_label;
-typedef vector< vector<int> > L_checkpoints_label;
-typedef vector<int> P_checkpoints_label;
-typedef vector<int> L_loop_bound_t;
-typedef vector<int> P_loop_bound_t;
+typedef std::vector<int> B_checkpoints_label;
+typedef std::vector< std::vector<int> > L_checkpoints_label;
+typedef std::vector<int> P_checkpoints_label;
+typedef std::vector<int> L_loop_bound_t;
+typedef std::vector<int> P_loop_bound_t;
+typedef std::vector<int> P_loop_entry_t;
 typedef struct Checkpoints_Label {
 	B_checkpoints_label B_checkpoints;
 	L_checkpoints_label L_checkpoints;
 	P_checkpoints_label P_checkpoints;
 	L_loop_bound_t L_loop_bound; // Recording the number of iteration every loop nest have run so far
 	P_loop_bound_t P_loop_bound;
+	P_loop_entry_t P_loop_entry;
 } checkpoints_label;
 
 typedef int B_type[4];
@@ -38,8 +41,8 @@ typedef struct B_Mining_table {
 } B_mining_table_t;
 
 typedef struct L_Mining_table {
-	vector<int> n_taken_rwcec;
-	vector<int> taken_rwcec;
+	std::vector<int> n_taken_rwcec;
+	std::vector<int> taken_rwcec;
 	int successors[2];
 } L_mining_table_t;
 

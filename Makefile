@@ -1,5 +1,6 @@
 CC:= g++
 SRC_DIR:= ./src
+PARSER_DIR:= ./Parser
 INC_DIR:= ./inc
 OBJ_DIR:= ./obj
 BIN_DIR:= ./bin
@@ -9,7 +10,7 @@ SRCEXT:= cpp
 
 APP= mul
 
-all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o 
+all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o pattern_gen.o parser.o 
 	
 	g++ $(CFLAG) -g -o $(APP) \
 			$(OBJ_DIR)/main.o \
@@ -17,7 +18,10 @@ all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o
 			$(OBJ_DIR)/inter_bus.o \
 			$(OBJ_DIR)/sched.o \
 			$(OBJ_DIR)/tick_cfg.o \
-			$(OBJ_DIR)/timer.o 
+			$(OBJ_DIR)/timer.o \
+			$(OBJ_DIR)/pattern_gen.o \
+			$(OBJ_DIR)/parser.o 
+			
 
 	mv $(APP) $(BIN_DIR)
 
@@ -27,7 +31,10 @@ main.o: $(SRC_DIR)/main.$(SRCEXT) \
 	$(INC_DIR)/dvfs_info.h \
 	$(INC_DIR)/sched.h \
 	$(INC_DIR)/timer.h \
-	$(INC_DIR)/inter_bus.h
+	$(INC_DIR)/inter_bus.h \
+	$(INC_DIR)/checkpoint_info.h \
+	$(PARSER_DIR)/parser.h \
+	$(INC_DIR)/pattern_gen.h 
 
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/main.$(SRCEXT)
 	mv *.o obj/ 	
@@ -42,7 +49,7 @@ inter_bus.o : $(SRC_DIR)/inter_bus.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/main.
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/inter_bus.$(SRCEXT)
 	mv *.o obj/
 
-sched.o : $(SRC_DIR)/sched.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/dvfs_info.h 
+sched.o : $(SRC_DIR)/sched.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h 
 
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/sched.$(SRCEXT)
 	mv *.o obj/
@@ -55,6 +62,16 @@ tick_cfg.o : $(SRC_DIR)/tick_cfg.$(SRCEXT) $(INC_DIR)/cfg_info.h $(INC_DIR)/dvfs
 timer.o : $(SRC_DIR)/timer.$(SRCEXT) $(INC_DIR)/timer.h
 
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/timer.$(SRCEXT)
+	mv *.o obj/
+
+pattern_gen.o : $(SRC_DIR)/pattern_gen.$(SRCEXT) $(INC_DIR)/pattern_gen.h $(INC_DIR)/cfg_info.h $(INC_DIR)/checkpoint_info.h
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/pattern_gen.$(SRCEXT)
+	mv *.o obj/
+
+parser.o : $(PARSER_DIR)/parser.$(SRCEXT) $(PARSER_DIR)/parser.h $(INC_DIR)/checkpoint_info.h
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(PARSER_DIR)/parser.$(SRCEXT)
 	mv *.o obj/
 
 clean:

@@ -17,6 +17,7 @@ extern int sim_cnt;
 extern int sys_mode;
 extern double energy_ref;
 float ISR_TIME_SLICE;
+int ExePathSet_caseID;
 
 int Basic_block::get_cycles(int case_t)
 {
@@ -68,12 +69,12 @@ Basic_block::~Basic_block(void)
 
 Src_CFG::Src_CFG(
 	char *file_name, 
-	Time_Management *&timer, 
-	checkpoints_label *&checkpoint_label_temp, 
-	RWCEC_Trace_in *&cycle_trace_temp,
-	checkpoint_num *&checkpointNum_temp,
-	int *&WCET_INFO, 
-	vector< vector<int> > test_case
+	Time_Management *timer, 
+	checkpoints_label *checkpoint_label_temp, 
+	RWCEC_Trace_in *cycle_trace_temp,
+	checkpoint_num *checkpointNum_temp,
+	exeTime_info WCET_INFO//, 
+//	ExePath_set test_case
 )
 {
 	FILE *fp;
@@ -84,7 +85,6 @@ Src_CFG::Src_CFG(
 	int size_temp;
 	succ_int_temp = 0;
 	fp = fopen(file_name, "r");
-
 	while(1) {
 		c = fgetc(fp); 
 		if( feof(fp) ) break;
@@ -151,7 +151,6 @@ Src_CFG::Src_CFG(
 		}
 	}
 	fclose(fp);
-
 	for(i = 0; i < task_id.size(); i++) {
 		int id_temp = 0; vector<int> cycles_temp;
 
@@ -187,7 +186,6 @@ Src_CFG::Src_CFG(
 		);
 		vector<int>().swap(cycles_temp); vector<int>().swap(succ_conv_temp);
 	}
-
 	// According to the input file
 	exe_cycle_tracing(WCET_INFO, cycle_trace_temp, checkpointNum_temp);
 	
@@ -199,7 +197,7 @@ Src_CFG::Src_CFG(
 	timer_config(timer);
 	
 	global_param_init();
-	pattern_init(test_case);
+//	pattern_init(test_case);
 	vector<int>().swap(succ_conv_temp); // Free vector's memory space
 }
 
@@ -218,9 +216,6 @@ void Src_CFG::global_param_init(void)
 	// Setting the DVFS-available specification
 	exe_speed_config();
 	
-	// Setting the Jitter constraints
-	//jitter_init(); 
-	
 	// Initialising some global parameters
 	exe_var = 0.0;
 	response_time = 0.0;
@@ -233,10 +228,15 @@ void Src_CFG::global_param_init(void)
 	cycle_acc = 0;
 	wcet = (float) (execution_cycles[WORST - 1] / default_freq_t);
 	bcet = (float) (execution_cycles[BEST - 1] / max_freq_t);
+	cout << "WCET: " << wcet << endl << "BCET: " << bcet << endl;
+	wcrt = wcet;
 	dline_miss = 0;
 	completion_flag = false;
 	rem_wcec = 0;
 	cycles_cnt = 0;
+	
+	// Setting the Jitter constraints
+	jitter_init(); 
 
 	// Initialising the context register
 	ISR_TIME_SLICE = INST_UNIT / default_freq_t;
@@ -259,9 +259,18 @@ void Src_CFG::exe_speed_config(void)
 	time_management -> cur_freq_config(default_freq_t);
 }
 
-void Src_CFG::pattern_init(vector< vector<int> > test_case)
+void Src_CFG::pattern_init(ExePath_set test_case)
 {
 	exe_path = test_case;
+	cout << "Task ";
+	for(int i = task_id_temp.size() - 1; i >= 0; i--) cout << task_id_temp[i];
+	cout << "'s test pattern:" << endl;
+	for(int j = 0; j < exe_path.size(); j++) {
+         cout << "Test Case " << j + 1 << ": " << endl;
+	 for(int k = 0; k < exe_path[j].size(); k++) cout << "Block_" << exe_path[j][k] << endl;
+	}
+	
+//=======================================================================================================================================================//
 }
 
 void Src_CFG::global_param_eval(void)
@@ -372,12 +381,13 @@ void Src_CFG::completion_config(void)
 	cur_block_index = 0;
 }
 
-void Src_CFG::traverse_spec_path(int &case_id, int case_t, float release_time_new, float start_time_new, float Deadline, char DVFS_en)
+void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new, float start_time_new, float Deadline, char DVFS_en)
 {
 	int cur_index, i;
 	float time_temp;
 	dvfs_en = DVFS_en;
 	exe_speed_config();
+	ExePathSet_caseID = case_id; // Information for Lookahead P-type checkpoint test pattern 
 //--------------------------------------------------------------------------------//
 // Setting the release time, start time, absolute deadline and relative deadline
 	// The release time of current(new) instance 
@@ -398,9 +408,10 @@ void Src_CFG::traverse_spec_path(int &case_id, int case_t, float release_time_ne
 	printf("#	max: %.02f MHz, min: %.02f MHz, Default speed: %.02f MHz\r\n", max_freq_t, min_freq_t, sys_clk -> cur_freq);
 	printf("#	Jitter constraint: BCET + (WCET - BCET) * %.02f%\r\n", jitter_config.alpha * 100);
 	cout << "==================================================================" << endl;
-	cout << "Start -> " << endl; cout << "current time: " << sys_clk -> cur_time << endl;
+	cout << "Start -> " << endl; cout << "current time: " << sys_clk -> cur_time << "us" << endl;
 #endif
-	for(cur_index = 0; exe_path[case_id][cur_index] != 0x7FFFFFFF; cur_index++) {
+	//for(cur_index = 0; exe_path[case_id][cur_index] != 0x7FFFFFFF; cur_index++) {
+	for(cur_index = 0; exe_path[case_id][cur_index] != exe_path[case_id].back(); cur_index++) {
 #ifdef DEBUG
 		cout << "Block_" << CFG_path[ exe_path[case_id][cur_index] - 1 ].get_index() << " -> ";
 #endif
@@ -414,8 +425,8 @@ void Src_CFG::traverse_spec_path(int &case_id, int case_t, float release_time_ne
 #ifdef DVFS_EN 
 	if(dvfs_en == (char) DVFS_ENABLE) {
 		// Invoking the operation of B-type checkpoint
-		if(CFG_path[ exe_path[case_id][cur_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
-			B_Intra_task_checkpoint_1(
+		if(CFG_path[ exe_path[case_id][cur_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) { 
+			B_Intra_task_checkpoint(
 				exe_path[case_id][cur_index],    // Cast current Basic Block ID 
 				exe_path[case_id][cur_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 			);		
@@ -428,20 +439,30 @@ void Src_CFG::traverse_spec_path(int &case_id, int case_t, float release_time_ne
 			);
 		}			
 		// Invoking the operation of P-type checkpoint
-		else {
-			int temp = exe_path[cur_case_id][cur_block_index];
-			int loop_addr  = CFG_path[temp - 1].P_checkpoint_en;
+		else if(CFG_path[ exe_path[case_id][cur_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) { 
 			P_Intra_task_checkpoint(
-				rand() % (P_mining_table[loop_addr].loop_bound + 1), // Randomly give actual ahead loop iteration(s)
-				exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
-				exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
+				exe_path[case_id][cur_index],    // Cast current Basic Block ID 
+				exe_path[case_id][cur_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
 			);		
 		}
+		else {
+		}	
 	}	
+		cout << "current time: " << sys_clk -> cur_time << "us" << endl;
 #endif
 	}
 #ifdef DEBUG
-	cout << "End" << endl << endl;
+		cout << "Block_" << CFG_path[ exe_path[case_id][cur_index] - 1 ].get_index() << " -> ";
+#endif
+		cycles_cnt += CFG_path[ exe_path[case_id][cur_index] - 1 ].get_cycles(case_t);
+
+		time_temp = time_management -> time_unit_config(
+			CFG_path[ exe_path[case_id][cur_index] - 1 ].get_cycles(case_t) / time_management -> sys_clk -> cur_freq
+		); 
+		time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
+		power_eval();
+#ifdef DEBUG
+	cout << "End at " << sys_clk -> cur_time << "us" << endl << endl;
 #endif
 	power_eval();
 	global_param_eval();
@@ -457,6 +478,7 @@ void Src_CFG::constraint_update(void)
 	jitter_config.alpha = (in_alpha < bcet_limit) ? bcet_limit :
 			      (in_alpha > wcet_limit) ? wcet_limit : in_alpha;
 #ifdef DEBUG	
+	cout << "Input value of alpha: " << in_alpha << endl;
        cout  << "jitter_config.alpha: " << jitter_config.alpha << "%" << endl
 	     << "bcet_limit: " << bcet_limit << "%" << endl
 	     << "wcet_limit: " << wcet_limit << "%" << endl
@@ -467,6 +489,7 @@ void Src_CFG::constraint_update(void)
 void Src_CFG::jitter_init(void)
 {
 	// Jitter constraint setting
+	cout << "wcrt: " << wcrt << endl;
 	jitter_config.fin_jitter_bound = wcrt - ((float) (execution_cycles[BEST - 1] / max_freq_t));
 	constraint_update();
 	jitter_config.fin_time_target = (execution_cycles[BEST - 1] / max_freq_t) + jitter_config.fin_jitter_bound * jitter_config.alpha;	
@@ -476,7 +499,7 @@ void Src_CFG::exe_speed_scaling(float new_speed)
 {
 	time_management -> cur_freq_config(new_speed);
 	ISR_TIME_SLICE = INST_UNIT / time_management -> sys_clk -> cur_freq;
-#ifndef DEBUG
+#ifdef DEBUG
 	printf("Current speed: %.02f MHz\r\n\r\n", time_management -> sys_clk -> cur_freq);
 	printf("The period of interrupt timer has been changed to %.08f us\r\n", ISR_TIME_SLICE);	
 #endif
@@ -523,7 +546,7 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
 #endif
 		rep_time_target = rep_time_expect;
-	}//
+	}
         else rep_time_target = jitter_config.fin_time_target;	
 	rem_time = rep_time_target - elapsed_time;
 	executed_time = time_management -> sys_clk -> cur_time - start_time;
@@ -563,7 +586,7 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	float rep_time_target;
 	float rep_time_expect; // A speculative execution time if keeping current execution speed withou any change
 	float elapsed_time;
-	float target_comparison, rem_time, executed_time;;
+	float target_comparison, rem_time, executed_time;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_index = CFG_path[cur_block_index - 1].L_checkpoint_en[0];
 	int loop_addr  = CFG_path[cur_block_index - 1].L_checkpoint_en[1];
@@ -648,9 +671,11 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 // Look up the remaining worst-case exeuction cycles (RWCEC) from P-type mining table
 	// Since actual loop iteration(s) have been known ahead of task really reach that loop in the near future,
 	// the calculation of the remaining worst-case execution cycles is: RWCEC = iteration x Iteration_WCEC + WCEC_after_Loop
-	rwcec = P_loop_LaIteration[loop_addr] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
+	rwcec = P_loop_LaIteration[loop_addr][ExePathSet_caseID] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
 #ifdef DEBUG
-	printf("P-type checkpoint: \r\nrwcec = %d, ", rwcec); 
+	cout << endl << endl << "============================================" << endl;
+	printf("P-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][ExePathSet_caseID]); 
+	cout << endl << endl << "============================================" << endl;
 #endif
 //===============================================================================================================//
 	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
@@ -659,7 +684,7 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
 #endif
 		rep_time_target = rep_time_expect;
-	}//
+	}
         else rep_time_target = jitter_config.fin_time_target;	
 	rem_time = rep_time_target - elapsed_time;
 	executed_time = time_management -> sys_clk -> cur_time - start_time;
@@ -715,12 +740,12 @@ float Src_CFG::discrete_handle(float new_freq, int rwcec)
 	   2) Configure data structure of  remaining execution cycles for each defined checkpoint
 	   3) Configure data structure of each B-/L-/P-type checkpoints' numbers
 **/
-void Src_CFG::exe_cycle_tracing(int *WCET_INFO, RWCEC_Trace_in *cycle_trace_temp, checkpoint_num *checkpointNum_temp)
+void Src_CFG::exe_cycle_tracing(exeTime_info WCET_INFO, RWCEC_Trace_in *cycle_trace_temp, checkpoint_num *checkpointNum_temp)
 {
 	// Procedure_1: assign task's worst-/average-/best-case execution cycles
-	execution_cycles[WORST - 1]   = WCET_INFO[0];
-	execution_cycles[AVERAGE - 1] = WCET_INFO[1];
-	execution_cycles[BEST - 1]    = WCET_INFO[2];
+	execution_cycles[WORST - 1]   = WCET_INFO[0]; cout << "WCEC: " << execution_cycles[WORST -1] << endl;
+	execution_cycles[AVERAGE - 1] = WCET_INFO[1]; cout << "ACEC: " << execution_cycles[AVERAGE - 1] << endl;
+	execution_cycles[BEST - 1]    = WCET_INFO[2]; cout << "BCEC: " << execution_cycles[BEST - 1] << endl;
 
 	// Procedure_2: configure data structure of  remaining execution cycles for each defined checkpoint
 	cycle_trace_in = cycle_trace_temp;
@@ -835,15 +860,16 @@ for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {
 	cout << " ------------------------------------------------------------------------------" << endl;
 	cout << "|WCEC(cycle): " << execution_cycles[WORST - 1] << "\t\t\t\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
-	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC fo each iteratoin\t|\tWCEC after Loop\t|" << endl;
+	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC of each iteratoin\t|\tWCEC after Loop\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
 	for(int i = 0; i < P_checkpoints_cnt; i++) {
 		cout << "| Loop_" 
 		     << i << "(Block " << P_mining_table[i].block_id << ")" << "\t|\t" 
 		     << P_mining_table[i].loop_bound 
+		     << "\t|\t" 
 		     << P_mining_table[i].iteration_wcec 
 		     << "\t|\t" 
-		     << P_mining_table[i].rwcec 
+		     << P_mining_table[i].succ_rwcec 
 	             << "\t|" << endl; 
 		cout << " ------------------------------------------------------------------------------" << endl;
 	}
@@ -872,9 +898,14 @@ void Src_CFG::checkpoints_placement(checkpoints_label *&checkpoint_label_temp)
 	for(int i = 0; i < P_cnt; i++) P_loop_iteration.push_back(checkpointLabel -> P_loop_bound[i]);
 	
 	// Enable the corresponding Basic Block as B-/L-/P-type checkpoint
-	for(int i = 0; i < B_cnt; i++ ) CFG_path[ checkpointLabel.B_checkpoints[i] - 1 ].B_checkpoint_en = i; 
-	for(int i = 0; i < L_cnt; i++ ) CFG_path[ checkpointLabel.L_checkpoints[i] - 1 ].L_checkpoint_en = i; 
-	for(int i = 0; i < P_cnt; i++ ) CFG_path[ checkpointLabel.P_checkpoints[i] - 1 ].P_checkpoint_en = i; 
+	for(int i = 0; i < B_cnt; i++ ) CFG_path[ checkpointLabel -> B_checkpoints[i] - 1 ].B_checkpoint_en = i; 
+	for(int i = 0; i < L_cnt; i++ ) {
+	 for(int j = 0; j < checkpointLabel -> L_checkpoints[i].size(); j++) {
+	  CFG_path[ checkpointLabel -> L_checkpoints[i][j] - 1 ].L_checkpoint_en[0] = i;
+	  CFG_path[ checkpointLabel -> L_checkpoints[i][j] - 1 ].L_checkpoint_en[1] = j;
+	 }
+	} 
+	for(int i = 0; i < P_cnt; i++ ) CFG_path[ checkpointLabel -> P_checkpoints[i] - 1 ].P_checkpoint_en = i; 
 	
 /*
 	for( index_temp = 0; index_temp < L_loop_cnt; index_temp++ ) {

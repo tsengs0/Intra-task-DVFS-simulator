@@ -6,8 +6,8 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include "../inc_test1/checkpoint_info.h"
-#include "../inc_test1/cfg_info_test1.h"
+#include "../inc/checkpoint_info.h"
+//#include "cfg_info.h"
 
 void parse_checkpoint(void);
 int char_int(const char *in);
@@ -31,7 +31,7 @@ class Parser {
 		Parser(void);
 		~Parser(void);
 	
-		void checkpoint_in(int tsk_num_in, RWCEC_Trace_in *cycle_trace, checkpoint_num *checkpoint_numbers, checkpoints_label *checkpoint_BlockID);
+		void checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkpoint_numbers_inout, void *checkpoint_BlockID_inout);
 }; 
 
 

@@ -12,6 +12,7 @@
 #include "../inc/inter_bus.h"
 #include "../inc/checkpoint_info.h"
 #include "../Parser/parser.h"
+#include "../inc/pattern_gen.h"
 
 using std::cout;
 using std::cin;
@@ -21,94 +22,101 @@ using std::vector;
 //-----------------------------------------------------------------------------------------//
 // Functions
 void system_init(void);
+void wcet_info_config(void);
+void checkpoint_config(void);
+void TestPattern_config(void);
 void array_int_cpy(vector<int> &Dst, int *Src);
 void simulation_exe_path(Src_CFG &task, int path, float release_time, float start_time, int dvfs_en);
+void func_gen(void *inout);
 //-----------------------------------------------------------------------------------------//
 //Input parameters
 float in_alpha;
 float in_default_speed;
-char msg[41];
 double energy_ref;
+char msg[41];
 Parser parsing;
 //-----------------------------------------------------------------------------------------//
 //Parameters for simulation
 int sim_cnt;
 int sys_mode; // 1) H_RESP, 2) L_POWER
-int test_case_1[] = {0, 5, 0, 5, 0, 5, 0, 5, 0, 5};
-int test_case_2[] = {0, 0, 0, 0, 0, 5, 5, 5, 5, 5};
 sys_clk_t Sys_Clk_0;
 Time_Management *time_management;
 Task_State_Bus *inter_intra_bus;
 extern float ISR_TIME_SLICE;
-int tasks_num = 3; // The number of tasks 
+//int tasks_num = 3; // The number of tasks 
+//int patterns_num = 1;
+vector<Src_CFG> src_intra;
 //-----------------------------------------------------------------------------------------//
 //Temporary test cases
 typedef vector<int> ExePath_case;
 typedef vector<ExePath_case> ExePath_set;
-int exe_path_0[] = {1, 5, 7, 0x7FFFFFFF};
-int exe_path_1[] = {1, 2, 3,4,1,5,6,7, 0x7FFFFFFF};
-int exe_path_2[] = {1, 2, 4, 1, 5, 6, 0x7FFFFFFF};
-int exe_path_3[] = {1, 2, 4, 1, 5, 7, 0x7FFFFFFF};
-int exe_path_4[] = {1, 2, 4, 1, 2, 3, 4, 1, 2, 4, 1, 5, 6, 7, 0x7FFFFFFF};
-int exe_path_5[] = {1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 5, 6, 7, 0x7FFFFFFF};
-void rand_ExePath_gen(int &pattern_num);
 //-----------------------------------------------------------------------------------------//
 //Checkpoints Objects
 void checkpoint_config();
-typedef int exeTime_info[3];
 exeTime_info task_wcet_info_t[tasks_num] = {
-	{
-	 10450, // The worst-case execution cycle(s)
-	 0    , // The average-case execution cycle(s)
-	 0      // The best-case exeucution cycle(s)
-	},
-	 
-	{
-	 12437, // The worst-case execution cycle(s)
-	 0    , // The average-case execution cycle(s)
-	 0      // The best-case exeucution cycle(s)
-	},
+        {
+         9750, // The worst-case execution cycle(s)
+         0    , // The average-case execution cycle(s)
+         1000   // The best-case exeucution cycle(s)
+        },
 
-	{
-	 2000, // The worst-case execution cycle(s)
-	 0   , // The average-case execution cycle(s)
-	 0     // The best-case exeucution cycle(s)
-	}
+        {
+         11950, // The worst-case execution cycle(s)
+         0    , // The average-case execution cycle(s)
+         52     // The best-case exeucution cycle(s)
+        },
+
+        {
+         1810, // The worst-case execution cycle(s)
+         0   , // The average-case execution cycle(s)
+         260   // The best-case exeucution cycle(s)
+        }
 };
 exeTime_info *task_wcet_info;
 checkpoint_num *checkpoint_num_t; // The size will be known after parsing
 RWCEC_Trace_in *cycle_trace; // The real size will be defined after parsing
 checkpoints_label *checkpointLabel; // The label of checkpoints at each task's Basic Block(s)
+ExePath_set *exe_path; // The set of exeuction-path set for tasks
 // Three instaneces for each of those two tasks
 int instance_case[2][3] = {
-	{5, 3, 0}, // Task 1: exe_path_5(first instance), exe_path_3(second instance), exe_path_0(third instance)
-	{5, 3, 1}  // Task 2: exe_path_5(first instance), exe_path_3(second instance), exe_path_1(third instance) 
+        {5, 3, 0}, // Task 1: exe_path_5(first instance), exe_path_3(second instance), exe_path_0(third instance)
+        {5, 3, 1}  // Task 2: exe_path_5(first instance), exe_path_3(second instance), exe_path_1(third instance) 
 };
-int instance_index[2] = {0,0};
 //-----------------------------------------------------------------------------------------//
 int main(int argc, char **argv)
 {
+	if(argc != 3 && argc == 1) {
+		cout << "The Default Operating Frequency ought to be defined" << endl;
+		exit(1);
+	}
+	else if(argc != 3 && argc == 0) {
+		cout << "The both 1) value of alpha(0~100) and 2) Default Operating Frequency ought to be defined" << endl;
+		exit(1);
+	}
+	else {
+		in_alpha = ((float) atoi(argv[1])) / 100;
+		in_default_speed = (float) atoi(argv[2]);
+	}
 //=======================================================================================================================================================//
 // Settings of each task's CFG information
-	float release_time = 0.0, start_time = 0.0;
+	cout << "Starting to initialise system" << endl;
 	system_init();
-	
-	in_alpha = ((float) atoi(argv[2])) / 100;
-	in_default_speed = (float) 1000.0;//(float) atoi(argv[3]);
-	
-	vector<Src_CFG> src_intra;
-	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, &checkpointLabel[0], &cycle_trace[0], task_wcet_info[0], exe_path); 
-	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, &checkpointLabel[1], &cycle_trace[1], task_wcet_info[1], exe_path);
-	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, &checkpointLabel[2], &cycle_trace[2], task_wcet_info[3], exe_path); 
+	cout << "After system initialisation" << endl;
+	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, &checkpointLabel[0], &cycle_trace[0], &checkpoint_num_t[0], task_wcet_info[0]/*, exe_path[0]*/); cout << "Finished configuring task1" << endl;
+	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, &checkpointLabel[1], &cycle_trace[1], &checkpoint_num_t[1], task_wcet_info[1]/*, exe_path[1]*/); cout << "Finished configuring task2" << endl;
+	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, &checkpointLabel[2], &cycle_trace[2], &checkpoint_num_t[2], task_wcet_info[2]/*, exe_path[2]*/); cout << "FInished configuring task3" << endl;
 	src_intra.push_back(task1); src_intra.push_back(task2); src_intra.push_back(task3);
 	cout << "The number of Intra-Source: " << src_intra.size() << endl;
 	if(tasks_num != src_intra.size()) {
 		cout << "The initial settings does not match Task-set pattern from input file" << endl;
 		exit(1);	
 	}
+	cout << "Starting to configure test patterns for all tasks" << endl;
+	TestPattern_config();
+	cout << "Finished configuring settings of test patterns" << endl;
 //=======================================================================================================================================================//
-// Settings of Inter-task
-/*	
+// Settings of Inter-task	
+	cout << "Starting to configure Inter tasks" << endl;
 	Ready_Queue que;
 	task_info_t *src_inter = new task_info_t[tasks_num];
 	src_inter[0] = {
@@ -146,13 +154,18 @@ int main(int argc, char **argv)
 			     (char) ZOMBIE, // Default Task State
 			     task3.wcet // Default WCRT
 	};
+	cout << "Finished configuring Inter tasks" << endl;
 //=======================================================================================================================================================//
 // Settings of Intra- and Inter-task communication Bus and Task Management
+	cout << "Starting to bind each Intra task(Control Flow Information) to their corresponding Inter task" << endl;
 	inter_intra_bus = new Task_State_Bus(time_management, src_inter, src_intra);
 	Task_Scheduler task_sched(time_management, src_inter, que, (char) RM, inter_intra_bus);
+	cout << "Finished binding Intra tasks with Inter tasks" << endl;
 //=======================================================================================================================================================//
 // Setting the Jitter constraints
+	cout << "Starting to set jitter contraints" << endl;
 	for(int i = 0; i < tasks_num; i++) inter_intra_bus -> intra_tasks[i].jitter_init(); 	
+	cout << "Finished setting jitter constraints" << endl;
 //=======================================================================================================================================================//
 	cout << "==================================================" << endl;
 	cout << "\t\t";
@@ -162,7 +175,7 @@ int main(int argc, char **argv)
 	task_sched.sched_arbitration(0.000);
 	cout << "0 us - " << endl;
 	float cur_time;
-	for(cur_time = 0.001; time_management -> sys_clk -> cur_time <= 3.0; ) {
+	for(cur_time = 0.001; time_management -> sys_clk -> cur_time <= 50.0; ) {
 		for(int i = 0; i < tasks_num; i++) { 
 			if(task_sched.task_list[i].state == (char) RUN) {
 				inter_intra_bus -> time_driven_cfg(i);
@@ -188,133 +201,90 @@ int main(int argc, char **argv)
 	cout << "==================================================" << endl;
 
 	delete time_management;
-*/		
+		
 	return 0;
 }
 
+void func_gen(void *inout)
+{
+        ExePath_case &out = *(ExePath_case*) inout;
+
+        for(int i = 0; i < 10; i++)
+        out.push_back(i);
+}
 void system_init(void)
 {
-	int i;
-	
-	vector<int> L_ch_temp;
-	exe_path_case exe_path_temp;
+        srand((unsigned) time(0));
+        energy_ref = 0.0;
 
-	srand((unsigned) time(0));
-	energy_ref = 0.0;
+        sys_mode = (int) H_RESP;
+        Sys_Clk_0.cur_freq = 0.0; // Initially none of task is running
+        Sys_Clk_0.cur_time  = 0.0;
+        Sys_Clk_0.time_unit = (int) US;
+        time_management = new Time_Management(Sys_Clk_0);
 
-	sys_mode = (int) H_RESP;
-	Sys_Clk_0.cur_freq = 0.0; // Initially none of task is running
-	Sys_Clk_0.cur_time  = 0.0;
-	Sys_Clk_0.time_unit = (int) US;
-	time_management = new Time_Management(Sys_Clk_0);
-	
-	checkpoints_1.L_loop_iteration.push_back(3 + 1);
-	
-	checkpoint_config();
-	wcet_info_config();
-}
-
-/**
-  * @brief Randomly generate an execution path as test pattern(s) for indeicate Control Flow Graph 
-
-  * @param CFG_path: target Control Flow Graph, i.e., target task
-  * @param pattern_num: the number of test patterns which are required
-  * @param TestPattern_inout: given memory space for filling generated set of test pattern
-**/
-void rand_ExePath_gen(vector<Basic_block> &CFG_path, int &pattern_num, void *TestPattern_inout)
-{
-	ExePath_case path_temp;
-	ExePath_set &TestPattern_set = *(ExePath_set*) TestPattern_inout;
-	vector<int> ActLoop_iteration;
-	int cnt = patten_num, loop_enty;
-	int cur_NodeID = CFG_path.front().get_index; // Let any test pattern of execution path start from start node of its CFG
-	do {
-		// Add current node's ID into current test pattern
-		path_temp.push_back(cur_NodeID); 
-		
-		// Randomly give actual loop iteration(s) for all loops
-		for(int i = 0; i < P_loop_iteration.size(); i++)
-			ActLoop_iteration.push_back(rand() % P_loop_iteration[i]);
-
-		if(CFG_path[cur_NodeID].get_succ[0] != 0)  { // If current node is a branch
-			int i = CFG_path[cur_NodeID].succ.size(); // Get the number of current node's successors
-			// Randomly choose a branch among all current node's successors
-			// Case 1: loop entry
-			// Case 2: Multiple successive execution paths, none of them is loop entry 
-			int j = rand() % i; // Randomly choose one of branches 
-			cur_NodeID = CFG_path[cur_NodeID].succ[j]; 
-		}
-		else if( // If current node is loop entry, conducting a recursion of randomly generating sub-execution path inside every iteration, 
-			 // in addition, avoiding such recursion being run over given "actual loop iteration(s)" 
-			
-			// Make sure there is only one successive path from current node (only reagarding the notion of for-loop and while-loop)
-			CFG_path[cur_NodeID].succ.size() == 1 &&   
-			// Check next node from current node is a return of loop entry, i.e., current node is loop exit
-			CFG_path[cfg_NodeID].succ[0] < cur_NodeID 
-		) {
-			cur_NodeID = CFG_path[cfg_NodeID].succ[0]; // Return back to its loop entry
-			path_temp.push_back(cur_NodeID);
-			
-			int i = rand() % (CFG_path[cur_NodeID].succ.size()); // Randomly choose one of branches from loop entry
-			// Identify currently reaching node belongs to which loop entry (the label of P-checkpoint)
-			for(loop_entry = 0; checkpointLabel -> P_checkpoints[loop_entry] != CFG_path[cfg_NodeID].succ[0]; loop_entry++); 
-			j = (ActLoop_iteration.)
-			cur_NodeID = CFG_path[cur_NodeID].succ[j]; 
-		} 
-		else if(CFG_path[cur_NodeID].get_succ[0] == 0) { // If current node is sink node	
-		//else(CFG_path[cur_NodeID].get_index() == CFG_path.back().get_index()) { // If current node is sink node	
-			cur_NodeID = CFG_path.front().get_index(); // Reset current node ID to start node for next test-pattern generation	
-			path_temp.push_back(cur_NodeID); // Add sink node to cuurent test pattern as ending point 
-			TestPattern_set.push_back(path_temp); // Finish generating a test pattern (one execution path)
-			vector<int>().swap(path_temp); // Free memory space
-			cnt--; // One pattern-number budget has been used
-		}
-	}while(cnt != 0); 
+        checkpoint_config();
+        wcet_info_config();
 }
 
 void checkpoint_config() {
-	parsing.checkpoint_in(
-			tasks_num,        // The number of tasks 
-			cycle_trace,      // The cycle tracing information for building Mining Table
-			checkpoint_num_t, // The number of eacc type heckpoints 
-			checkpointLabel   // The label of checkpoints at each task's Basic Block(s)
-	);
+        cycle_trace      = new RWCEC_Trace_in[tasks_num];
+        checkpoint_num_t = new checkpoint_num[tasks_num];
+        checkpointLabel  = new checkpoints_label[tasks_num];
+        parsing.checkpoint_in(
+                        tasks_num,                             // The number of tasks 
+                        (RWCEC_Trace_in*) cycle_trace,         // The cycle tracing information for building Mining Table
+                        (checkpoint_num*) checkpoint_num_t,    // The number of eacc type heckpoints 
+                        (checkpoints_label*) checkpointLabel   // The label of checkpoints at each task's Basic Block(s)
+        );
+/*
+        for(int i = 0; i < tasks_num; i++) {
+                for(int j = 0; j < checkpointLabel[i].B_checkpoints.size(); j++) 
+                        cout << "B_checkpoint[" << j << "]: " << checkpointLabel[i].B_checkpoints[j] << endl;
+                for(int k = 0; k < checkpointLabel[i].L_checkpoints.size(); k++)  
+                        for(int m = 0; m < checkpointLabel[i].L_checkpoints[k].size(); m++) 
+                                cout << "L_checkpoint[" << k << "][" << m << "]: " << checkpointLabel[i].L_checkpoints[k][m] << endl;
+                for(int l = 0; l < checkpointLabel[i].P_checkpoints.size(); l++) 
+                        cout << "P_checkpoint[" << l << "]: " << checkpointLabel[i].P_checkpoints[l] << endl;
+                for(int n = 0; n < checkpointLabel[i].L_loop_bound.size(); n++)
+                        cout << "L_bound[" << n << "]: " << checkpointLabel[i].L_loop_bound[n] << endl; 
+                for(int n = 0; n < checkpointLabel[i].P_loop_bound.size(); n++)
+                        cout << "P_bound[" << n << "]: " << checkpointLabel[i].P_loop_bound[n] << endl; 
+                cout << endl << endl;
+        }
+*/
 }
 
 void wcet_info_config() {
-	task_wcet_info = new exeTime_info[tasks_num];
-	memcpy(task_wcet_info, task_wcet_info_t, tasks_num * 3 * sizeof(int));
+        task_wcet_info = new exeTime_info[tasks_num];
+        memcpy(task_wcet_info, task_wcet_info_t, tasks_num * 3 * sizeof(int));
+}
+
+void TestPattern_config()
+{
+        exe_path = new ExePath_set[tasks_num];
+        for(int i = 0; i < tasks_num; i++) {
+         src_intra[i].P_loop_LaIteration = new int*[checkpointLabel[i].P_loop_bound.size()];
+         for(int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++)
+          src_intra[i].P_loop_LaIteration[j] = new int[patterns_num];
+         rand_ExePath_gen (
+                 src_intra[i].CFG_path,         // Pass each task's corrsponding Src_CFG
+                 patterns_num,                  // The number of test patterns demanded to be generated
+                 checkpointLabel[i],            // The label of checkpoints' corresponding Basic Block ID
+                 (ExePath_set*) (&exe_path[i]), // The output of generated set of test patterns
+                 (int**) src_intra[i].P_loop_LaIteration
+         );
+         for(int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
+           for(int k = 0; k < patterns_num; k++)
+            cout << "Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra[i].P_loop_LaIteration[j][k] << endl;
+         }
+         src_intra[i].pattern_init(exe_path[i]);
+        }
 }
 
 void array_int_cpy(vector<int> &Dst, int *Src)
 {
-	int a = 0;
-	for(a = 0; Src[a] != 0x7FFFFFFF; a++) Dst.push_back(Src[a]);
+        int a = 0;
+        for(a = 0; Src[a] != 0x7FFFFFFF; a++) Dst.push_back(Src[a]);
 }
 
-/*
-void simulation_exe_path(Src_CFG &task, int path, float release_time, float start_time, int dvfs_en)
-{
-	switch(path) {
-		case 0:
-			task.traverse_spec_path(exe_path_0, WORST, release_time, start_time, dvfs_en); 
-			break;
-		case 1:
-			task.traverse_spec_path(exe_path_1, WORST, release_time, start_time, dvfs_en); 
-			break;
-		case 2:
-			task.traverse_spec_path(exe_path_2, WORST, release_time, start_time, dvfs_en);
-			break; 
-		case 3:
-			task.traverse_spec_path(exe_path_3, WORST, release_time, start_time, dvfs_en);
-			break; 
-		case 4:
-			task.traverse_spec_path(exe_path_4, WORST, release_time, start_time, dvfs_en);
-			break; 
-		case 5:
-			task.traverse_spec_path(exe_path_5, WORST, release_time, start_time, dvfs_en);
-			break; 
-		
-	}
-}
-*/

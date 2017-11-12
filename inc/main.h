@@ -1,14 +1,17 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-//#define DEBUG
+#define DEBUG
 //#define RT_SIMULATOR
 #define INTRA_SCHED
 #define US 1
 #define SEC 1000000
 #define S_MS 1000
-#define INST_UNIT 5 // Each instruction takes five execution cycles
+#define INST_UNIT 1 // Each instruction takes 1 execution cycles (=1 CPI)
 #define N_DECIMAL_POINTS_PRECISION 1000.0 // To extracting three decimal points
+
+#define tasks_num 3
+#define patterns_num 10
 
 /*
  cur_freq (MHz)
@@ -60,5 +63,7 @@ enum {
 	H_RESP  = 1, // High Responsiveness
 	L_POWER = 2, // Low Power 
 };
+
+typedef int exeTime_info[3];
 
 #endif // __MAIN_H
