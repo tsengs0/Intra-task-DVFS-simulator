@@ -86,11 +86,28 @@ typedef struct Task_Info {
 //	: release_time(r), prt(pr), rel_dline(rd), wcet(wc), period(p), state(st) {}
 } task_info_t;
 
-typedef struct Preemption_Stack {
+typedef struct Context {
 	int task_id;
 	float rwcet; // unit: us
 	bool isr_flag;
-} preemption_stack_t;
+	struct Context *next; // For stacking
+} context_t;
+
+class Preemption_Stack {
+	private:
+		context_t *top;
+		context_t *bottom;
+		context_t *ptr;
+		int stack_cnt;
+
+	public:
+		Preemption_Stack(void);
+		~Preemption_Stack(void);
+		void push(context_t in);
+		void pop(void *inout);
+		void stack_list(void);
+		bool IsEmpty(void);
+};
 
 float ceiling(float x);
 class RT_Analyser {
@@ -128,7 +145,11 @@ class Task_Scheduler {
 		RT_Analyser *rta;	
 		char sched_policy;
 		float rwcet; // unit: us
-		preemption_stack_t isr_stack;
+
+		// The dedicated stack for preemption		
+		Preemption_Stack isr_stack;
+		context_t cur_context;
+
 		int running_task_id; // The identity of currently running task
 		int pre_task; // To record the current task id, whilst a new task arrives and a preemption may occur
 		bool new_task_start_flag;

@@ -4,7 +4,7 @@ PARSER_DIR:= ./Parser
 INC_DIR:= ./inc
 OBJ_DIR:= ./obj
 BIN_DIR:= ./bin
-CFLAG:= -std=c++11 -Wall
+CFLAG:= -std=c++11 -Wall 
 SRCEXT:= cpp
 #LIB=-lm -H -c -Wall
 

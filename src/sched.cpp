@@ -147,10 +147,10 @@ int Ready_Queue::pop(void)
 	}
 	else {
 		ptr = rear -> pre_task;
+		temp = ptr -> next_task -> task_id;
 		delete rear;
 		rear = ptr;
-		ptr -> next_task = NULL;
-		temp = rear -> task_id;
+		rear -> next_task = NULL;
 		//ptr = NULL;
 	}
 #ifdef DEBUG
@@ -215,9 +215,9 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready
 	new_task_start_flag = false;
 	inter_intra_bus = msg_bus;
 	rwcet = (float) 0.0;
-	isr_stack.task_id = (int) NO_PREEMPTION;
-	isr_stack.rwcet = (float) 0.0;
-	isr_stack.isr_flag = false;	
+	cur_context.task_id = (int) NO_PREEMPTION;
+	cur_context.rwcet = (float) 0.0;
+	cur_context.isr_flag = false;	
 	
 	// Creating Response-Time-Analyser module
 	rta = new RT_Analyser(task_list);
@@ -240,14 +240,11 @@ Task_Scheduler::~Task_Scheduler(void)
 
 void Task_Scheduler::resume(void)
 {
-	isr_stack.task_id = (int) NO_PREEMPTION;
-	rwcet = isr_stack.rwcet;
-
-	isr_stack.rwcet = (float) 0.0;
-	isr_stack.isr_flag = false;
-
+	isr_stack.pop((Preemption_Stack*) (&cur_context));
+	rwcet = cur_context.rwcet;
 #ifdef DEBUG
-	cout << "Resume!" << endl;
+	cout << "Resume Task_" << cur_context.task_id << "'s execution(RWCET:" << rwcet << " us) " << "from Task_" << running_task_id << endl;
+	char a; cout << "Press any key:"; cin >> a; 
 #endif
 }
 
@@ -262,9 +259,13 @@ void Task_Scheduler::context_switch(int &cur_task, int &new_task)
 	bool sched_verify = true;
 	// (1) delay()
 	// (2) Src_CFG[new_task].traverse_spec_path()
-	isr_stack.task_id = cur_task;
-	isr_stack.rwcet = rwcet;
-	isr_stack.isr_flag = true;
+	
+	// Fill current context into Preemption Stack
+	cur_context.task_id = cur_task;
+	cur_context.rwcet = rwcet;
+	cur_context.isr_flag = true;	
+	isr_stack.push(cur_context);
+	
 	rwcet = task_list[new_task].wcet;
 	pre_task = (int) CPU_IDLE;
 /*
@@ -282,6 +283,92 @@ void Task_Scheduler::context_switch(int &cur_task, int &new_task)
 
 }
 
+Preemption_Stack::Preemption_Stack(void)
+{
+	top = NULL;
+	bottom = NULL;
+	ptr = NULL;
+	stack_cnt = 0;
+}
+
+Preemption_Stack::~Preemption_Stack(void)
+{
+	stack_cnt = 0;
+/*	if(top == NULL) delete top;
+	if(bottom == NULL) delete bottom;
+	if(ptr == NULL) delete ptr;
+*/
+}
+
+void Preemption_Stack::push(context_t in)
+{
+	ptr = new context_t;
+	ptr -> task_id = in.task_id;
+	ptr -> rwcet = in.rwcet;
+	ptr -> isr_flag = in.isr_flag;
+
+	if(bottom == NULL) {
+		if(top != NULL) {
+			cout << "Wrong Stack Manipulation" << endl;
+			cout << "Since Bottom is pointing to the NULL, so Top also should be located in NULL" << endl;
+			exit(1);
+		}
+		else {
+			top = ptr; bottom = ptr;
+			bottom -> next = NULL;
+		}
+	}
+	else {
+		ptr -> next = top;
+		top = ptr;
+	}
+	stack_cnt += 1;
+}
+
+void Preemption_Stack::pop(void *inout)
+{
+	context_t *out = (context_t*) inout;
+
+	if(bottom == NULL) {
+		if(top != NULL) {
+			cout << "Wrong Stack Manipulation" << endl;
+			cout << "Since Bottom is pointing to the NULL, so Top also should be located in NULL" << endl;
+			exit(1);
+		}
+		else {
+			cout << "You use Preemption Stack at improper time" << endl;
+			cout << "Because there is no context inside Preemption Stack" << endl;
+			exit(1);
+		}
+	}
+	else {
+		out -> task_id  = top -> task_id;
+		out -> rwcet    = top -> rwcet; // unit: us
+		out -> isr_flag = top -> isr_flag;
+		out -> next     = NULL;
+	}
+	stack_cnt -= 1;
+	ptr = top;
+	top = top -> next;
+	delete ptr;
+}
+
+void Preemption_Stack::stack_list(void)
+{
+	ptr = top;
+	cout << "Top(Input/Output) -> ...... -> Bottom" << endl;
+	for(int i = 0; i < stack_cnt; i++) {
+		cout << "Task_" << ptr -> task_id << " -> ";
+		if(i != stack_cnt - 1) ptr = ptr -> next;
+		else cout << "NULL" << endl;
+	}
+}
+
+bool Preemption_Stack::IsEmpty(void)
+{
+	return (top == NULL) ? true : false;
+}
+
 void Task_Scheduler::sched_arbitration(float sched_tick)
 {
 	bool sched_verify = true;
@@ -293,6 +380,12 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 		task_list[running_task_id].release_time += task_list[running_task_id].period;
 		inter_intra_bus -> intra_tasks[running_task_id].completion_flag = false;
 		task_list[running_task_id].NRT_USED = false;
+		if(isr_stack.IsEmpty() == false) resume();
+		else {
+			cur_context.task_id = (int) NO_PREEMPTION;
+			cur_context.rwcet = (float) 0.0;
+			cur_context.isr_flag = false;
+		}
 	#ifdef DEBUG
 		cout << endl << "Task_" << running_task_id << " complete at " << time_management -> sys_clk -> cur_time << " us" << endl;
 		cout << "Task_" << running_task_id << "'s next release time: " << task_list[running_task_id].release_time << " us" << endl;
@@ -420,6 +513,7 @@ void Task_Scheduler::dispatcher(void)
 	if(pre_task != running_task_id && pre_task != (int) CPU_IDLE) { // Preemption
 		cout << "preemption(pre:" << pre_task << ", new:" << running_task_id << ")" << endl;
 		context_switch(pre_task, running_task_id);
+		char a; cout << "Press any key:"; cin >> a; 
 		
 		cout << "start new task" << endl; 
 		rwcet = task_list[running_task_id].wcet;
@@ -435,9 +529,9 @@ void Task_Scheduler::dispatcher(void)
 				);
 		new_task_start_flag = false;
 	} 
-	else if(isr_stack.isr_flag == true && isr_stack.task_id == running_task_id) { // Resuming from previous preemption
+	else if(cur_context.isr_flag == true && cur_context.task_id == running_task_id) { // Resuming from previous preemption
 		cout << "resume" << endl; 
-		resume();
+		//resume();
 	} 
 	else { // Starting new arrival task
 		cout << "start new task" << endl; 

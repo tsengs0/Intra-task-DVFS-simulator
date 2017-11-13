@@ -32,6 +32,7 @@ class Preemption_Stack {
 		void push(context_t in);
 		void pop(void *inout);
 		void stack_list(void);
+		bool IsEmpty(void);
 };
 
 Preemption_Stack::Preemption_Stack(void)
@@ -115,11 +116,19 @@ void Preemption_Stack::stack_list(void)
 	}
 }
 
+bool Preemption_Stack::IsEmpty(void)
+{
+	return (top == NULL) ? true : false;
+}
+
 int main(int argc, char **argv)
 {
 	Preemption_Stack isr_stack;
 	context_t in_temp;
 	
+	if(isr_stack.IsEmpty() == true) cout << "Currently, Preemption Stack is empty" << endl;
+	else cout << "Currently, Preemption Stack is not empty" << endl;
+
 	cout << "Push:" << endl;
 	for(int i = 0; i < 10; i++) {
 		in_temp.task_id  = i;
@@ -129,6 +138,8 @@ int main(int argc, char **argv)
 		isr_stack.push(in_temp);
 	}
 	isr_stack.stack_list();
+	if(isr_stack.IsEmpty() == true) cout << "Currently, Preemption Stack is empty" << endl;
+	else cout << "Currently, Preemption Stack is not empty" << endl;
 	cout << endl << "Pop:" << endl;
 	for(int i = 0; i < 10; i++) {
 		isr_stack.pop((context_t*) (&in_temp));
@@ -139,5 +150,7 @@ int main(int argc, char **argv)
 		isr_stack.stack_list();
 		cout << endl;
 	}
+	if(isr_stack.IsEmpty() == true) cout << "Currently, Preemption Stack is empty" << endl;
+	else cout << "Currently, Preemption Stack is not empty" << endl;
 	return 0;
 }
