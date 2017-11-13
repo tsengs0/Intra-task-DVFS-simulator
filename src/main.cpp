@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 	task_sched.sched_arbitration(0.000);
 	cout << "0 us - " << endl;
 	float cur_time;
-	for(cur_time = 0.001; time_management -> sys_clk -> cur_time <= 50.0; ) {
+	for(cur_time = 0.001; /*time_management -> sys_clk -> cur_time <= 100.0*/; ) {
 		for(int i = 0; i < tasks_num; i++) { 
 			if(task_sched.task_list[i].state == (char) RUN) {
 				inter_intra_bus -> time_driven_cfg(i);
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 		} 
 		//time_management -> update_cur_time(cur_time);
 		task_sched.sched_arbitration(cur_time);
-		cout << endl << time_management -> sys_clk -> cur_time << " us*\t\t";
+		cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
 		//task_sched.list_task_state();
 		cout << endl; // << "--------------------------------------------------" << endl;
 		if(task_sched.IsIdle() == true) {

@@ -303,14 +303,14 @@ void Src_CFG::global_param_eval(void)
 	min_response = (min_response > response_cur) ? response_cur : min_response;
 	AFJ = max_response - min_response;
 	RFJ = (RFJ < response_diff) ? response_diff : RFJ;
-#ifndef DEBUG
+#ifdef DEBUG
 	cout << "Actual Execution Cycles: " << cycles_cnt << " cycles" << endl;
 	printf("Relative Deadline: %.05f us\r\n", rel_dline);
 	printf("Worst Case Execution Time: %.05f us\r\n", wcet);
 	printf("Best Case Execution Time: %.05f us\r\n", bcet);
-	printf("Target Execution Time: %.05f us(%.02f%%)\r\n", jitter_config.fin_time_target, jitter_config.alpha * 100);
 	printf("Actual Execution Time: %.05f us(%.02f%%)\r\n", Act_CET, ((Act_CET - bcet)  / jitter_config.fin_jitter_bound) * 100);  
-	printf("Response Time: %.05f us.\r\n", response_cur);
+	printf("Target Response Time: %.05f us(%.02f%%)\r\n", jitter_config.fin_time_target, jitter_config.alpha * 100);
+	printf("Actual Response Time: %.05f us.\r\n", response_cur);
 	printf("Absolute Deadline: %.05f us\r\n", abs_dline);
 	printf("Completion time: %.05f us\r\n", sys_clk -> cur_time);
 	printf("The number of Deadline miss: %d\r\n", dline_miss);

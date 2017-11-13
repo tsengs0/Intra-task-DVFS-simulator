@@ -102,7 +102,7 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 
 	if(intra_tasks[new_task_id].exe_path[case_id][cur_block_index] != intra_tasks[new_task_id].exe_path[case_id].back()) {
 #ifdef DEBUG
-		printf("(Cur_Freq: %.01f MHz)", time_management -> sys_clk -> cur_freq);
+		printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
 		cout << "Block_" << intra_tasks[new_task_id].CFG_path[ 
 						intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1 
 						].get_index() << " -> ";
@@ -128,7 +128,7 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 	}
 	else {
 #ifdef DEBUG
-		printf("\(Cur_Freq: %.01f MHz\)  ", time_management -> sys_clk -> cur_freq);
+		printf("[Cur_Freq: %.01f MHz]  ", time_management -> sys_clk -> cur_freq);
 		cout << "Block_" << intra_tasks[new_task_id].CFG_path[ 
 						intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1 
 						].get_index() << " -> ";
