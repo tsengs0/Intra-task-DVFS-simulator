@@ -78,11 +78,11 @@ Src_CFG::Src_CFG(
 )
 {
 	FILE *fp;
-	int c, i, j, k;
+	unsigned int c, i, j, k;
 	unsigned char fsm_state = (unsigned char) ATTRIBUTES_ITEM;
 	unsigned char fsm_state_internal = (unsigned char) TASK_ID;
 	vector<int> succ_conv_temp;
-	int size_temp;
+	unsigned int size_temp;
 	succ_int_temp = 0;
 	fp = fopen(file_name, "r");
 	while(1) {

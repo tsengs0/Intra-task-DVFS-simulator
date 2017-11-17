@@ -28,8 +28,8 @@ extern float ISR_TIME_SLICE;
 **/   
 isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 {
-	int cur_index, cycles_cnt = 0, i;
-	int time_temp, rem_block_cycles, sub_block_cycles, isr_time_cycles;
+	int cur_index, cycles_cnt = 0;
+	int rem_block_cycles, sub_block_cycles, isr_time_cycles;
 	int rem_cycles_temp;
 	dvfs_en = DVFS_en;
 	isr_context_t context_reg;
@@ -131,7 +131,6 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 **/
 void Src_CFG::dispatch_cfg(int &case_id, int case_t, float release_time_new, float start_time_new, float Deadline, char DVFS_en)
 {
-	int cur_index, i;
 	float time_temp;
 	dvfs_en = DVFS_en;
 	isr_context_t context_reg;

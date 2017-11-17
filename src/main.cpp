@@ -263,9 +263,9 @@ void wcet_info_config() {
 void TestPattern_config()
 {
         exe_path = new ExePath_set[tasks_num];
-        for(int i = 0; i < tasks_num; i++) {
+        for(unsigned int i = 0; i < tasks_num; i++) {
          src_intra[i].P_loop_LaIteration = new int*[checkpointLabel[i].P_loop_bound.size()];
-         for(int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++)
+         for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++)
           src_intra[i].P_loop_LaIteration[j] = new int[patterns_num];
          rand_ExePath_gen (
                  src_intra[i].CFG_path,         // Pass each task's corrsponding Src_CFG
@@ -274,8 +274,8 @@ void TestPattern_config()
                  (ExePath_set*) (&exe_path[i]), // The output of generated set of test patterns
                  (int**) src_intra[i].P_loop_LaIteration
          );
-         for(int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
-           for(int k = 0; k < patterns_num; k++)
+         for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
+           for(unsigned int k = 0; k < patterns_num; k++)
             cout << "Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra[i].P_loop_LaIteration[j][k] << endl;
          }
          src_intra[i].pattern_init(exe_path[i]);
