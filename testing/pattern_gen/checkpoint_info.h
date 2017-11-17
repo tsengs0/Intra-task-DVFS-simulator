@@ -18,7 +18,12 @@ typedef struct Checkpoints_Label {
 } checkpoints_label;
 
 typedef int B_type[4];
-typedef int L_type[2][8];
+typedef int L_branch[4];
+typedef struct L_Type {
+	int loop_bound;
+	int rwcec_AfterLoop;
+	L_branch *branch;
+} L_type;
 typedef int P_type[3];
 typedef struct RWCEC_Trace {
 	B_type *B_RWCEC_t;
@@ -41,9 +46,13 @@ typedef struct B_Mining_table {
 } B_mining_table_t;
 
 typedef struct L_Mining_table {
-	std::vector<int> n_taken_rwcec;
-	std::vector<int> taken_rwcec;
-	int successors[2];
+	std::vector<int> block_id; // Labelling which Basic Block it belongs to
+	int loop_bound; // Loop Bound
+	std::vector<int> taken_succ; // Labelling which Basic Block Taken-Successor belongs to
+	std::vector<int> taken_rwcec; // The worst-case execution cycles from Taken-Successor to current Loop's exit (within an iteration)
+	std::vector<int> n_taken_succ; // Labelling which Basic Block Not-Taken-Successor belongs to
+	std::vector<int> n_taken_rwcec; // The worst-case execution cycles from Not-Taken-Successors until current Loop's exit (within an iteration)
+	int succ_rwcec; // The remaining worst-case execution cycles (RWCECs) after this loop
 } L_mining_table_t;
 
 typedef struct P_Mining_table {

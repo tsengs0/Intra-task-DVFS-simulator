@@ -176,7 +176,7 @@ Sample Variance
 */
 static float sample_variance(vector<float> &a) 
 {
-	int i; float acc = 0.0, acc_1 = 0.0; 
+	unsigned int i; float acc = 0.0, acc_1 = 0.0; 
 
 	for(i = 0; i < a.size(); i++) acc += a[i]; 
 	acc = acc / a.size(); 
