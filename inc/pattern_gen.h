@@ -16,3 +16,4 @@ void rand_ExePath_gen(
 int isLoopEntry(int cur_NodeID, vector<Basic_block> &CFG_path, checkpoints_label &checkpointLabel);
 
 #endif // __PATTERN_GEN_H
+

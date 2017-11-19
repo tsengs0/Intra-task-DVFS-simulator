@@ -43,8 +43,9 @@ sys_clk_t Sys_Clk_0;
 Time_Management *time_management;
 Task_State_Bus *inter_intra_bus;
 extern float ISR_TIME_SLICE;
-//int tasks_num = 3; // The number of tasks 
-//int patterns_num = 1;
+extern int cur_TskID;
+//int tasks_num =3 ; // The number of tasks 
+//int patterns_num = 5;
 vector<Src_CFG> src_intra;
 //-----------------------------------------------------------------------------------------//
 //Temporary test cases
@@ -178,6 +179,7 @@ int main(int argc, char **argv)
 	for(cur_time = 0.001; /*time_management -> sys_clk -> cur_time <= 100.0*/; ) {
 		for(int i = 0; i < tasks_num; i++) { 
 			if(task_sched.task_list[i].state == (char) RUN) {
+				cur_TskID = i;
 				inter_intra_bus -> time_driven_cfg(i);
 				for(int j = 0; j < 15; j++) cout << "-"; 
 				for(int j = 0; j < 8*i; j++) cout << "-"; 
@@ -262,7 +264,7 @@ void wcet_info_config() {
 
 void TestPattern_config()
 {
-        exe_path = new ExePath_set[tasks_num];
+	exe_path = new ExePath_set[tasks_num];
         for(unsigned int i = 0; i < tasks_num; i++) {
          src_intra[i].P_loop_LaIteration = new int*[checkpointLabel[i].P_loop_bound.size()];
          for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++)
@@ -274,10 +276,14 @@ void TestPattern_config()
                  (ExePath_set*) (&exe_path[i]), // The output of generated set of test patterns
                  (int**) src_intra[i].P_loop_LaIteration
          );
+	 vector<int> temp;
          for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
-           for(unsigned int k = 0; k < patterns_num; k++)
+           for(unsigned int k = 0; k < patterns_num; k++) {
             cout << "Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra[i].P_loop_LaIteration[j][k] << endl;
-         }
+            temp.push_back(src_intra[i].P_loop_LaIteration[j][k] + 1);
+	   } 
+	}
+	 src_intra[i].L_loop_iteration.push_back(temp); vector<int>().swap(temp); 
          src_intra[i].pattern_init(exe_path[i]);
         }
 }

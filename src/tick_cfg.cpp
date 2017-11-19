@@ -11,6 +11,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 
+int cur_TskID;
 extern float in_alpha;
 extern float in_default_speed;
 extern int sim_cnt;
@@ -54,7 +55,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
-				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { cout << "LLLLLLLL" << endl;
 					L_Intra_task_checkpoint(
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according ot the indicated execution path case
@@ -72,6 +73,46 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 #endif 
 		cur_block_index += 1;			
 		while(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) < rem_cycles_temp) { 
+#ifdef DEBUG
+			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
+			cout << "Block_" << CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_index() << " -> ";
+			for(int j = 0; j < 15; j++) cout << "-"; 
+			for(int j = 0; j < 8*cur_TskID; j++) cout << "-"; 
+			cout << "|" << cur_TskID << "|";
+#endif
+			cycles_cnt += CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t);
+			float time_temp = time_management -> time_unit_config(
+				CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) / time_management -> sys_clk -> cur_freq
+			); 
+			time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
+			power_eval();
+			cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
+#ifdef DVFS_EN  // Before crossing to next basic block, checking if current basic block is a checkpoint
+			if(dvfs_en == (char) DVFS_ENABLE) {
+				// Invoking the operation of B-type checkpoint
+				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
+					B_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
+					);		
+				}
+				// Invoking the operation of L-type checkpoint
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { cout << "LLLLLLLL" << endl;
+					L_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according ot the indicated execution path case
+					);
+				}			
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].P_checkpoint_en != 0x7FFFFFFF) { 
+					P_Intra_task_checkpoint(
+						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
+						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case
+					);		
+				}
+				else {
+				}	
+			}	
+#endif 
 			rem_cycles_temp -= CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t);
 			cur_block_index += 1;			
 			if(exe_path[cur_case_id][cur_block_index] == 0x7FFFFFFF) {
@@ -95,7 +136,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
-				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) {
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { cout << "LLLLLLLLLLLL" << endl;
 					L_Intra_task_checkpoint(
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case

@@ -98,8 +98,7 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 {
 	float time_temp;
 	int case_id = intra_tasks[new_task_id].cur_case_id;
-	int cur_block_index = intra_tasks[new_task_id].cur_block_index;
-
+	int cur_block_index = intra_tasks[new_task_id].cur_block_index; 
 	if(intra_tasks[new_task_id].exe_path[case_id][cur_block_index] != intra_tasks[new_task_id].exe_path[case_id].back()) {
 #ifdef DEBUG
 		printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);

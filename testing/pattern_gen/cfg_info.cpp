@@ -191,7 +191,7 @@ Src_CFG::Src_CFG(
 	
 	// Checkpoints insertion and generating its corresponding mining table
 	checkpoints_placement(checkpoint_label_temp); 
-	mining_table_gen();
+	mining_table_gen(); 
 	
 	// Designating the system-clock/timer source
 	timer_config(timer);
@@ -367,7 +367,7 @@ void Src_CFG::completion_config(void)
 	completion_flag = true;
 	
 	// Since task has completed its current job, preloading the loop iteration counter by the values of their corresponding Loop Bounds
-	for(int i = 0; i < checkpointLabel -> L_checkpoints.size(); i++) L_loop_iteration.at(i) = checkpointLabel -> L_loop_bound[i] + 1;
+	//for(int i = 0; i < checkpointLabel -> L_checkpoints.size(); i++) L_loop_iteration.at(i) = checkpointLabel -> L_loop_bound[i] + 1;
 	for(int i = 0; i < checkpointLabel -> P_checkpoints.size(); i++) P_loop_iteration.at(i) = checkpointLabel -> P_loop_bound[i];
 
 	// Reset the runtime information
@@ -593,25 +593,33 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from L-type mining table
 	// Accumulate L-type iteration counter by -1 if task reached loop's exit currently
-	if(cur_block_index == L_loop_exit[loop_index]) 
-		L_loop_iteration.at(loop_index) = L_loop_iteration[loop_index] - 1;
+	if(cur_block_index == L_mining_table[loop_index].loop_entry) 
+		L_loop_iteration[loop_index].at(ExePathSet_caseID) = 
+			((L_loop_iteration[loop_index][ExePathSet_caseID] - 1) == -1) ? 0 : L_loop_iteration[loop_index][ExePathSet_caseID] - 1;
 	// Identify the actual branch
-	if( succ_block_index == L_mining_table[loop_index][loop_addr].successors[0] ) {
-		// Avoid negative value of index whilst task is reaching loop's exit at last iteration (refered to loop bound)
-		int temp = ((L_loop_iteration[loop_index] - 1) == -1) ? 0 : (L_loop_iteration[loop_index] - 1);
-		rwcec = L_mining_table[loop_index][loop_addr].n_taken_rwcec[temp]; 
-		rem_wcec = rwcec;
+	cout << endl << "taken_succ[" << loop_addr << "]: " << L_mining_table[loop_index].taken_succ[loop_addr] << endl;
+	cout << "not-taken_succ[" << loop_addr << "]: " << L_mining_table[loop_index].n_taken_succ[loop_addr] << endl;
+	if(L_loop_iteration[loop_index][ExePathSet_caseID] == 0) 
+		rwcec = L_mining_table[loop_index].succ_rwcec;
+	else if( succ_block_index == L_mining_table[loop_index].taken_succ[loop_addr]) {
+		rwcec = L_mining_table[loop_index].taken_rwcec[loop_addr] + 
+			(L_loop_iteration[loop_index][ExePathSet_caseID] - 1) * P_mining_table[loop_index].iteration_wcec +  
+			L_mining_table[loop_index].succ_rwcec; 
 #ifdef DEBUG
-		cout << endl << "not taken" << endl; 
+		cout << endl << "taken\t"; 
+		cout << "remaining iteration is (" << loop_index << ")(" << ExePathSet_caseID << "): " << L_loop_iteration[loop_index][ExePathSet_caseID] << endl;
 #endif
 	}
 	else {
-		rwcec = L_mining_table[loop_index][loop_addr].taken_rwcec[L_loop_iteration[loop_index] - 1]; 
-		rem_wcec = rwcec;
+		rwcec = L_mining_table[loop_index].n_taken_rwcec[loop_addr] + 
+			(L_loop_iteration[loop_index][ExePathSet_caseID] - 1) * P_mining_table[loop_index].iteration_wcec +  
+			L_mining_table[loop_index].succ_rwcec; 
 #ifdef DEBUG
-		cout << endl << "taken" << endl; 
+		cout << endl << "not taken\t"; 
+		cout << "remaining iteration is (" << loop_index << ")(" << ExePathSet_caseID << "): " << L_loop_iteration[loop_index][ExePathSet_caseID] << endl;
 #endif
 	}
+	rem_wcec = rwcec;
 #ifdef DEBUG
 	printf("rwcec = %d, ", rwcec);
 #endif
@@ -656,6 +664,7 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
 #endif
 	exe_speed_scaling(new_freq);
+
 }
 
 void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
@@ -672,6 +681,7 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	// Since actual loop iteration(s) have been known ahead of task really reach that loop in the near future,
 	// the calculation of the remaining worst-case execution cycles is: RWCEC = iteration x Iteration_WCEC + WCEC_after_Loop
 	rwcec = P_loop_LaIteration[loop_addr][ExePathSet_caseID] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
+	rem_wcec = rwcec;
 #ifdef DEBUG
 	cout << endl << endl << "============================================" << endl;
 	printf("P-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][ExePathSet_caseID]); 
@@ -756,12 +766,12 @@ void Src_CFG::exe_cycle_tracing(exeTime_info WCET_INFO, RWCEC_Trace_in *cycle_tr
 
 void Src_CFG::mining_table_gen(void)
 {
-	int B_checkpoints_cnt, L_checkpoints_cnt, P_checkpoints_cnt;
+	unsigned int B_checkpoints_cnt, L_loops_cnt, L_checkpoints_cnt,  P_checkpoints_cnt;
 
 // Creating the correspoinding miniing table in order to record the remaining worst-case execution cycles at each basic block (especially every branch)
 // For B-type checkpoints
 	B_checkpoints_cnt = checkpointLabel -> B_checkpoints.size();
-	for(int i = 0; i < B_checkpoints_cnt; i++) 
+	for(unsigned int i = 0; i < B_checkpoints_cnt; i++) 
 		B_mining_table.push_back( 
 			(B_mining_table_t) 
 			{
@@ -782,7 +792,7 @@ void Src_CFG::mining_table_gen(void)
 	cout << "\t\t -------------------------------" << endl;
 	cout << "|\t\t|\t" << "n_taken\t|\ttaken\t|" << endl;
 	cout << " -----------------------------------------------" << endl;
-	for(int i = 0; i < B_checkpoints_cnt; i++) {
+	for(unsigned int i = 0; i < B_checkpoints_cnt; i++) {
 		cout << "| Branch_" 
 		     << i << "(Block " << B_mining_table[i].block_id << ")" << "\t|\t" 
 		     << B_mining_table[i].n_taken_rwcec 
@@ -795,53 +805,41 @@ void Src_CFG::mining_table_gen(void)
 	}
 	cout << endl;
 #endif 	
-
-/*
 // For L-type checkpoints
-	for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) { // The #th Loop-nest
-		vector<L_mining_table_t> loop_t;
-		L_checkpoints_cnt = L_checkpoints[index_temp].size();
-		for(i = 0; i < L_checkpoints_cnt; i++) { // The checkpoints inside #th Loop-nest
-			vector<int> n_taken_t, taken_t;
-			for(j = 0; j < loop_bound[index_temp]; j++) { // The #th iteration of each checkpoint inside each Loop-nest
-				n_taken_t.push_back(cycle_trace_in -> L_RWCEC_t[index_temp][i][NOT_TAKEN * (j + 1)]);
-				taken_t.push_back(cycle_trace_in -> L_RWCEC_t[index_temp][i][(loop_bound[index_temp] + 2) + j]);
-			}
-			loop_t.push_back( 
-				{
-					n_taken_t,
-					taken_t,
-					cycle_trace_in -> L_RWCEC_t[index_temp][i][0], // Not Taken
-					cycle_trace_in -> L_RWCEC_t[index_temp][i][loop_bound[index_temp] + 1], // Taken
-				} 
-			);
-			vector<int>().swap(n_taken_t); vector<int>().swap(taken_t);
+	L_loops_cnt = checkpointLabel -> L_checkpoints.size();
+	for(unsigned int i = 0; i < L_loops_cnt; i++) { // The #th Loop-nest
+		L_mining_table_t *loop_t = new L_mining_table_t;
+		loop_t -> loop_entry = checkpointLabel -> L_checkpoints[i];       // Block ID of Loop Entry
+		loop_t -> loop_bound = cycle_trace_in -> L_RWCEC_t[i].loop_bound; // Loop Bound
+		loop_t -> succ_rwcec = cycle_trace_in -> L_RWCEC_t[i].rwcec_AfterLoop; // The RWCEC after loop
+		L_checkpoints_cnt = cycle_trace_in -> L_RWCEC_t[i].branch_num;
+		for(unsigned int j = 0; j < L_checkpoints_cnt; j++) { // The checkpoint/branch inside #th Loop-nest
+			loop_t -> block_id.push_back     (cycle_trace_in -> L_RWCEC_t[i].branch[j][0]); // The current branch's Block ID
+			loop_t -> taken_succ.push_back   (cycle_trace_in -> L_RWCEC_t[i].branch[j][1]); // The successor_1's Block ID
+			loop_t -> taken_rwcec.push_back  (cycle_trace_in -> L_RWCEC_t[i].branch[j][2]); // The WCEC from successor_1 until loop exit/entry
+			loop_t -> n_taken_succ.push_back (cycle_trace_in -> L_RWCEC_t[i].branch[j][3]); // The successor_2's Block ID
+			loop_t -> n_taken_rwcec.push_back(cycle_trace_in -> L_RWCEC_t[i].branch[j][4]); // The WCEC from successor_2 until loop exit/entry
 		}
-		L_mining_table.push_back(loop_t);
-		vector<L_mining_table_t>().swap(loop_t);		
+		L_mining_table.push_back(*loop_t);
+		delete loop_t;
 	}
-
 #ifdef DEBUG
-for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {	
-	L_checkpoints_cnt = L_checkpoints[index_temp].size(); 
-	cout << "L-Type Mining Table_" << index_temp << endl;
+for(unsigned int i = 0; i < L_loops_cnt; i++) {	
+	L_checkpoints_cnt = cycle_trace_in -> L_RWCEC_t[i].branch_num;
+	cout << "L-Type Mining Table_" << i + 1 << endl;
 	cout << "------------------------------------------------" << endl;
-	cout << "Loop Bound(iteration): " << loop_bound[index_temp] << endl;
-	for( i = 0; i < L_checkpoints_cnt; i++ ) {
-		cout << "Branch_" << i << ":" << endl; 
-		for(j = loop_bound[index_temp] - 1; j >= 0; j--) {
-			cout << "n_taken_" << (j + 1) << ": " 
-		             << L_mining_table[index_temp][i].n_taken_rwcec[j] << "(" << L_mining_table[index_temp][i].successors[0] <<")\t";
-			cout << "taken_" << (j + 1) << ": " 
-		             << L_mining_table[index_temp][i].taken_rwcec[j] << "(" << L_mining_table[index_temp][i].successors[1] << ")" << endl;
-		}
-		cout << endl;
+	cout << "Loop Entry/Exit(Basic Block): " << L_mining_table[i].loop_entry << endl;
+	cout << "Loop Bound(iteration): " << L_mining_table[i].loop_bound << endl;
+	cout << "The Remaining Worst-Case Execution Cycle(cycle): " << L_mining_table[i].succ_rwcec << endl;
+	for( unsigned int j = 0; j < L_checkpoints_cnt; j++ ) {
+		cout << "Address_" << j + 1 << "(Block_" << L_mining_table[i].block_id[j] << "): " << endl; 
+		cout << "Taken(Block_" << L_mining_table[i].taken_succ[j] << ") =>  WCEC: " << L_mining_table[i].taken_rwcec[j] << " cycle(s)" << endl;
+		cout << "Not-Taken(Block_" << L_mining_table[i].n_taken_succ[j] << ") =>  WCEC: " << L_mining_table[i].n_taken_rwcec[j] << " cycle(s)" << endl;
 	}
 	cout << "------------------------------------------------" << endl;
 	cout << endl << endl;
 }
 #endif 	
-*/
 
 // For P-type checkpoints
 	P_checkpoints_cnt = checkpointLabel -> P_checkpoints.size();
@@ -860,7 +858,7 @@ for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {
 	cout << " ------------------------------------------------------------------------------" << endl;
 	cout << "|WCEC(cycle): " << execution_cycles[WORST - 1] << "\t\t\t\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
-	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC of each iteratoin\t|\tWCEC after Loop\t|" << endl;
+	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC of each iteratoin\t|\tWCEC apart from Loop\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
 	for(int i = 0; i < P_checkpoints_cnt; i++) {
 		cout << "| Loop_" 
@@ -887,24 +885,24 @@ for(index_temp = 0; index_temp < L_loop_cnt; index_temp++) {
 **/
 void Src_CFG::checkpoints_placement(checkpoints_label *&checkpoint_label_temp)
 {	
-	int B_cnt, L_cnt, P_cnt, index_temp;
+	unsigned int B_cnt, L_cnt, P_cnt, index_temp;
 	checkpointLabel = checkpoint_label_temp;
 	B_cnt = checkpointLabel -> B_checkpoints.size();
 	L_cnt = checkpointLabel -> L_checkpoints.size();
 	P_cnt = checkpointLabel -> P_checkpoints.size();
 	
 	// Preload/setup the counter of L- and P-type iteration
-	for(int i = 0; i < L_cnt; i++) L_loop_iteration.push_back(checkpointLabel -> L_loop_bound[i]);
-	for(int i = 0; i < P_cnt; i++) P_loop_iteration.push_back(checkpointLabel -> P_loop_bound[i]);
+	//for(unsigned int i = 0; i < L_cnt; i++) L_loop_iteration.push_back(checkpointLabel -> L_loop_bound[i]);
+	for(unsigned int i = 0; i < P_cnt; i++) P_loop_iteration.push_back(checkpointLabel -> P_loop_bound[i]);
 	
 	// Enable the corresponding Basic Block as B-/L-/P-type checkpoint
-	for(int i = 0; i < B_cnt; i++ ) CFG_path[ checkpointLabel -> B_checkpoints[i] - 1 ].B_checkpoint_en = i; 
-	for(int i = 0; i < L_cnt; i++ ) {
-	 for(int j = 0; j < checkpointLabel -> L_checkpoints[i].size(); j++) {
-	  CFG_path[ checkpointLabel -> L_checkpoints[i][j] - 1 ].L_checkpoint_en[0] = i;
-	  CFG_path[ checkpointLabel -> L_checkpoints[i][j] - 1 ].L_checkpoint_en[1] = j;
+	for(unsigned int i = 0; i < B_cnt; i++ ) CFG_path[ checkpointLabel -> B_checkpoints[i] - 1 ].B_checkpoint_en = i; 
+	for(unsigned int i = 0; i < L_cnt; i++ ) {
+	 for(unsigned int j = 0; j <  cycle_trace_in -> L_RWCEC_t[i].branch_num; j++) {
+	  CFG_path[cycle_trace_in -> L_RWCEC_t[i].branch[j][0] - 1].L_checkpoint_en[0] = i;
+	  CFG_path[cycle_trace_in -> L_RWCEC_t[i].branch[j][0] - 1].L_checkpoint_en[1] = j;
 	 }
-	} 
+	}
 	for(int i = 0; i < P_cnt; i++ ) CFG_path[ checkpointLabel -> P_checkpoints[i] - 1 ].P_checkpoint_en = i; 
 	
 /*

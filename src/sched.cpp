@@ -244,7 +244,6 @@ void Task_Scheduler::resume(void)
 	rwcet = cur_context.rwcet;
 #ifdef DEBUG
 	cout << "Resume Task_" << cur_context.task_id << "'s execution(RWCET:" << rwcet << " us) " << "from Task_" << running_task_id << endl;
-	char a; cout << "Press any key:"; cin >> a; 
 #endif
 }
 
@@ -513,7 +512,6 @@ void Task_Scheduler::dispatcher(void)
 	if(pre_task != running_task_id && pre_task != (int) CPU_IDLE) { // Preemption
 		cout << "preemption(pre:" << pre_task << ", new:" << running_task_id << ")" << endl;
 		context_switch(pre_task, running_task_id);
-		char a; cout << "Press any key:"; cin >> a; 
 		
 		cout << "start new task" << endl; 
 		rwcet = task_list[running_task_id].wcet;

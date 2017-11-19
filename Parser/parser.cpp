@@ -27,9 +27,10 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 	string read_id;
 	string read_id_1;
 	string read_int;
-	int tasks_num, TaskNum_check = 0, BNum_check, LNum_check, PNum_check;
+	int tasks_num, TaskNum_check, BNum_check, LNum_check, PNum_check;
 	int task_id;
 	char *cstr;
+	TaskNum_check = 0;
 	RWCEC_Trace_in *cycle_trace = (RWCEC_Trace_in*) cycle_trace_inout;
 	checkpoint_num *checkpoint_numbers = (checkpoint_num*) checkpoint_numbers_inout; 
 	checkpoints_label *checkpoint_BlockID = (checkpoints_label*) checkpoint_BlockID_inout;
@@ -54,7 +55,7 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 				     << tasks_num << " tasks)" << endl;
 				exit(1);
 			}
-			else if(TaskNum_check > tasks_num) {
+			else if(TaskNum_check < tasks_num) {
 				cout << "The pre-defined number of Tasks is "
 				     << tasks_num << ", but only "
 				     <<	TaskNum_check << " tasks have been configured" << endl;
@@ -171,11 +172,31 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 						}
 						else L_id -= 1;
 						
-						for(int i = 0; i < 2; i++)
-						 for(int j = 0; j < 8; j++) {
-						   read_content >> read_int; 
-						   cycle_trace[task_id - 1].L_RWCEC_t[L_id][i][j] = char_int(read_int.c_str()); 
-						 } 
+						// The loop entry
+						read_content >> read_int; 
+						checkpoint_BlockID[task_id - 1].L_checkpoints.push_back(char_int(read_int.c_str())); 
+						// The number of branches inside every Loop
+						read_content >> read_int;
+						int branch_num = char_int(read_int.c_str()); 
+						cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch_num = branch_num;
+						cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch = new L_branch[branch_num];
+						read_content >> read_int;
+						cycle_trace[task_id - 1].L_RWCEC_t[L_id].loop_bound = char_int(read_int.c_str());
+						checkpoint_BlockID[task_id - 1].L_loop_bound.push_back(char_int(read_int.c_str())); 
+						for(int addr = 0; addr < branch_num; addr++) {
+						  read_content >> read_int; // current loop's Block ID of addr_1
+						  cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch[addr][0] = char_int(read_int.c_str()); 
+						  read_content >> read_int; // successor_1(taken)'s Block ID at addr_1 of current Loop
+						  cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch[addr][1] = char_int(read_int.c_str()); 
+						  read_content >> read_int; // WCEC from successor_1
+						  cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch[addr][2] = char_int(read_int.c_str()); 
+						  read_content >> read_int; // successor_2(not taken)'s Block ID at addr_1 of current Loop
+						  cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch[addr][3] = char_int(read_int.c_str()); 
+						  read_content >> read_int; // WCEC from successor_2
+						  cycle_trace[task_id - 1].L_RWCEC_t[L_id].branch[addr][4] = char_int(read_int.c_str()); 
+						}
+						read_content >> read_int; // RWCEC after current Loop
+						cycle_trace[task_id - 1].L_RWCEC_t[L_id].rwcec_AfterLoop = char_int(read_int.c_str()); 
 				}
 				else if(!read_id_1.compare(checkpoint_id_6)) { // P-type Checkpoint
 						int digit = read_id.length() - read_id_1.length() - 1;
@@ -233,14 +254,14 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 		 				     << cycle_trace[cnt].B_RWCEC_t[i][2] << " "
 		 				     << cycle_trace[cnt].B_RWCEC_t[i][3] << endl;
 		}
-		cout << "L-type Checkpoint:" << endl;
+		/*cout << "L-type Checkpoint:" << endl;
 		if(checkpoint_numbers[cnt].L_ch == 0) cout << "    No L-type Checkpoint is inserted in this Task" << endl;
 		else {
 		 for(int i = 0; i < checkpoint_numbers[cnt].L_ch; i++)		
 		  for(int j = 0; j < 2; j++)
 		   for(int k = 0; k < 8; k++) 
 		     cout << "L(" << i + 1 << "," << j << "," << k << "): " << cycle_trace[cnt].L_RWCEC_t[i][j][k] << endl;
-		}
+		}*/
 		cout << "P-type Checkpoint:" << endl;
 		if(checkpoint_numbers[cnt].P_ch == 0) cout << "    No P-type Checkpoint is inserted in this Task" << endl;
 		else {

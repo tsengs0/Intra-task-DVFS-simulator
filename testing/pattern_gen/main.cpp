@@ -115,12 +115,16 @@ int main(int argc, char **argv)
 //	 }
 //	}
 //=======================================================================================================================================================//
-	for(int tmp = 0; tmp < tasks_num; tmp++)
+	/*for(int tmp = 0; tmp < tasks_num; tmp++)
 	for(int i = 0; i < patterns_num; i++) {
 		src_intra[tmp].traverse_spec_path(i, (int) WORST, 0.0, 0.0, 50.0, (char) DVFS_ENABLE);
 		cout << "==================================================================" << endl << endl;
 	}
-	
+	*/
+	for(int i = 0; i < patterns_num; i++) {
+		src_intra[2].traverse_spec_path(i, (int) WORST, 0.0, 0.0, 50.0, (char) DVFS_ENABLE);
+		cout << "==================================================================" << endl << endl;
+	}
 	return 0;
 }
 
@@ -193,10 +197,14 @@ void TestPattern_config()
 		 (ExePath_set*) (&exe_path[i]), // The output of generated set of test patterns
 		 (int**) src_intra[i].P_loop_LaIteration
 	 );
+	 vector<int> temp;
 	 for(int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
-	   for(int k = 0; k < patterns_num; k++)
-	    cout << "Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra[i].P_loop_LaIteration[j][k] << endl; 
+	   for(int k = 0; k < patterns_num; k++) {
+	    cout << "Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra[i].P_loop_LaIteration[j][k] << endl;
+            temp.push_back(src_intra[i].P_loop_LaIteration[j][k] + 1);
+           } 
 	 }
+	 src_intra[i].L_loop_iteration.push_back(temp); vector<int>().swap(temp); 
 	 src_intra[i].pattern_init(exe_path[i]);
 	}
 }

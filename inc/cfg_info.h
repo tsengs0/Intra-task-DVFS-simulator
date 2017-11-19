@@ -76,7 +76,7 @@ class Src_CFG {
 		float tar_diff; // The difference between actual execution time and target execution time
 		jitter_constraint jitter_config;
 		std::vector<B_mining_table_t> B_mining_table;
-		std::vector< vector<L_mining_table_t> > L_mining_table;
+		std::vector<L_mining_table_t> L_mining_table;
 		std::vector<P_mining_table_t> P_mining_table;
 
 	//public:
@@ -146,7 +146,7 @@ class Src_CFG {
 		checkpoint_num *checkpointNum;
 	
 	/*Since Lookahead Actual Loop iteration have been declared, so this two variables maybe no need*/	
-	/*Note*/	std::vector<int> L_loop_iteration; // The counter of L-type iteration
+	/*Note*/	std::vector< std::vector<int> > L_loop_iteration; // The counter of L-type iteration
 	/*Note*/	std::vector<int> P_loop_iteration; // The counter of P-type iteration
 		std::vector<int> L_loop_exit;
 
@@ -176,7 +176,7 @@ Sample Variance
 */
 static float sample_variance(vector<float> &a) 
 {
-	int i; float acc = 0.0, acc_1 = 0.0; 
+	unsigned int i; float acc = 0.0, acc_1 = 0.0; 
 
 	for(i = 0; i < a.size(); i++) acc += a[i]; 
 	acc = acc / a.size(); 

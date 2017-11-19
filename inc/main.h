@@ -11,7 +11,7 @@
 #define N_DECIMAL_POINTS_PRECISION 1000.0 // To extracting three decimal points
 
 #define tasks_num 3
-#define patterns_num 10
+#define patterns_num 1
 
 /*
  cur_freq (MHz)
@@ -67,3 +67,4 @@ enum {
 typedef int exeTime_info[3];
 
 #endif // __MAIN_H
+
