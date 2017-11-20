@@ -94,7 +94,7 @@ class Src_CFG {
 		void L_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		void P_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		
-		float discrete_handle(float new_freq, int rwcec);
+		float discrete_handle(float new_freq, int rwcec, float rel_deadline);
 		void checkpoint_operation(int block_index, int case_t);
 		void exe_speed_config(void); // For determining all DVFS availability firstly
 		void jitter_init(void); // Configuration of jitter constraints

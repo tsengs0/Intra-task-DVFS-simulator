@@ -555,14 +555,17 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 					executed_time,
 					rep_time_target 
 		);
-		printf("Available Time for Task_%d: %f us\r\n", TskID, time_available);
+		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, rel_deadline);
 #endif
 		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
 								rwcec / rel_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
-	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
+	if(new_freq != min_freq_t && new_freq != max_freq_t) {
+		printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
+		new_freq = discrete_handle(new_freq, rwcec, rel_deadline);
+	}
 #endif
 	exe_speed_scaling(new_freq);
 }
@@ -624,14 +627,17 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 					executed_time,
 					rep_time_target 
 		);
-		printf("Available Time for Task_%d: %f us\r\n", TskID, time_available);
+		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, rel_deadline);
 #endif
 		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
 								rwcec / rel_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
-	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
+	if(new_freq != min_freq_t && new_freq != max_freq_t) {
+		printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
+		new_freq = discrete_handle(new_freq, rwcec, rel_deadline);
+	}
 #endif
 	exe_speed_scaling(new_freq);
 }
@@ -670,19 +676,22 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 					executed_time,
 					rep_time_target 
 		);
-		printf("Available Time for Task_%d: %f us\r\n", TskID, time_available);
+		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, rel_deadline);
 #endif
 		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
 								rwcec / rel_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
-	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
+	if(new_freq != min_freq_t && new_freq != max_freq_t) {
+		printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
+		new_freq = discrete_handle(new_freq, rwcec, rel_deadline);
+	}
 #endif
 	exe_speed_scaling(new_freq);
 }
 
-float Src_CFG::discrete_handle(float new_freq, int rwcec)
+float Src_CFG::discrete_handle(float new_freq, int rwcec, float rel_deadline)
 {
 	int i;
 	float max_diff, min_diff;
@@ -693,7 +702,7 @@ float Src_CFG::discrete_handle(float new_freq, int rwcec)
 #endif
 	min_diff = new_freq - freq_vol[i][0];
 	max_diff = freq_vol[i+1][0] - new_freq;
-	return (min_diff < max_diff && (sys_clk -> cur_time + rwcec / freq_vol[i][0]) <= abs_dline) ? freq_vol[i][0] : freq_vol[i+1][0];	
+	return (min_diff < max_diff && ((rwcec / freq_vol[i][0]) <= rel_deadline)) ? freq_vol[i][0] : freq_vol[i+1][0];	
 }
 
 /**
