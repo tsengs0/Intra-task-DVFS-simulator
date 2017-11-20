@@ -41,6 +41,7 @@ typedef struct isr_context{
 class Src_CFG {
 	private:
 		std::vector<char_str> task_id;
+		int TskID;
 		char_str task_id_temp;
 		std::vector<char_str> wcec, acec, bcec;
 		char_str wcec_temp, acec_temp, bcec_temp;
@@ -136,8 +137,8 @@ class Src_CFG {
 			checkpoints_label *checkpoint_label_temp, 
 			RWCEC_Trace_in *cycle_in_temp,
 			checkpoint_num *checkpointNum_temp,
-			exeTime_info WCET_INFO//, 
-			//ExePath_set exe_path
+			exeTime_info WCET_INFO,
+			int TskID_in 
 		);
 		~Src_CFG(void);
 

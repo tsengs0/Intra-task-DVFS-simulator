@@ -64,6 +64,13 @@ enum {
 	L_POWER = 2, // Low Power 
 };
 
+enum {
+	START_TIME      = 0x01,
+	PREEMPTED_POINT = 0x02,
+	RESUME_POINT    = 0x03,
+	COMPLETION_TIME = 0x04
+};
+
 typedef int exeTime_info[3];
 
 #endif // __MAIN_H

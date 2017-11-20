@@ -372,6 +372,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 	// The completion of currently running task
 #ifdef INTRA_SCHED
 	if(IsIdle() != true && inter_intra_bus -> intra_tasks[running_task_id].completion_flag == true) {
+		time_management -> ExecutedTime_Accumulator((unsigned char) COMPLETION_TIME, (int) running_task_id);
 		task_list[running_task_id].state = (char) IDLE;
 		task_list[running_task_id].release_time += task_list[running_task_id].period;
 		inter_intra_bus -> intra_tasks[running_task_id].completion_flag = false;
@@ -507,6 +508,7 @@ void Task_Scheduler::dispatcher(void)
 #endif
 	// Checking whether context switch is needed or not, e.g., preemption or comletion/start is happened
 	if(pre_task != running_task_id && pre_task != (int) CPU_IDLE) { // Preemption
+		time_management -> ExecutedTime_Accumulator((unsigned char) PREEMPTED_POINT, (int) running_task_id);
 		cout << "preemption(pre:" << pre_task << ", new:" << running_task_id << ")" << endl;
 		context_switch(pre_task, running_task_id);
 		
@@ -525,6 +527,7 @@ void Task_Scheduler::dispatcher(void)
 		new_task_start_flag = false;
 	} 
 	else if(cur_context.isr_flag == true && cur_context.task_id == running_task_id) { // Resuming from previous preemption
+		time_management -> ExecutedTime_Accumulator((unsigned char) RESUME_POINT, (int) running_task_id);
 		cout << "resume" << endl; 
 		//resume();
 	} 
@@ -542,6 +545,7 @@ void Task_Scheduler::dispatcher(void)
 					(char) DVFS_ENABLE
 				);
 		new_task_start_flag = false;
+		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
 	} 
 #ifdef DEBUG
 //	list_task_state();
@@ -586,4 +590,3 @@ void Task_Scheduler::list_task_state(void)
         cout << "===================================" << endl;
 
 }
-

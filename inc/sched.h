@@ -125,7 +125,7 @@ class RT_Analyser {
 class Task_State_Bus;
 class Task_Scheduler {
 	private:		
-
+	
 	public:  
 		Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus);
 		~Task_Scheduler(void);

@@ -103,9 +103,9 @@ int main(int argc, char **argv)
 	cout << "Starting to initialise system" << endl;
 	system_init();
 	cout << "After system initialisation" << endl;
-	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, &checkpointLabel[0], &cycle_trace[0], &checkpoint_num_t[0], task_wcet_info[0]/*, exe_path[0]*/); cout << "Finished configuring task1" << endl;
-	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, &checkpointLabel[1], &cycle_trace[1], &checkpoint_num_t[1], task_wcet_info[1]/*, exe_path[1]*/); cout << "Finished configuring task2" << endl;
-	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, &checkpointLabel[2], &cycle_trace[2], &checkpoint_num_t[2], task_wcet_info[2]/*, exe_path[2]*/); cout << "FInished configuring task3" << endl;
+	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, &checkpointLabel[0], &cycle_trace[0], &checkpoint_num_t[0], task_wcet_info[0], (int) 0); cout << "Finished configuring task1" << endl;
+	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, &checkpointLabel[1], &cycle_trace[1], &checkpoint_num_t[1], task_wcet_info[1], (int) 1); cout << "Finished configuring task2" << endl;
+	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, &checkpointLabel[2], &cycle_trace[2], &checkpoint_num_t[2], task_wcet_info[2], (int) 2); cout << "FInished configuring task3" << endl;
 	src_intra.push_back(task1); src_intra.push_back(task2); src_intra.push_back(task3);
 	cout << "The number of Intra-Source: " << src_intra.size() << endl;
 	if(tasks_num != src_intra.size()) {
@@ -223,6 +223,11 @@ void system_init(void)
         Sys_Clk_0.cur_time  = 0.0;
         Sys_Clk_0.time_unit = (int) US;
         time_management = new Time_Management(Sys_Clk_0);
+	// Initially, assigning every task's Executed Time annotation as value of "0"
+	// Since none of task is executed at very beginning
+	time_management -> ExecutedTime = new float[tasks_num];
+	for(int i = 0; i < tasks_num; i++) time_management -> ExecutedTime[i] = (float) 0.0;
+	time_management -> UpdatePoint = 0;
 
         checkpoint_config();
         wcet_info_config();

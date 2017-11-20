@@ -73,16 +73,17 @@ Src_CFG::Src_CFG(
 	checkpoints_label *checkpoint_label_temp, 
 	RWCEC_Trace_in *cycle_trace_temp,
 	checkpoint_num *checkpointNum_temp,
-	exeTime_info WCET_INFO//, 
+	exeTime_info WCET_INFO,
+	int TskID_in //, 
 //	ExePath_set test_case
 )
 {
 	FILE *fp;
-	unsigned int c, i, j, k;
+	unsigned int c, i, j;
 	unsigned char fsm_state = (unsigned char) ATTRIBUTES_ITEM;
 	unsigned char fsm_state_internal = (unsigned char) TASK_ID;
 	vector<int> succ_conv_temp;
-	unsigned int size_temp;
+	TskID = TskID_in;
 	succ_int_temp = 0;
 	fp = fopen(file_name, "r");
 	while(1) {
@@ -284,7 +285,7 @@ void Src_CFG::global_param_eval(void)
 		cout << "Deadline miss" << "Current Time is " << sys_clk -> cur_time << " us, but Absolute Deadline is " << abs_dline << "us" << endl;
 		while(1);
 	}
-	Act_CET = (float) (sys_clk -> cur_time - start_time);
+/*Need to be modified*/	Act_CET = (float) (sys_clk -> cur_time - start_time); // Regardless of preemption
 	cycle_acc += cycles_cnt;
 	exe_acc += Act_CET;
 	exe_case.push_back(Act_CET);
@@ -342,7 +343,7 @@ void Src_CFG::output_result(char* case_msg) {
 		in_alpha,
 		in_default_speed
 	);
-	system(ExeVar_msg); 
+	system((char*) ExeVar_msg); 
 }
 
 void Src_CFG::power_init(void)
@@ -369,7 +370,7 @@ void Src_CFG::completion_config(void)
 	
 	// Since task has completed its current job, preloading the loop iteration counter by the values of their corresponding Loop Bounds
 	//for(int i = 0; i < checkpointLabel -> L_checkpoints.size(); i++) L_loop_iteration.at(i) = checkpointLabel -> L_loop_bound[i] + 1;
-	for(int i = 0; i < checkpointLabel -> P_checkpoints.size(); i++) P_loop_iteration.at(i) = checkpointLabel -> P_loop_bound[i];
+	for(unsigned int i = 0; i < checkpointLabel -> P_checkpoints.size(); i++) P_loop_iteration.at(i) = checkpointLabel -> P_loop_bound[i];
 
 	// Reset the runtime information
 	cycles_cnt = 0;	
@@ -384,7 +385,7 @@ void Src_CFG::completion_config(void)
 
 void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new, float start_time_new, float Deadline, char DVFS_en)
 {
-	int cur_index, i;
+	int cur_index;
 	float time_temp;
 	dvfs_en = DVFS_en;
 	exe_speed_config();
@@ -515,11 +516,11 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 {
 	float new_freq;
 	float rep_time_target;
-	float rep_time_expect; // A speculative response time if keeping current execution speed withou any change
-	float elapsed_time; 
-	float target_comparison, rem_time, executed_time;
+/*For debugging*/	float elapsed_time; 
+	float executed_time, time_available, rel_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int branch_addr = CFG_path[cur_block_index - 1].B_checkpoint_en;
+	rel_deadline = wcrt - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from B-type mining table
 	// Identify the actual branch
@@ -541,40 +542,25 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	printf("rwcec = %d, ", rwcec); 
 #endif
 //===============================================================================================================//
-	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
-	if(elapsed_time > jitter_config.fin_time_target) {
-#ifdef DEBUG
-		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
-#endif
-		rep_time_target = rep_time_expect;
-	}
-        else rep_time_target = jitter_config.fin_time_target;	
-	rem_time = rep_time_target - elapsed_time;
-	executed_time = time_management -> sys_clk -> cur_time - start_time;
-	rep_time_expect = 
-				(wcrt - wcet) + // Preempted Duration 
-				executed_time + // The total time task has spent so far
-				(rwcec / time_management -> sys_clk -> cur_freq); // A future expectation
-	target_comparison = rep_time_target - rep_time_expect;
+/*For debugging*/	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
+        rep_time_target = jitter_config.fin_time_target;	
+	executed_time = time_management -> ExecutedTime[TskID] + (time_management -> sys_clk -> cur_time - time_management -> UpdatePoint);
+	time_available = rep_time_target - (wcrt - wcet) - executed_time;  
 //===============================================================================================================//
-	if( (float) target_comparison != 0.0 ) {
 #ifdef DEBUG
 		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
 		printf("Current time: %f us, ", sys_clk -> cur_time);
-		printf("Elapsed time = %f us, Target Response Time = %f us, Expected Response Time = %f us, ", 
+		printf("Elapsed time = %f us, Executed Time = %f us, Target Response Time = %f us\r\n", 
 					elapsed_time, 
-					rep_time_target, 
-					rep_time_expect
+					executed_time,
+					rep_time_target 
 		);
-		printf("Difference: %.05f us\r\n", target_comparison);
+		printf("Available Time for Task_%d: %f us\r\n", TskID, time_available);
 #endif
-		new_freq = (rem_time <= wcrt - elapsed_time) ?  rwcec / rem_time : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / (wcrt - elapsed_time); // Deadline miss might occur
+		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / rel_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
-	}
-	else 
-		new_freq = sys_clk -> cur_freq;	
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
 #endif
@@ -585,12 +571,12 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 {
 	float new_freq;
 	float rep_time_target;
-	float rep_time_expect; // A speculative execution time if keeping current execution speed withou any change
-	float elapsed_time;
-	float target_comparison, rem_time, executed_time;
+/*For debugging*/	float elapsed_time; 	
+	float executed_time, time_available, rel_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_index = CFG_path[cur_block_index - 1].L_checkpoint_en[0];
 	int loop_addr  = CFG_path[cur_block_index - 1].L_checkpoint_en[1];
+	rel_deadline = wcrt - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from L-type mining table
 	// Accumulate L-type iteration counter by -1 if task reached loop's exit currently
@@ -625,58 +611,40 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	printf("rwcec = %d, ", rwcec);
 #endif
 //===============================================================================================================//
-	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
-	if(elapsed_time > jitter_config.fin_time_target) {
-#ifdef DEBUG
-		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
-#endif
-		rep_time_target = rep_time_expect;
-	}//
-        else rep_time_target = jitter_config.fin_time_target;	
-	rem_time = rep_time_target - elapsed_time;
-	executed_time = time_management -> sys_clk -> cur_time - start_time;
-	rep_time_expect = 
-				(wcrt - wcet) + // Preempted Duration 
-				executed_time + // The total time task has spent so far
-				(rwcec / time_management -> sys_clk -> cur_freq); // A future expectation
-	target_comparison = rep_time_target - rep_time_expect;
+/*For debugging*/	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
+        rep_time_target = jitter_config.fin_time_target;	
+	executed_time = time_management -> ExecutedTime[TskID] + (time_management -> sys_clk -> cur_time - time_management -> UpdatePoint);
+	time_available = rep_time_target - (wcrt - wcet) - executed_time;  
 //===============================================================================================================//
-	if( (float) target_comparison != 0.0 ) {
 #ifdef DEBUG
 		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
-		printf("Current time: %.05f us, ", sys_clk -> cur_time);
-		printf("Elapsed time = %.05f us, Target Response Time = %.05f us, Expected Response Time = %.05f us, ", 
+		printf("Current time: %f us, ", sys_clk -> cur_time);
+		printf("Elapsed time = %f us, Executed Time = %f us, Target Response Time = %f us\r\n", 
 					elapsed_time, 
-					rep_time_target, 
-					rep_time_expect
+					executed_time,
+					rep_time_target 
 		);
-		printf("Difference: %.05f us\r\n", target_comparison);
+		printf("Available Time for Task_%d: %f us\r\n", TskID, time_available);
 #endif
-		new_freq = (rem_time <= wcrt - elapsed_time) ?  rwcec / rem_time : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / (wcrt - elapsed_time); // Deadline miss might occur
+		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / rel_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
-		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
-		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
-	}
-	else 
-		new_freq = sys_clk -> cur_freq;
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
 #endif
 	exe_speed_scaling(new_freq);
-
 }
 
 void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 {
 	float new_freq;
 	float rep_time_target;
-	float rep_time_expect; // A speculative response time if keeping current execution speed withou any change
-	float elapsed_time; 
-	float target_comparison, rem_time, executed_time;
+/*For debugging*/	float elapsed_time; 
+	float executed_time, time_available, rel_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_addr  = CFG_path[cur_block_index - 1].P_checkpoint_en;
+	rel_deadline = wcrt - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from P-type mining table
 	// Since actual loop iteration(s) have been known ahead of task really reach that loop in the near future,
@@ -689,40 +657,25 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	cout << endl << endl << "============================================" << endl;
 #endif
 //===============================================================================================================//
-	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
-	if(elapsed_time > jitter_config.fin_time_target) {
-#ifdef DEBUG
-		cout << endl << "Updating Jitter Constraint from " << rep_time_target << "us to " << rep_time_expect << "us" << endl;
-#endif
-		rep_time_target = rep_time_expect;
-	}
-        else rep_time_target = jitter_config.fin_time_target;	
-	rem_time = rep_time_target - elapsed_time;
-	executed_time = time_management -> sys_clk -> cur_time - start_time;
-	rep_time_expect = 
-				(wcrt - wcet) + // Preempted Duration 
-				executed_time + // The total time task has spent so far
-				(rwcec / time_management -> sys_clk -> cur_freq); // A future expectation
-	target_comparison = rep_time_target - rep_time_expect;
+/*For debugging*/	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
+        rep_time_target = jitter_config.fin_time_target;	
+	executed_time = time_management -> ExecutedTime[TskID] + (time_management -> sys_clk -> cur_time - time_management -> UpdatePoint);
+	time_available = rep_time_target - (wcrt - wcet) - executed_time;  
 //===============================================================================================================//
-	if( (float) target_comparison != 0.0 ) {
 #ifdef DEBUG
 		printf("cur_block: %d, succ_block: %d\r\n", cur_block_index, succ_block_index);
 		printf("Current time: %f us, ", sys_clk -> cur_time);
-		printf("Elapsed time = %f us, Target Response Time = %f us, Expected Response Time = %f us, ", 
+		printf("Elapsed time = %f us, Executed Time = %f us, Target Response Time = %f us\r\n", 
 					elapsed_time, 
-					rep_time_target, 
-					rep_time_expect
+					executed_time,
+					rep_time_target 
 		);
-		printf("Difference: %.05f us\r\n", target_comparison);
+		printf("Available Time for Task_%d: %f us\r\n", TskID, time_available);
 #endif
-		new_freq = (rem_time <= wcrt - elapsed_time) ?  rwcec / rem_time : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / (wcrt - elapsed_time); // Deadline miss might occur
+		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / rel_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
-	}
-	else 
-		new_freq = sys_clk -> cur_freq;	
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) new_freq = discrete_handle(new_freq, rwcec);
 #endif
@@ -844,7 +797,7 @@ for(unsigned int i = 0; i < L_loops_cnt; i++) {
 
 // For P-type checkpoints
 	P_checkpoints_cnt = checkpointLabel -> P_checkpoints.size();
-	for(int i = 0; i < P_checkpoints_cnt; i++) 
+	for(unsigned int i = 0; i < P_checkpoints_cnt; i++) 
 		P_mining_table.push_back( 
 			(P_mining_table_t) 
 			{
@@ -861,7 +814,7 @@ for(unsigned int i = 0; i < L_loops_cnt; i++) {
 	cout << " ------------------------------------------------------------------------------" << endl;
 	cout << "| Address\t|" << "\tLoop Bound\t|\tWCEC of each iteratoin\t|\tWCEC apart from Loop\t|" << endl;
 	cout << " ------------------------------------------------------------------------------" << endl;
-	for(int i = 0; i < P_checkpoints_cnt; i++) {
+	for(unsigned int i = 0; i < P_checkpoints_cnt; i++) {
 		cout << "| Loop_" 
 		     << i << "(Block " << P_mining_table[i].block_id << ")" << "\t|\t" 
 		     << P_mining_table[i].loop_bound 
@@ -886,7 +839,7 @@ for(unsigned int i = 0; i < L_loops_cnt; i++) {
 **/
 void Src_CFG::checkpoints_placement(checkpoints_label *&checkpoint_label_temp)
 {	
-	unsigned int B_cnt, L_cnt, P_cnt, index_temp;
+	unsigned int B_cnt, L_cnt, P_cnt;
 	checkpointLabel = checkpoint_label_temp;
 	B_cnt = checkpointLabel -> B_checkpoints.size();
 	L_cnt = checkpointLabel -> L_checkpoints.size();
@@ -899,12 +852,12 @@ void Src_CFG::checkpoints_placement(checkpoints_label *&checkpoint_label_temp)
 	// Enable the corresponding Basic Block as B-/L-/P-type checkpoint
 	for(unsigned int i = 0; i < B_cnt; i++ ) CFG_path[ checkpointLabel -> B_checkpoints[i] - 1 ].B_checkpoint_en = i; 
 	for(unsigned int i = 0; i < L_cnt; i++ ) {
-	 for(unsigned int j = 0; j <  cycle_trace_in -> L_RWCEC_t[i].branch_num; j++) {
+	 for(unsigned int j = 0; j <  (unsigned int) cycle_trace_in -> L_RWCEC_t[i].branch_num; j++) {
 	  CFG_path[cycle_trace_in -> L_RWCEC_t[i].branch[j][0] - 1].L_checkpoint_en[0] = i;
 	  CFG_path[cycle_trace_in -> L_RWCEC_t[i].branch[j][0] - 1].L_checkpoint_en[1] = j;
 	 }
 	}
-	for(int i = 0; i < P_cnt; i++ ) CFG_path[ checkpointLabel -> P_checkpoints[i] - 1 ].P_checkpoint_en = i; 
+	for(unsigned int i = 0; i < P_cnt; i++ ) CFG_path[ checkpointLabel -> P_checkpoints[i] - 1 ].P_checkpoint_en = i; 
 	
 /*
 	for( index_temp = 0; index_temp < L_loop_cnt; index_temp++ ) {
