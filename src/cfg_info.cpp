@@ -262,6 +262,7 @@ void Src_CFG::exe_speed_config(void)
 void Src_CFG::pattern_init(ExePath_set test_case)
 {
 	exe_path = test_case;
+#ifndef DEBUG
 	cout << "Task ";
 	for(int i = task_id_temp.size() - 1; i >= 0; i--) cout << task_id_temp[i];
 	cout << "'s test pattern:" << endl;
@@ -269,7 +270,7 @@ void Src_CFG::pattern_init(ExePath_set test_case)
          cout << "Test Case " << j + 1 << ": " << endl;
 	 for(int k = 0; k < exe_path[j].size(); k++) cout << "Block_" << exe_path[j][k] << endl;
 	}
-	
+#endif	
 //=======================================================================================================================================================//
 }
 

@@ -189,7 +189,6 @@ int main(int argc, char **argv)
 		//time_management -> update_cur_time(cur_time);
 		task_sched.sched_arbitration(cur_time);
 		cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
-		//task_sched.list_task_state();
 		cout << endl; // << "--------------------------------------------------" << endl;
 		if(task_sched.IsIdle() == true) {
 			// Extracting decimal point(s) and doing accumulative addition by the number of 0.001 

@@ -160,7 +160,7 @@ class Task_Scheduler {
 
 class Task_State_Bus {
 	private:
-
+		int timeline_curBlock;
 	public:
 		Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, vector<Src_CFG> &src_intra);
 		~Task_State_Bus(void);

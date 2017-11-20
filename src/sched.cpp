@@ -85,14 +85,13 @@ void Ready_Queue::insert(int new_val, task_element_t *&pre_task, char location)
 if(pre_task -> pre_task == NULL) cout << "NULL -> " << pre_task -> task_id << " -> ";
 else cout << pre_task -> pre_task -> task_id << " -> " << pre_task -> task_id << " -> ";
 if(pre_task -> next_task == NULL) cout << "NULL" << endl;
-else cout << pre_task -> next_task -> task_id << endl;
+else cout << pre_task -> next_task -> task_id << endl; cout << "ssssss" << endl;
 	ptr = new task_element_t();
 	ptr -> task_id = new_val;
 	if(pre_task == front && location == (char) BEFORE) {
 		ptr -> next_task = front;
 		ptr -> pre_task = NULL;
 		front -> pre_task = ptr;
-		cout << "BEFORE(1), " << endl;//front -> task_id << " -> " << front -> next_task -> task_id << endl;
 	}
 	else if(pre_task == front && location == (char) AFTER) {
 		if(pre_task -> pre_task == NULL && pre_task -> next_task == NULL) cout << "Only one, " << pre_task -> task_id << endl;
@@ -101,23 +100,20 @@ else cout << pre_task -> next_task -> task_id << endl;
 		front -> next_task = ptr;
 		if(ptr -> next_task == NULL) {rear = ptr; cout << "rear -> task_id: " << rear -> task_id << endl;}
 		else  {ptr -> next_task -> pre_task = ptr; cout << "111" << endl;}
-		cout << "AFTER(1), " << ptr -> task_id << endl;//front -> task_id << " -> " << front -> next_task -> task_id << endl;
 	}
 	else if(pre_task != front && location == (char) BEFORE){
 		ptr -> next_task = pre_task;
 		ptr -> pre_task = pre_task -> pre_task;
 		pre_task -> pre_task = ptr;
-		ptr -> pre_task -> next_task = ptr; 
-		cout << "BEFORE(2), " << endl;//ptr ->  task_id << " -> " << ptr -> next_task -> task_id << endl;
+		if(pre_task != front) ptr -> pre_task -> next_task = ptr; 
 	}
 	else if(pre_task != front && location == (char) AFTER){
 		ptr -> next_task = pre_task -> next_task;
 		ptr -> pre_task = pre_task;
 		pre_task -> next_task = ptr;
-		ptr -> next_task -> pre_task = ptr; 
-		cout << "AFTER(2), " << endl;//ptr -> pre_task -> task_id << " -> " << ptr -> task_id << endl;
+		if(pre_task != rear) ptr -> next_task -> pre_task = ptr; 
 	}
-	
+
 	// Re-locating the Front-pointer
 	ptr = front;
 	while(ptr -> pre_task != NULL) ptr = ptr -> pre_task;
@@ -125,7 +121,7 @@ else cout << pre_task -> next_task -> task_id << endl;
 	
 	// Re-locating the Rear-pointer
 	ptr = rear;
-	while(ptr -> next_task != NULL){ ptr = ptr -> next_task; cout << "ptr -> task_id: "<< ptr -> task_id << endl;}
+	while(ptr -> next_task != NULL){ ptr = ptr -> next_task; cout << "ptr -> task_id: " << ptr -> task_id << endl;}
 	rear = ptr;
 	ptr = NULL;
 
@@ -244,6 +240,7 @@ void Task_Scheduler::resume(void)
 	rwcet = cur_context.rwcet;
 #ifdef DEBUG
 	cout << "Resume Task_" << cur_context.task_id << "'s execution(RWCET:" << rwcet << " us) " << "from Task_" << running_task_id << endl;
+	list_task_state();
 #endif
 }
 
@@ -275,9 +272,9 @@ void Task_Scheduler::context_switch(int &cur_task, int &new_task)
 	if(sched_policy == (char) RM) sched_verify = RM_sched(cur_task);
 	else if(sched_policy == (char) EDF) sched_verify = EDF_sched(cur_task);
 */
-	list_task_state();
 #ifdef DEBUG
 	cout << "Preemption!" << endl;
+	list_task_state();
 #endif
 
 }
