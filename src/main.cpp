@@ -174,22 +174,21 @@ int main(int argc, char **argv)
 	cout << endl << "--------------------------------------------------" << endl;
 	time_management -> update_cur_time(0.0);
 	task_sched.sched_arbitration(0.000);
-	cout << "0 us - " << endl;
+	//cout << "0 us - " << endl;
 	float cur_time;
-	for(cur_time = 0.001; /*time_management -> sys_clk -> cur_time <= 100.0*/; ) {
+	for(cur_time = 0.001; /*time_management -> sys_clk -> cur_time <= 500.0*/; ) {
+		task_sched.sched_arbitration(cur_time);
+		//cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
 		for(int i = 0; i < tasks_num; i++) { 
 			if(task_sched.task_list[i].state == (char) RUN) {
 				cur_TskID = i;
 				inter_intra_bus -> time_driven_cfg(i);
-				for(int j = 0; j < 15; j++) cout << "-"; 
+				/*for(int j = 0; j < 15; j++) cout << "-"; 
 				for(int j = 0; j < 8*i; j++) cout << "-"; 
-				cout << "|" << i << "|";
+				cout << "|" << i << "|";*/
 			}
 		} 
-		//time_management -> update_cur_time(cur_time);
-		task_sched.sched_arbitration(cur_time);
-		cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
-		cout << endl; // << "--------------------------------------------------" << endl;
+		//cout << endl; // << "--------------------------------------------------" << endl;
 		if(task_sched.IsIdle() == true) {
 			// Extracting decimal point(s) and doing accumulative addition by the number of 0.001 
 			cur_time = (time_management -> sys_clk -> cur_time) + 0.001;

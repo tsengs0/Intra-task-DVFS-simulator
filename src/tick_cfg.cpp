@@ -73,6 +73,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 #endif 
 		cur_block_index += 1;			
 		while(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) < rem_cycles_temp) { 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 #ifdef DEBUG
 			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
 			cout << "Block_" << CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_index() << " -> ";
@@ -80,6 +81,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			for(int j = 0; j < 8*cur_TskID; j++) cout << "-"; 
 			cout << "|" << cur_TskID << "|";
 #endif
+			/*
 			cycles_cnt += CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t);
 			float time_temp = time_management -> time_unit_config(
 				CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) / time_management -> sys_clk -> cur_freq
@@ -87,6 +89,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
 			power_eval();
 			cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
+			*/
 #ifdef DVFS_EN  // Before crossing to next basic block, checking if current basic block is a checkpoint
 			if(dvfs_en == (char) DVFS_ENABLE) {
 				// Invoking the operation of B-type checkpoint
@@ -112,7 +115,8 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 				else {
 				}	
 			}	
-#endif 
+#endif
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 			rem_cycles_temp -= CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t);
 			cur_block_index += 1;			
 			if(exe_path[cur_case_id][cur_block_index] == 0x7FFFFFFF) {

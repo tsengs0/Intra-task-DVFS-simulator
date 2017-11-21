@@ -339,13 +339,15 @@ void Preemption_Stack::pop(void *inout)
 	}
 	else {
 		out -> task_id  = top -> task_id;
-		out -> rwcet    = top -> rwcet; // unit: us
+		out -> rwcet    = top -> rwcet; // unit: us		
 		out -> isr_flag = top -> isr_flag;
+		top -> isr_flag = false; // Free the Preemption Flag of current task's context
 		out -> next     = NULL;
 	}
 	stack_cnt -= 1;
 	ptr = top;
-	top = top -> next;
+	if(top != bottom) top = top -> next;
+	else top = NULL;	
 	delete ptr;
 }
 
@@ -365,6 +367,11 @@ bool Preemption_Stack::IsEmpty(void)
 	return (top == NULL) ? true : false;
 }
 
+int Preemption_Stack::show_StackCnt(void)
+{
+	return stack_cnt;
+}
+
 void Task_Scheduler::sched_arbitration(float sched_tick)
 {
 	bool sched_verify = true;
@@ -377,11 +384,23 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 		task_list[running_task_id].release_time += task_list[running_task_id].period;
 		inter_intra_bus -> intra_tasks[running_task_id].completion_flag = false;
 		task_list[running_task_id].NRT_USED = false;
-		if(isr_stack.IsEmpty() == false) resume();
+		if(isr_stack.IsEmpty() == false) {
+			resume(); isr_stack.stack_list(); 
+			cout << "isr stack is not empty, therefore resume" << endl;
+			/*if(isr_stack.show_StackCnt() == 0) {
+				cur_context.task_id = (int) NO_PREEMPTION;
+				cur_context.rwcet = (float) 0.0;
+				cur_context.isr_flag = false;
+				cout << "Flush Preemption Stack" << endl;
+				isr_stack.stack_list();
+			}*/
+		}
 		else {
 			cur_context.task_id = (int) NO_PREEMPTION;
 			cur_context.rwcet = (float) 0.0;
 			cur_context.isr_flag = false;
+			cout << "Flush Preemption Stack" << endl;
+			isr_stack.stack_list();
 		}
 	#ifdef DEBUG
 		cout << endl << "Task_" << running_task_id << " complete at " << time_management -> sys_clk -> cur_time << " us" << endl;
@@ -454,16 +473,12 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 				// Suspending the running task temporarily, and putting it into the rear of Ready Queue
 				task_list[running_task_id].state = (char) READY;
 				
-				cout << "1" << endl;
 				ready_queue -> insert(running_task_id, ready_queue -> rear, (char) AFTER);
-				cout << "2" << endl;
 				pre_task = running_task_id;
 				running_task_id = (int) CPU_IDLE;
 				
-				cout << "3" << endl;
 				if(sched_policy == (char) RM) sched_verify = RM_sched(i);
 				else if(sched_policy == (char) EDF) sched_verify = EDF_sched(i);
-				cout << "4" << endl;
 			}
 		}
 	}
@@ -521,14 +536,22 @@ void Task_Scheduler::dispatcher(void)
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
 					task_list[running_task_id].start_time, 
-					task_list[running_task_id].period, 
+					task_list[running_task_id].rel_dline, 
 					(char) DVFS_ENABLE
 				);
 		new_task_start_flag = false;
+		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
+		printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
+		printf("ExeutedTime: %f us, UpdatePoint: %f us\r\n", time_management -> ExecutedTime[running_task_id], time_management -> UpdatePoint);
+	}
+	else if(pre_task == running_task_id && pre_task != (int) CPU_IDLE) { // Change nothing but continue current task which suppose has the highest priority
+		cout << "Here arrives a new task with lower priority, thus continuing current task without either preemption or restart" << endl;			
+		pre_task = (int) CPU_IDLE;
 	} 
 	else if(cur_context.isr_flag == true && cur_context.task_id == running_task_id) { // Resuming from previous preemption
 		time_management -> ExecutedTime_Accumulator((unsigned char) RESUME_POINT, (int) running_task_id);
-		cout << "resume" << endl; 
+		cout << "resume" << endl;
+		cout << "cur_context.task_id: " << cur_context.task_id << " running_task_id:  " << running_task_id;
 		//resume();
 	} 
 	else { // Starting new arrival task
@@ -541,11 +564,13 @@ void Task_Scheduler::dispatcher(void)
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
 					task_list[running_task_id].start_time, 
-					task_list[running_task_id].period, 
+					task_list[running_task_id].rel_dline, 
 					(char) DVFS_ENABLE
 				);
 		new_task_start_flag = false;
 		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
+		printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
+		printf("ExeutedTime: %f us, UpdatePoint: %f us\r\n", time_management -> ExecutedTime[running_task_id], time_management -> UpdatePoint);
 	} 
 #ifdef DEBUG
 //	list_task_state();

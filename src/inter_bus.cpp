@@ -73,7 +73,7 @@ void Task_State_Bus::start_new_task_config(
 	time_management -> update_cur_time(intra_tasks[new_task_id].start_time);
 
 //--------------------------------------------------------------------------------//
-#ifndef DEBUG
+#ifdef DEBUG
 	cout << "==================================================================" << endl;
 	printf("#	Release time: %.05f us, Start time: %.05f us\r\n", 
 				intra_tasks[new_task_id].release_time, 
@@ -93,15 +93,14 @@ void Task_State_Bus::start_new_task_config(
 	intra_tasks[new_task_id].executed_cycles = 0;
 	intra_tasks[new_task_id].cur_case_id = case_id;
 	timeline_curBlock = 1;
-/*#ifdef DEBUG
+#ifdef DEBUG
 	cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
 	for(int j = 0; j < 15; j++) cout << "-"; 
 	for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
-	cout << "|" << new_task_id << "|";
+	cout << "|" << new_task_id << "|" << endl;
 	printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
 	cout << "Block_" << timeline_curBlock << " -> ";
-	cout << "Block_" << timeline_curBlock << " -> ";
-#endif*/
+#endif
 }
 
 void Task_State_Bus::time_driven_cfg(int new_task_id)
@@ -111,20 +110,25 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 	int cur_block_index = intra_tasks[new_task_id].cur_block_index; 
 	if(intra_tasks[new_task_id].exe_path[case_id][cur_block_index] != intra_tasks[new_task_id].exe_path[case_id].back()) {
 #ifdef DEBUG
-	//	cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
-	//	for(int j = 0; j < 15; j++) cout << "-"; 
-	//	for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
-	//	cout << "|" << new_task_id << "|";
-	//	int temp = intra_tasks[new_task_id].CFG_path[intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1].get_index();
-	//	if(temp != timeline_curBlock) {
-	//		printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
-	//		cout << "Block_" << timeline_curBlock << " -> ";
+		int temp = intra_tasks[new_task_id].CFG_path[intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1].get_index();
+		if(temp != timeline_curBlock) {
+		/*	cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
+			for(int j = 0; j < 15; j++) cout << "-"; 
+			for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
+			cout << "|" << new_task_id << "|" << endl;;
+			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
+			cout << "Block_" << timeline_curBlock << " -> ";
+		*/	
+			cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
+			for(int j = 0; j < 15; j++) cout << "-"; 
+			for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
+			cout << "|" << new_task_id << "|" << endl;
 			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
 			cout << "Block_" << intra_tasks[new_task_id].CFG_path[ 
 							intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1 
 							].get_index() << " -> ";
-	//	}
-	//	timeline_curBlock = temp;
+			timeline_curBlock = temp;
+		}
 #endif
 		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, (char) DVFS_ENABLE);
 		time_temp = time_management -> time_unit_config(
@@ -147,20 +151,25 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 	}
 	else {
 #ifdef DEBUG
-	//	cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
-	//	for(int j = 0; j < 15; j++) cout << "-"; 
-	//	for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
-	//	cout << "|" << new_task_id << "|";
-	//	int temp = intra_tasks[new_task_id].CFG_path[intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1].get_index();
-	//	if(temp != timeline_curBlock) {
-	//		printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
-	//		cout << "Block_" << timeline_curBlock << " -> ";
+		int temp = intra_tasks[new_task_id].CFG_path[intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1].get_index();
+		if(temp != timeline_curBlock) {
+		/*	cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
+			for(int j = 0; j < 15; j++) cout << "-"; 
+			for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
+			cout << "|" << new_task_id << "|" << endl;
+			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
+			cout << "Block_" << timeline_curBlock << " -> ";
+		*/	
+			cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
+			for(int j = 0; j < 15; j++) cout << "-"; 
+			for(int j = 0; j < 8*new_task_id; j++) cout << "-"; 
+			cout << "|" << new_task_id << "|" << endl;
 			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
 			cout << "Block_" << intra_tasks[new_task_id].CFG_path[ 
 							intra_tasks[new_task_id].exe_path[case_id][cur_block_index] - 1 
 							].get_index() << " -> ";
-	//	}
-	//	timeline_curBlock = temp;
+			timeline_curBlock = temp;
+		}
 #endif
 		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, (char) DVFS_ENABLE);
 		time_temp = time_management -> time_unit_config(

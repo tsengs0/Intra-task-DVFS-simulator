@@ -17,7 +17,6 @@ extern int sim_cnt;
 extern int sys_mode;
 extern double energy_ref;
 float ISR_TIME_SLICE;
-int ExePathSet_caseID;
 
 int Basic_block::get_cycles(int case_t)
 {
@@ -389,7 +388,7 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 	float time_temp;
 	dvfs_en = DVFS_en;
 	exe_speed_config();
-	ExePathSet_caseID = case_id; // Information for Lookahead P-type checkpoint test pattern 
+	cur_case_id = case_id; // Information for Lookahead P-type checkpoint test pattern 
 //--------------------------------------------------------------------------------//
 // Setting the release time, start time, absolute deadline and relative deadline
 	// The release time of current(new) instance 
@@ -517,10 +516,10 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	float new_freq;
 	float rep_time_target;
 /*For debugging*/	float elapsed_time; 
-	float executed_time, time_available, rel_deadline;
+	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int branch_addr = CFG_path[cur_block_index - 1].B_checkpoint_en;
-	rel_deadline = wcrt - time_management -> sys_clk -> cur_time;
+	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from B-type mining table
 	// Identify the actual branch
@@ -555,16 +554,16 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 					executed_time,
 					rep_time_target 
 		);
-		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, rel_deadline);
+		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, local_deadline);
 #endif
-		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / rel_deadline; // Deadline miss might occur
+		new_freq = (time_available <= local_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / local_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) {
 		printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
-		new_freq = discrete_handle(new_freq, rwcec, rel_deadline);
+		new_freq = discrete_handle(new_freq, rwcec, local_deadline);
 	}
 #endif
 	exe_speed_scaling(new_freq);
@@ -575,38 +574,38 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	float new_freq;
 	float rep_time_target;
 /*For debugging*/	float elapsed_time; 	
-	float executed_time, time_available, rel_deadline;
+	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_index = CFG_path[cur_block_index - 1].L_checkpoint_en[0];
 	int loop_addr  = CFG_path[cur_block_index - 1].L_checkpoint_en[1];
-	rel_deadline = wcrt - time_management -> sys_clk -> cur_time;
+	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from L-type mining table
 	// Accumulate L-type iteration counter by -1 if task reached loop's exit currently
 	if(cur_block_index == L_mining_table[loop_index].loop_entry) 
-		L_loop_iteration[loop_index].at(ExePathSet_caseID) = 
-			((L_loop_iteration[loop_index][ExePathSet_caseID] - 1) == -1) ? 0 : L_loop_iteration[loop_index][ExePathSet_caseID] - 1;
+		L_loop_iteration[loop_index].at(cur_case_id) = 
+			((L_loop_iteration[loop_index][cur_case_id] - 1) == -1) ? 0 : L_loop_iteration[loop_index][cur_case_id] - 1;
 	// Identify the actual branch
 	cout << endl << "taken_succ[" << loop_addr << "]: " << L_mining_table[loop_index].taken_succ[loop_addr] << endl;
 	cout << "not-taken_succ[" << loop_addr << "]: " << L_mining_table[loop_index].n_taken_succ[loop_addr] << endl;
-	if(L_loop_iteration[loop_index][ExePathSet_caseID] == 0) 
+	if(L_loop_iteration[loop_index][cur_case_id] == 0) 
 		rwcec = L_mining_table[loop_index].succ_rwcec;
 	else if( succ_block_index == L_mining_table[loop_index].taken_succ[loop_addr]) {
 		rwcec = L_mining_table[loop_index].taken_rwcec[loop_addr] + 
-			(L_loop_iteration[loop_index][ExePathSet_caseID] - 1) * P_mining_table[loop_index].iteration_wcec +  
+			(L_loop_iteration[loop_index][cur_case_id] - 1) * P_mining_table[loop_index].iteration_wcec +  
 			L_mining_table[loop_index].succ_rwcec; 
 #ifdef DEBUG
 		cout << endl << "taken\t"; 
-		cout << "remaining iteration is (" << loop_index << ")(" << ExePathSet_caseID << "): " << L_loop_iteration[loop_index][ExePathSet_caseID] << endl;
+		cout << "remaining iteration is (" << loop_index << ")(" << cur_case_id << "): " << L_loop_iteration[loop_index][cur_case_id] << endl;
 #endif
 	}
 	else {
 		rwcec = L_mining_table[loop_index].n_taken_rwcec[loop_addr] + 
-			(L_loop_iteration[loop_index][ExePathSet_caseID] - 1) * P_mining_table[loop_index].iteration_wcec +  
+			(L_loop_iteration[loop_index][cur_case_id] - 1) * P_mining_table[loop_index].iteration_wcec +  
 			L_mining_table[loop_index].succ_rwcec; 
 #ifdef DEBUG
 		cout << endl << "not taken\t"; 
-		cout << "remaining iteration is (" << loop_index << ")(" << ExePathSet_caseID << "): " << L_loop_iteration[loop_index][ExePathSet_caseID] << endl;
+		cout << "remaining iteration is (" << loop_index << ")(" << cur_case_id << "): " << L_loop_iteration[loop_index][cur_case_id] << endl;
 #endif
 	}
 	rem_wcec = rwcec;
@@ -627,16 +626,16 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 					executed_time,
 					rep_time_target 
 		);
-		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, rel_deadline);
+		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, local_deadline);
 #endif
-		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / rel_deadline; // Deadline miss might occur
+		new_freq = (time_available <= local_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / local_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) {
 		printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
-		new_freq = discrete_handle(new_freq, rwcec, rel_deadline);
+		new_freq = discrete_handle(new_freq, rwcec, local_deadline);
 	}
 #endif
 	exe_speed_scaling(new_freq);
@@ -647,25 +646,26 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	float new_freq;
 	float rep_time_target;
 /*For debugging*/	float elapsed_time; 
-	float executed_time, time_available, rel_deadline;
+	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_addr  = CFG_path[cur_block_index - 1].P_checkpoint_en;
-	rel_deadline = wcrt - time_management -> sys_clk -> cur_time;
+	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from P-type mining table
 	// Since actual loop iteration(s) have been known ahead of task really reach that loop in the near future,
 	// the calculation of the remaining worst-case execution cycles is: RWCEC = iteration x Iteration_WCEC + WCEC_after_Loop
-	rwcec = P_loop_LaIteration[loop_addr][ExePathSet_caseID] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
+	rwcec = P_loop_LaIteration[loop_addr][cur_case_id] * P_mining_table[loop_addr].iteration_wcec + P_mining_table[loop_addr].succ_rwcec; 
 	rem_wcec = rwcec;
 #ifdef DEBUG
 	cout << endl << endl << "============================================" << endl;
-	printf("P-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][ExePathSet_caseID]); 
+	printf("P-type checkpoint: \r\nblock_%d -> block_%d\r\nrwcec = %d(actual loop iteration: %d)\r\n\r\n, ", cur_block_index, succ_block_index, rwcec, P_loop_LaIteration[loop_addr][cur_case_id]); 
 	cout << endl << endl << "============================================" << endl;
 #endif
 //===============================================================================================================//
 /*For debugging*/	elapsed_time = time_management -> sys_clk -> cur_time - release_time; 
         rep_time_target = jitter_config.fin_time_target;	
 	executed_time = time_management -> ExecutedTime[TskID] + (time_management -> sys_clk -> cur_time - time_management -> UpdatePoint);
+	printf("Task_%d, before checkpoint, executed_time:%f us, updatePoint: %f us\r\n", TskID, time_management -> ExecutedTime[TskID], time_management -> UpdatePoint);
 	time_available = rep_time_target - (wcrt - wcet) - executed_time;  
 //===============================================================================================================//
 #ifdef DEBUG
@@ -676,22 +676,22 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 					executed_time,
 					rep_time_target 
 		);
-		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, rel_deadline);
+		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, local_deadline);
 #endif
-		new_freq = (time_available <= rel_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / rel_deadline; // Deadline miss might occur
+		new_freq = (time_available <= local_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
+								rwcec / local_deadline; // Deadline miss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
 	if(new_freq != min_freq_t && new_freq != max_freq_t) {
 		printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
-		new_freq = discrete_handle(new_freq, rwcec, rel_deadline);
+		new_freq = discrete_handle(new_freq, rwcec, local_deadline);
 	}
 #endif
 	exe_speed_scaling(new_freq);
 }
 
-float Src_CFG::discrete_handle(float new_freq, int rwcec, float rel_deadline)
+float Src_CFG::discrete_handle(float new_freq, int rwcec, float local_deadline)
 {
 	int i;
 	float max_diff, min_diff;
@@ -700,9 +700,10 @@ float Src_CFG::discrete_handle(float new_freq, int rwcec, float rel_deadline)
 #ifdef DEBUG
 	printf("Discrete Bound: %.02f MHz, %.02f MHz, %.02f MHz\r\n", freq_vol[i][0], new_freq, freq_vol[i+1][0]);
 #endif
-	min_diff = new_freq - freq_vol[i][0];
-	max_diff = freq_vol[i+1][0] - new_freq;
-	return (min_diff < max_diff && ((rwcec / freq_vol[i][0]) <= rel_deadline)) ? freq_vol[i][0] : freq_vol[i+1][0];	
+	//min_diff = new_freq - freq_vol[i][0];
+	//max_diff = freq_vol[i+1][0] - new_freq;
+	//return (min_diff < max_diff && ((rwcec / freq_vol[i][0]) <= local_deadline)) ? freq_vol[i][0] : freq_vol[i+1][0];	
+	return freq_vol[i+1][0];
 }
 
 /**

@@ -107,6 +107,7 @@ class Preemption_Stack {
 		void pop(void *inout);
 		void stack_list(void);
 		bool IsEmpty(void);
+		int show_StackCnt(void);
 };
 
 float ceiling(float x);
