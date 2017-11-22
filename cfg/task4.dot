@@ -1,0 +1,67 @@
+digraph task4 {
+	subgraph cluster0 {
+		style = filled;
+		color = lightgrey;
+		proc3 -> proc4;
+		proc4 -> proc3;
+		A [
+		 label="Loop#1\nLoop Bound:150"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+		//{rank=same; proc5, proc6}
+
+	}
+	subgraph cluster1 {
+		style = filled;
+		color = lightgrey;
+		proc6 -> proc7;
+		proc7 -> proc6;
+		B [
+		 label="Loop#2\nLoop Bound:100"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph cluster2 {
+		style = filled;
+		color = lightgrey;
+		proc9 -> proc10;
+		proc10 -> proc9;
+		C [
+		 label="Loop#3\nLoop Bound:130"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph Basic_Block {
+		proc1 [label = "{<f0> B1|<f1> 12}" shape = Mrecord];
+		proc2 [label = "{<f0> B2|<f1> 2}" shape = Mrecord];
+		proc3 [label = "{<f0> B3|<f1> 2}" shape = Mrecord];
+		proc4 [label = "{<f0> B4|<f1> 27}" shape = Mrecord];
+		proc5 [label = "{<f0> B5|<f1> 5}" shape = Mrecord];
+		proc6 [label = "{<f0> B6|<f1> 10}" shape = Mrecord];
+		proc7 [label = "{<f0> B7|<f1> 25}" shape = Mrecord];
+		proc8 [label = "{<f0> B8|<f1> 3}" shape = Mrecord];
+		proc9 [label = "{<f0> B9|<f1> 4}" shape = Mrecord];
+		proc10 [label = "{<f0> B10|<f1> 26}" shape = Mrecord];
+		proc11 [label = "{<f0> B11|<f1> 12}" shape = Mrecord];
+	}
+	proc1 -> proc2;
+	proc2 -> proc3;
+	proc3 -> proc5;
+	proc5 -> proc6;
+	proc6 -> proc8;
+	proc8 -> proc9;
+	proc9 -> proc11;
+	proc11 -> end;
+}
