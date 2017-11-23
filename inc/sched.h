@@ -82,6 +82,7 @@ typedef struct Task_Info {
 	bool NRT_USED; // A flag used to label whether the polling of release_time have been detected/used or not
 	char state;
 	float wcrt;
+	unsigned int completion_cnt;
 //	Task_Info(int r, int pr, int rd, int wc, int p, char st)
 //	: release_time(r), prt(pr), rel_dline(rd), wcet(wc), period(p), state(st) {}
 } task_info_t;

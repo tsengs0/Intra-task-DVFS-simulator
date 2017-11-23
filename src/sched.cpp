@@ -82,10 +82,11 @@ void Ready_Queue::push(int &new_val)
 */
 void Ready_Queue::insert(int new_val, task_element_t *&pre_task, char location)
 {
-if(pre_task -> pre_task == NULL) cout << "NULL -> " << pre_task -> task_id << " -> ";
+/*if(pre_task -> pre_task == NULL) cout << "NULL -> " << pre_task -> task_id << " -> ";
 else cout << pre_task -> pre_task -> task_id << " -> " << pre_task -> task_id << " -> ";
 if(pre_task -> next_task == NULL) cout << "NULL" << endl;
-else cout << pre_task -> next_task -> task_id << endl; cout << "ssssss" << endl;
+else cout << pre_task -> next_task -> task_id << endl; 
+*/
 	ptr = new task_element_t();
 	ptr -> task_id = new_val;
 	if(pre_task == front && location == (char) BEFORE) {
@@ -99,7 +100,7 @@ else cout << pre_task -> next_task -> task_id << endl; cout << "ssssss" << endl;
 		ptr -> pre_task =  front;
 		front -> next_task = ptr;
 		if(ptr -> next_task == NULL) {rear = ptr; cout << "rear -> task_id: " << rear -> task_id << endl;}
-		else  {ptr -> next_task -> pre_task = ptr; cout << "111" << endl;}
+		else  ptr -> next_task -> pre_task = ptr; 
 	}
 	else if(pre_task != front && location == (char) BEFORE){
 		ptr -> next_task = pre_task;
@@ -384,6 +385,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 		task_list[running_task_id].release_time += task_list[running_task_id].period;
 		inter_intra_bus -> intra_tasks[running_task_id].completion_flag = false;
 		task_list[running_task_id].NRT_USED = false;
+		task_list[running_task_id].completion_cnt += 1;
 		if(isr_stack.IsEmpty() == false) {
 			resume(); isr_stack.stack_list(); 
 			cout << "isr stack is not empty, therefore resume" << endl;
@@ -399,7 +401,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 			cur_context.task_id = (int) NO_PREEMPTION;
 			cur_context.rwcet = (float) 0.0;
 			cur_context.isr_flag = false;
-			cout << "Flush Preemption Stack" << endl;
+			cout << "Flush all redundant element(s) out of ISR Stack" << endl;
 			isr_stack.stack_list();
 		}
 	#ifdef DEBUG
@@ -433,7 +435,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 			cout << "Task_" << i << " release" << endl;
 			if(IsIdle() == true && ready_queue -> IsEmpty() == true) {
 #ifdef DEBUG
-				cout << "Idle and Empty-queue: " << i << endl;
+				//cout << "Idle and Empty-queue: " << i << endl;
 #endif
 				task_list[i].state = (char) READY;
 				ready_queue -> push(i);
@@ -441,7 +443,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 			}
 			else if(IsIdle() == true && ready_queue -> IsEmpty() != true) {
 #ifdef DEBUG
-				cout << "Idle and non-Empty-queue: " << i << endl;
+				//cout << "Idle and non-Empty-queue: " << i << endl;
 #endif
 				task_list[i].state = (char) READY;
 				//pre_task = running_task_id;
@@ -451,7 +453,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 			}
 			else if(IsIdle() != true && ready_queue -> IsEmpty() == true) {
 #ifdef DEBUG
-				cout << "non-Idle and Empty-queue" << endl;
+				//cout << "non-Idle and Empty-queue" << endl;
 #endif
 				task_list[i].state = (char) READY;
 
@@ -466,7 +468,7 @@ void Task_Scheduler::sched_arbitration(float sched_tick)
 			}
 			else{ // IsIdle() != true && ready_queue -> IsEmpty() == false
 #ifdef DEBUG
-				cout << "non-Idle: " << i << endl;
+				//cout << "non-Idle: " << i << endl;
 #endif
 				task_list[i].state = (char) READY;
 
@@ -541,8 +543,8 @@ void Task_Scheduler::dispatcher(void)
 				);
 		new_task_start_flag = false;
 		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
-		printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
-		printf("ExeutedTime: %f us, UpdatePoint: %f us\r\n", time_management -> ExecutedTime[running_task_id], time_management -> UpdatePoint);
+		//printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
+		//printf("ExeutedTime: %f us, UpdatePoint: %f us\r\n", time_management -> ExecutedTime[running_task_id], time_management -> UpdatePoint);
 	}
 	else if(pre_task == running_task_id && pre_task != (int) CPU_IDLE) { // Change nothing but continue current task which suppose has the highest priority
 		cout << "Here arrives a new task with lower priority, thus continuing current task without either preemption or restart" << endl;			
@@ -551,11 +553,12 @@ void Task_Scheduler::dispatcher(void)
 	else if(cur_context.isr_flag == true && cur_context.task_id == running_task_id) { // Resuming from previous preemption
 		time_management -> ExecutedTime_Accumulator((unsigned char) RESUME_POINT, (int) running_task_id);
 		cout << "resume" << endl;
-		cout << "cur_context.task_id: " << cur_context.task_id << " running_task_id:  " << running_task_id;
+		//cout << "cur_context.task_id: " << cur_context.task_id << " running_task_id:  " << running_task_id;
 		//resume();
 	} 
 	else { // Starting new arrival task
 		cout << "start new task" << endl; 
+		list_task_state();
 		rwcet = task_list[running_task_id].wcet;
 		new_task_start_flag = true;
 		inter_intra_bus -> start_new_task_config(
@@ -569,8 +572,8 @@ void Task_Scheduler::dispatcher(void)
 				);
 		new_task_start_flag = false;
 		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
-		printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
-		printf("ExeutedTime: %f us, UpdatePoint: %f us\r\n", time_management -> ExecutedTime[running_task_id], time_management -> UpdatePoint);
+		//printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
+		//printf("ExeutedTime: %f us, UpdatePoint: %f us\r\n", time_management -> ExecutedTime[running_task_id], time_management -> UpdatePoint);
 	} 
 #ifdef DEBUG
 //	list_task_state();
@@ -604,9 +607,9 @@ void Task_Scheduler::list_task_state(void)
                                 cout << "Task_" << i << ": " << "ZOMBIE";
                                 break;
                 }
-		printf("  (Absolute Deadline: %.02f, Release time: %.02f)\r\n",
-				task_list[i].rel_dline + task_list[i].release_time,
-				task_list[i].release_time
+		printf("  (Release Time: %.02f, Absolute Deadline: %.02f)\r\n",
+				task_list[i].release_time,
+				task_list[i].rel_dline + task_list[i].release_time
 		);
         }
 

@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 // Settings of each task's CFG information
 	cout << "Starting to initialise system" << endl;
 	system_init();
-	cout << "After system initialisation" << endl;
+	cout << "After system initialisation" << endl;	
 	Src_CFG task1((char*) "../cfg/task3.cfg", time_management, &checkpointLabel[0], &cycle_trace[0], &checkpoint_num_t[0], task_wcet_info[0], (int) 0); cout << "Finished configuring task1" << endl;
 	Src_CFG task2((char*) "../cfg/task4.cfg", time_management, &checkpointLabel[1], &cycle_trace[1], &checkpoint_num_t[1], task_wcet_info[1], (int) 1); cout << "Finished configuring task2" << endl;
 	Src_CFG task3((char*) "../cfg/task5.cfg", time_management, &checkpointLabel[2], &cycle_trace[2], &checkpoint_num_t[2], task_wcet_info[2], (int) 2); cout << "FInished configuring task3" << endl;
@@ -129,7 +129,8 @@ int main(int argc, char **argv)
 		             24.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
-			     task1.wcet // Default WCRT
+			     task1.wcet, // Default WCRT
+			     (unsigned int) 0
 	};
 
 	src_inter[1] = {
@@ -141,7 +142,8 @@ int main(int argc, char **argv)
 		             35.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
-			     task2.wcet // Default WCRT
+			     task2.wcet, // Default WCRT
+			     (unsigned int) 0
 	};
 	
 	src_inter[2] = {
@@ -153,7 +155,8 @@ int main(int argc, char **argv)
 		             55.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
-			     task3.wcet // Default WCRT
+			     task3.wcet, // Default WCRT
+			     (unsigned int) 0
 	};
 	cout << "Finished configuring Inter tasks" << endl;
 //=======================================================================================================================================================//
@@ -176,7 +179,7 @@ int main(int argc, char **argv)
 	task_sched.sched_arbitration(0.000);
 	//cout << "0 us - " << endl;
 	float cur_time;
-	for(cur_time = 0.001; /*time_management -> sys_clk -> cur_time <= 500.0*/; ) {
+	for(cur_time = 0.001; /*time_management -> sys_clk -> cur_time <= 500.0*/src_inter[2].completion_cnt < 20; ) {
 		task_sched.sched_arbitration(cur_time);
 		//cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
 		for(int i = 0; i < tasks_num; i++) { 

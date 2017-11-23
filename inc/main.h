@@ -11,7 +11,7 @@
 #define N_DECIMAL_POINTS_PRECISION 1000.0 // To extracting three decimal points
 
 #define tasks_num 3
-#define patterns_num 3
+#define patterns_num 10
 
 /*
  cur_freq (MHz)

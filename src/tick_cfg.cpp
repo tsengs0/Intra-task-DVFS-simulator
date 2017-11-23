@@ -55,7 +55,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
-				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { cout << "LLLLLLLL" << endl;
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { 
 					L_Intra_task_checkpoint(
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according ot the indicated execution path case
@@ -100,7 +100,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
-				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { cout << "LLLLLLLL" << endl;
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { 
 					L_Intra_task_checkpoint(
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according ot the indicated execution path case
@@ -140,7 +140,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 					);		
 				}
 				// Invoking the operation of L-type checkpoint
-				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { cout << "LLLLLLLLLLLL" << endl;
+				else if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].L_checkpoint_en[0] != 0x7FFFFFFF) { 
 					L_Intra_task_checkpoint(
 						exe_path[cur_case_id][cur_block_index],    // Cast current Basic Block ID 
 						exe_path[cur_case_id][cur_block_index + 1] // Cast its successive Basic Block ID according to the indicated execution path case

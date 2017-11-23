@@ -34,10 +34,10 @@ void rand_ExePath_gen(
 		for(unsigned int i = 0; i < checkpointLabel.P_loop_bound.size(); i++) { // Randomly give actual loop iteration(s) for all loops
 			ActLoop_iteration[i][pattern_num - cnt] = rand() % checkpointLabel.P_loop_bound[i];
 			ActLoop_iteration_cnt[i][pattern_num - cnt] = ActLoop_iteration[i][pattern_num - cnt];
-			cout << "ActLoop_iteration[" << i << "][" << pattern_num - cnt << "]" << endl;
-			cout << "[" << i << "][" << pattern_num - cnt << "]: " << ActLoop_iteration[i][pattern_num - cnt] 
-			     << "(cnt: " << ActLoop_iteration_cnt[i][pattern_num - cnt] << ",Loop Bound: " 
-			     <<  checkpointLabel.P_loop_bound[i] << ")" << endl; 
+			//cout << "ActLoop_iteration[" << i << "][" << pattern_num - cnt << "]" << endl;
+			//cout << "[" << i << "][" << pattern_num - cnt << "]: " << ActLoop_iteration[i][pattern_num - cnt] 
+			//     << "(cnt: " << ActLoop_iteration_cnt[i][pattern_num - cnt] << ",Loop Bound: " 
+			//     <<  checkpointLabel.P_loop_bound[i] << ")" << endl; 
 		}
 		do {
 			LoopID = isLoopEntry(cur_NodeID, CFG_path, checkpointLabel); 
