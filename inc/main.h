@@ -11,7 +11,7 @@
 #define N_DECIMAL_POINTS_PRECISION 1000.0 // To extracting three decimal points
 
 #define tasks_num 3
-#define patterns_num 10
+#define patterns_num 50
 
 /*
  cur_freq (MHz)
@@ -55,11 +55,6 @@ enum {
 };
 
 enum {
-	DVFS_ENABLE  = 0x01, // Enabling the DVFS
-	DVFS_DISABLE = 0x02  // Disabling the DVFS
-};
-
-enum {
 	H_RESP  = 1, // High Responsiveness
 	L_POWER = 2, // Low Power 
 };
@@ -69,6 +64,12 @@ enum {
 	PREEMPTED_POINT = 0x02,
 	RESUME_POINT    = 0x03,
 	COMPLETION_TIME = 0x04
+};
+
+enum {
+	NonDVFS_sim      = 1, // The settings without DVFS
+	DVFS_sim         = 2, // The settings of DVFS regardless transition overhead
+	DVFSOverhead_sim = 3  // The settings of DVFS regarding to transition overhead
 };
 
 typedef int exeTime_info[3];

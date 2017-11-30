@@ -15,16 +15,20 @@ typedef vector<ExePath_case> ExePath_set;
   * @param TestPattern_inout: given memory space for filling generated set of test pattern
 **/
 void rand_ExePath_gen(
-	vector<Basic_block> &CFG_path, 
+	vector<Basic_block> &CFG_path,
 	int pattern_num, 
 	checkpoints_label &checkpointLabel,
 	void *TestPattern_inout,
-	void *Lookahead_LoopIteration_inout
+	void *Lookahead_LoopIteration1_inout, // For Non-DVFS environment
+	void *Lookahead_LoopIteration2_inout, // For DVFS enviroment
+	void *Lookahead_LoopIteration3_inout  // For DVFSOverhead enviroment
 )
 {
 	ExePath_case path_temp;
 	ExePath_set &TestPattern_set = *(ExePath_set*) TestPattern_inout;
-	int **ActLoop_iteration = (int**) Lookahead_LoopIteration_inout;
+	int **ActLoop_iteration1 = (int**) Lookahead_LoopIteration1_inout;
+	int **ActLoop_iteration2 = (int**) Lookahead_LoopIteration2_inout;
+	int **ActLoop_iteration3 = (int**) Lookahead_LoopIteration3_inout;
 	int ActLoop_iteration_cnt[checkpointLabel.P_checkpoints.size()][pattern_num];
 	int LoopID, cur_NodeID, succ_NodeID;
 	int cnt = pattern_num;
@@ -32,15 +36,17 @@ void rand_ExePath_gen(
 		cur_NodeID = CFG_path.front().get_index(); // Let any test pattern of execution path start from start node of its CFG
 		path_temp.push_back(cur_NodeID); // Add current node's ID into current test pattern
 		for(unsigned int i = 0; i < checkpointLabel.P_loop_bound.size(); i++) { // Randomly give actual loop iteration(s) for all loops
-			ActLoop_iteration[i][pattern_num - cnt] = rand() % checkpointLabel.P_loop_bound[i];
-			ActLoop_iteration_cnt[i][pattern_num - cnt] = ActLoop_iteration[i][pattern_num - cnt];
+			ActLoop_iteration1[i][pattern_num - cnt] = rand() % checkpointLabel.P_loop_bound[i];
+			ActLoop_iteration2[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
+			ActLoop_iteration3[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
+			ActLoop_iteration_cnt[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
 			//cout << "ActLoop_iteration[" << i << "][" << pattern_num - cnt << "]" << endl;
 			//cout << "[" << i << "][" << pattern_num - cnt << "]: " << ActLoop_iteration[i][pattern_num - cnt] 
 			//     << "(cnt: " << ActLoop_iteration_cnt[i][pattern_num - cnt] << ",Loop Bound: " 
 			//     <<  checkpointLabel.P_loop_bound[i] << ")" << endl; 
 		}
 		do {
-			LoopID = isLoopEntry(cur_NodeID, CFG_path, checkpointLabel); 
+			LoopID = isLoopEntry(cur_NodeID, CFG_path, checkpointLabel);  
 			/*Basic_block *curTemp = &CFG_path[cur_NodeID - 1];*/
 			if( // If current node is a branch
 			   CFG_path[cur_NodeID - 1].succ.size() != 0 && 

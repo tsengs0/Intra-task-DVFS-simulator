@@ -11,13 +11,13 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-int cur_TskID;
 extern float in_alpha;
 extern float in_default_speed;
 extern int sim_cnt;
 extern int sys_mode;
 extern double energy_ref;
 extern float ISR_TIME_SLICE;
+int cur_TskID;
 
 /**
   * @brief Executing/simulating the sub-portion of control flow graph in terms of 
@@ -45,8 +45,8 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 	sub_block_cycles = (isr_time_cycles % (int) INST_UNIT == 0) ? isr_time_cycles : isr_time_cycles - (isr_time_cycles % (int) INST_UNIT);	
 	rem_cycles_temp = sub_block_cycles - rem_block_cycles; 
 	if(rem_cycles_temp > 0) { // Crossing multiple basic blocks within one period of interrupt timer
-#ifdef DVFS_EN  // Before crossing to next basic block, checking if current basic block is a checkpoint
-			if(dvfs_en == (char) DVFS_ENABLE) {
+	                          // Before crossing to next basic block, checking if current basic block is a checkpoint
+			if(dvfs_en == (char) DVFS_sim || dvfs_en == (char) DVFSOverhead_sim) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
 					B_Intra_task_checkpoint(
@@ -70,9 +70,9 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 				else {
 				}	
 			}	
-#endif 
+
 		cur_block_index += 1;			
-		while(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) < rem_cycles_temp) { 
+		while(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) < rem_cycles_temp) { cout << "sss" << endl; 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 #ifdef DEBUG
 			printf("[Cur_Freq: %.01f MHz]", time_management -> sys_clk -> cur_freq);
@@ -86,12 +86,12 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 			float time_temp = time_management -> time_unit_config(
 				CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) / time_management -> sys_clk -> cur_freq
 			); 
-			time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
+			time_management -> update_cur_time(time_temp + sys_clk -> cur_time);			
 			power_eval();
 			cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
 			*/
-#ifdef DVFS_EN  // Before crossing to next basic block, checking if current basic block is a checkpoint
-			if(dvfs_en == (char) DVFS_ENABLE) {
+            // Before crossing to next basic block, checking if current basic block is a checkpoint
+			if(dvfs_en == (char) DVFS_sim || dvfs_en == (char) DVFSOverhead_sim) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
 					B_Intra_task_checkpoint(
@@ -115,7 +115,6 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 				else {
 				}	
 			}	
-#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 			rem_cycles_temp -= CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t);
 			cur_block_index += 1;			
@@ -130,8 +129,8 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 	}
 	else if(rem_cycles_temp == 0) { // Remaining workload of current basic block takes same time as one period of interrupt timer
 		executed_cycles = 0; // Reset the accumulation for next basic block
-#ifdef DVFS_EN 
-			if(dvfs_en == (char) DVFS_ENABLE) {
+
+			if(dvfs_en == (char) DVFS_sim || dvfs_en == (char) DVFSOverhead_sim) {
 				// Invoking the operation of B-type checkpoint
 				if(CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) {
 					B_Intra_task_checkpoint(
@@ -156,7 +155,6 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, char DVFS_en)
 				else {
 				}	
 			}	
-#endif	
 		cur_block_index += 1;
 	}
 	else { // Remaingin workload of current basic block takes a greater number of required exeuction time than one period of interrupt timer
@@ -219,9 +217,8 @@ void Src_CFG::dispatch_cfg(int &case_id, int case_t, float release_time_new, flo
 		printf("\r\n#actual Execution cycles withing this period of interrupt timer: %d cycles\r\n", context_reg.act_cycles);
 		printf("#Actual Execution time within this period of interrupt timer: %.05f us\r\n", time_temp);
 		time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
-		printf("Current Time: %.05f us\r\n", time_management -> sys_clk -> cur_time);
+		printf("Current Time: %.05f us\r\n", time_management -> sys_clk -> cur_time);	
 		power_eval();
-
 	}
 #ifndef DEBUG
 	cout << "End" << endl << endl;

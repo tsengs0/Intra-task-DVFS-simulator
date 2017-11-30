@@ -1,9 +1,13 @@
 #include "../inc/sched.h"
 #include "../inc/main.h"
 
+using std::cout;
+using std::cin;
+using std::endl;
+using std::vector;
 //extern int tasks_num;
 
-Task_State_Bus::Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, vector<Src_CFG> &src_intra)
+Task_State_Bus::Task_State_Bus(Time_Management *timer, task_info_t *src_inter, vector<Src_CFG> &src_intra)
 {
 	time_management = timer;
 
@@ -18,7 +22,7 @@ Task_State_Bus::Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, 
 		cout << "Relative Deadline: " << src_inter[i].rel_dline << endl;
 		cout << "WCET: " << src_inter[i].wcet << endl;
 		cout << "Period: " << src_inter[i].period << endl;
-		cout << "Operating State: " << (int) src_inter[i].state << endl;
+		cout << "Operating State: " << (int) (src_inter[i].state) << endl;
 		cout << "Default WCRT: " << inter_tasks[i].wcrt << endl;
 		cout << "=====================================================" << endl;
 	}
@@ -130,7 +134,7 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 			timeline_curBlock = temp;
 		}
 #endif
-		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, (char) DVFS_ENABLE);
+		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, intra_tasks[new_task_id].dvfs_en);
 		time_temp = time_management -> time_unit_config(
 			intra_tasks[new_task_id].context_reg.act_exe_time
 		); 
@@ -146,7 +150,7 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 		);
 		*/
 		time_management -> update_cur_time(time_temp + time_management -> sys_clk -> cur_time);
-		//printf("Current Time: %.05f us\r\n", time_management -> sys_clk -> cur_time);
+		//printf("Current Time: %.05f us\r\n", time_management -> sys_clk -> cur_time);	
 		intra_tasks[new_task_id].power_eval();
 	}
 	else {
@@ -171,18 +175,18 @@ void Task_State_Bus::time_driven_cfg(int new_task_id)
 			timeline_curBlock = temp;
 		}
 #endif
-		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, (char) DVFS_ENABLE);
+		intra_tasks[new_task_id].context_reg = intra_tasks[new_task_id].isr_driven_cfg((int) WORST, intra_tasks[new_task_id].dvfs_en);
 		time_temp = time_management -> time_unit_config(
 			intra_tasks[new_task_id].context_reg.act_exe_time
 		); 
 		intra_tasks[new_task_id].cycles_cnt += intra_tasks[new_task_id].context_reg.act_cycles; 
-		time_management -> update_cur_time(time_temp + time_management -> sys_clk -> cur_time);
+		time_management -> update_cur_time(time_temp + time_management -> sys_clk -> cur_time);	
 		intra_tasks[new_task_id].power_eval();
 #ifdef DEBUG
 	cout << "End" << endl << endl;
 	cout << endl << time_management -> sys_clk -> cur_time << " us\t\t";
 #endif
-		cout << endl << "Evaluation of Task_" << new_task_id << ":" << endl;
+		cout << endl << "Evaluation of Task_" << new_task_id << ":" << endl;		
 		intra_tasks[new_task_id].power_eval();
 		intra_tasks[new_task_id].global_param_eval();
 		intra_tasks[new_task_id].completion_config();

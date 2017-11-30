@@ -1,14 +1,13 @@
 #!/bin/bash
 
-for i in {0..100..5}
-do
- for a in 250 500 750 1000
- do
-	./test $1 $i $a
- done
-done
+in_alpha=$1
+#for in_alpha in {50..100};
+#do
+  for i in {0..49..1}
+  do
+	../bin/mul $in_alpha 1000 > log.txt
+  done
+  mkdir ../result/Alpha_$in_alpha &&
+  mv *.txt ../result/Alpha_$in_alpha
+#done
 
-echo 
-
-mkdir $1_results &&
-mv test_result* $1_results/

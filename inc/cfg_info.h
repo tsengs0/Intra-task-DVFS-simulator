@@ -84,6 +84,9 @@ class Src_CFG {
 		void traverse_spec_path(int case_id, int case_t, float releast_time_new, float start_time_new, float Deadline, char DVFS_en);
 		float get_cur_speed(void);
 
+		// Configuratoin of DVFS environment
+		void dvfs_config(char env);
+
 		// Intra-task DVFS attributes
 		void checkpoints_placement(checkpoints_label *&checkpoint_label_temp);
 		void mining_table_gen(void);
@@ -113,7 +116,7 @@ class Src_CFG {
 		//Configuration of Time Management 
 		sys_clk_t *sys_clk;
 		Time_Management *time_management; // Designate which time-management rules this task
-		void timer_config(Time_Management *&timer);		
+		void timer_config(Time_Management *timer);
 
 		// Test Case
 		void pattern_init(ExePath_set test_case);
@@ -138,7 +141,7 @@ class Src_CFG {
 			RWCEC_Trace_in *cycle_in_temp,
 			checkpoint_num *checkpointNum_temp,
 			exeTime_info WCET_INFO,
-			int TskID_in 
+			int TskID_in
 		);
 		~Src_CFG(void);
 
@@ -175,7 +178,7 @@ class Src_CFG {
 Sample Variance
 (s^2) = sum from {i = 1} to {n} { [(x_i - x')^2] / (n - 1) }
 */
-static float sample_variance(vector<float> &a) 
+static float sample_variance(std::vector<float> &a) 
 {
 	unsigned int i; float acc = 0.0, acc_1 = 0.0; 
 

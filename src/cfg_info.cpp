@@ -16,6 +16,7 @@ extern float in_default_speed;
 extern int sim_cnt;
 extern int sys_mode;
 extern double energy_ref;
+extern double energy_ref_overhead;
 float ISR_TIME_SLICE;
 
 int Basic_block::get_cycles(int case_t)
@@ -73,8 +74,7 @@ Src_CFG::Src_CFG(
 	RWCEC_Trace_in *cycle_trace_temp,
 	checkpoint_num *checkpointNum_temp,
 	exeTime_info WCET_INFO,
-	int TskID_in //, 
-//	ExePath_set test_case
+	int TskID_in
 )
 {
 	FILE *fp;
@@ -205,7 +205,11 @@ Src_CFG::~Src_CFG(void)
 {
 }
 
-void Src_CFG::timer_config(Time_Management *&timer)
+void Src_CFG::dvfs_config(char env) {
+	dvfs_en = env;
+}
+
+void Src_CFG::timer_config(Time_Management *timer)
 {
 	time_management = timer;
 	sys_clk = timer -> sys_clk;
@@ -214,7 +218,7 @@ void Src_CFG::timer_config(Time_Management *&timer)
 void Src_CFG::global_param_init(void)
 {
 	// Setting the DVFS-available specification
-	exe_speed_config();
+	exe_speed_config(); 
 	
 	// Initialising some global parameters
 	exe_var = 0.0;
@@ -281,8 +285,8 @@ void Src_CFG::global_param_eval(void)
 	dline_miss = (sys_clk -> cur_time > abs_dline) ? dline_miss + 1 : dline_miss;
 	if(dline_miss != 0) {
 		cout << endl << endl << endl;
-		cout << "Deadline miss" << "Current Time is " << sys_clk -> cur_time << " us, but Absolute Deadline is " << abs_dline << "us" << endl;
-		while(1);
+		cout << "Task_" << TskID <<  " missed deadline, " << "Current Time is " << sys_clk -> cur_time << " us, but Absolute Deadline is " << abs_dline << "us" << endl;
+	//	exit(1);
 	}
 /*Need to be modified*/	Act_CET = (float) (sys_clk -> cur_time - start_time); // Regardless of preemption
 	cycle_acc += cycles_cnt;
@@ -332,15 +336,13 @@ void Src_CFG::global_param_eval(void)
 void Src_CFG::output_result(char* case_msg) {
 	char ExeVar_msg[152];
 	
-	sprintf(ExeVar_msg, "echo \"%sDefault_Freq: %.02fMHz -> Std_dev(Response):%.02f\%, RFJ:%.02f(us), AFJ:%.02f(us), Response(avg):%.02f\%\" >> test_result%.02f_%.01f.txt", 
-		case_msg,
-		default_freq_t, 
-	        (sqrt(response_SampleVariance) / jitter_config.fin_jitter_bound) * 100,
+	sprintf(ExeVar_msg, "echo \"Task_%d: Alpha:%.05f, RFJ:%.05f(us), AFJ:%.05f(us), Energy:%.05f(uJ)\" >> test_result_%s.txt", 
+		TskID,
+		in_alpha,
 		RFJ,
 		AFJ,
-		exe_var,
-		in_alpha,
-		in_default_speed
+		energy_acc * 1000,
+		case_msg
 	);
 	system((char*) ExeVar_msg); 
 }
@@ -355,11 +357,15 @@ void Src_CFG::power_eval(void)
 {
 #ifdef PROCESSOR_AM335x
 	int i;
-	for(i = 0; sys_clk -> cur_freq != freq_vol[i][0]; i++);
-	energy_acc += (sys_clk -> cur_time - pre_eval_time) * (MPU_POWER[i] / 1000000);
-	pre_eval_time = sys_clk -> cur_time;
 	
-	energy_ref = (dvfs_en == (char) DVFS_DISABLE) ? energy_acc : energy_ref;
+#ifdef DISCRETE_DVFS
+	for(i = 0; time_management -> sys_clk -> cur_freq != freq_vol[i][0]; i++);
+	energy_acc += ((time_management -> sys_clk -> cur_time - pre_eval_time) * (MPU_POWER[i] / 1000000));
+#endif
+	pre_eval_time = time_management -> sys_clk -> cur_time;
+	
+	energy_ref = (dvfs_en == (char) NonDVFS_sim) ? energy_acc : 
+		     (dvfs_en == (char) DVFS_sim   ) ? energy_ref : energy_ref_overhead;
 #endif
 }
 
@@ -421,10 +427,10 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 		time_temp = time_management -> time_unit_config(
 			CFG_path[ exe_path[case_id][cur_index] - 1 ].get_cycles(case_t) / time_management -> sys_clk -> cur_freq
 		); 
-		time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
+		time_management -> update_cur_time(time_temp + sys_clk -> cur_time);	
 		power_eval();
-#ifdef DVFS_EN 
-	if(dvfs_en == (char) DVFS_ENABLE) {
+
+	if(dvfs_en == (char) DVFS_sim || dvfs_en == (char) DVFSOverhead_sim) {
 		// Invoking the operation of B-type checkpoint
 		if(CFG_path[ exe_path[case_id][cur_index] - 1 ].B_checkpoint_en != 0x7FFFFFFF) { 
 			B_Intra_task_checkpoint(
@@ -450,7 +456,7 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 		}	
 	}	
 		cout << "current time: " << sys_clk -> cur_time << "us" << endl;
-#endif
+
 	}
 #ifdef DEBUG
 		cout << "Block_" << CFG_path[ exe_path[case_id][cur_index] - 1 ].get_index() << " -> ";
@@ -460,11 +466,14 @@ void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new
 		time_temp = time_management -> time_unit_config(
 			CFG_path[ exe_path[case_id][cur_index] - 1 ].get_cycles(case_t) / time_management -> sys_clk -> cur_freq
 		); 
-		time_management -> update_cur_time(time_temp + sys_clk -> cur_time);
+		time_management -> update_cur_time(time_temp + time_management -> sys_clk -> cur_time);		
 		power_eval();
+
+
 #ifdef DEBUG
 	cout << "End at " << sys_clk -> cur_time << "us" << endl << endl;
 #endif
+	
 	power_eval();
 	global_param_eval();
 	completion_config();
@@ -500,6 +509,17 @@ void Src_CFG::exe_speed_scaling(float new_speed)
 {
 	time_management -> cur_freq_config(new_speed);
 	ISR_TIME_SLICE = INST_UNIT / time_management -> sys_clk -> cur_freq;
+	
+// Conducting Transition Overhead
+	if(dvfs_en == (char) DVFSOverhead_sim) {
+		time_management -> update_cur_time(
+			sys_clk -> cur_time +  // The base of current time
+			((float) OverheadTime) // The overhead of frequency-voltage scaling
+		);	
+		power_eval();
+	}
+	energy_ref = (dvfs_en == (char) NonDVFS_sim) ? energy_acc : 
+		     (dvfs_en == (char) DVFS_sim   ) ? energy_ref : energy_ref_overhead;
 #ifdef DEBUG
 	printf("Current speed: %.02f MHz\r\n\r\n", time_management -> sys_clk -> cur_freq);
 	printf("The period of interrupt timer has been changed to %.08f us\r\n", ISR_TIME_SLICE);	
@@ -519,6 +539,8 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int branch_addr = CFG_path[cur_block_index - 1].B_checkpoint_en;
+	float time_temp;
+	int temp;
 	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from B-type mining table
@@ -566,6 +588,19 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		new_freq = discrete_handle(new_freq, rwcec, local_deadline);
 	}
 #endif
+// Conducting Transition Overhead
+	if(dvfs_en == (char) DVFSOverhead_sim) {
+		temp = (int) OverheadCycle_B;
+		cycles_cnt += temp;
+		time_temp = time_management -> time_unit_config(
+			temp / time_management -> sys_clk -> cur_freq
+		);
+		time_management -> update_cur_time(
+			sys_clk -> cur_time + // The base of current time
+			time_temp             // The overhead of checkpoint operation
+		);		
+		energy_acc += ((float) OverheadEnergy);
+	}
 	exe_speed_scaling(new_freq);
 }
 
@@ -578,6 +613,8 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_index = CFG_path[cur_block_index - 1].L_checkpoint_en[0];
 	int loop_addr  = CFG_path[cur_block_index - 1].L_checkpoint_en[1];
+	float time_temp;
+	int temp;
 	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from L-type mining table
@@ -638,6 +675,19 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		new_freq = discrete_handle(new_freq, rwcec, local_deadline);
 	}
 #endif
+// Conducting Transition Overhead
+	if(dvfs_en == (char) DVFSOverhead_sim) {
+		temp = (int) OverheadCycle_L;
+		cycles_cnt += temp;
+		time_temp = time_management -> time_unit_config(
+			temp / time_management -> sys_clk -> cur_freq
+		);
+		time_management -> update_cur_time(
+			sys_clk -> cur_time + // The base of current time
+			time_temp             // The overhead of checkpoint operation
+		);		
+		energy_acc += ((float) OverheadEnergy);
+	}
 	exe_speed_scaling(new_freq);
 }
 
@@ -649,6 +699,8 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_addr  = CFG_path[cur_block_index - 1].P_checkpoint_en;
+	float time_temp;
+	int temp;
 	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
 // Look up the remaining worst-case exeuction cycles (RWCEC) from P-type mining table
@@ -679,7 +731,7 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		printf("Available Time for Task_%d: %f us, Remaining Execution time until WCRT: %f us\r\n", TskID, time_available, local_deadline);
 #endif
 		new_freq = (time_available <= local_deadline) ?  rwcec / time_available : // Remaining time until WCRT won't lead to deadline miss
-								rwcec / local_deadline; // Deadline miss might occur
+								rwcec / local_deadline; // Deadline zmiss might occur
 		new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 		           (new_freq < min_freq_t) ? min_freq_t : new_freq;
 #ifdef DISCRETE_DVFS
@@ -688,6 +740,19 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		new_freq = discrete_handle(new_freq, rwcec, local_deadline);
 	}
 #endif
+// Conducting Transition Overhead
+	if(dvfs_en == (char) DVFSOverhead_sim) {
+		temp = (int) OverheadCycle_P;
+		cycles_cnt += temp;
+		time_temp = time_management -> time_unit_config(
+			temp / time_management -> sys_clk -> cur_freq
+		);
+		time_management -> update_cur_time(
+			sys_clk -> cur_time + // The base of current time
+			time_temp             // The overhead of checkpoint operation
+		);	
+		energy_acc += ((float) OverheadEnergy);
+	}
 	exe_speed_scaling(new_freq);
 }
 

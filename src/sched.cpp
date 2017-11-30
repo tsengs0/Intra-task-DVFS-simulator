@@ -117,7 +117,7 @@ else cout << pre_task -> next_task -> task_id << endl;
 
 	// Re-locating the Front-pointer
 	ptr = front;
-	while(ptr -> pre_task != NULL) ptr = ptr -> pre_task;
+	while(ptr -> pre_task != NULL) {ptr = ptr -> pre_task; cout << "Relocating Front" << endl;}
 	front = ptr;
 	
 	// Re-locating the Rear-pointer
@@ -201,11 +201,11 @@ float RT_Analyser::RM_Analysis(int task_id, float wcrt_pre)
 	return RM_Analysis(task_id, wcrt_t);
 }
 
-Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus)
+Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue *queue, char policy, Task_State_Bus *msg_bus)
 {
 	time_management = timer;
 	task_list = tasks;
-	ready_queue = &queue;
+	ready_queue = queue;
 	sched_policy = policy;
 	running_task_id = (int) CPU_IDLE;
 	pre_task = running_task_id;
@@ -228,6 +228,9 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready
 	}
 	// Initially, all tasks' state are set to 'IDLE'
 	for(int i = 0; i < tasks_num; i++) task_list[i].state = (char) IDLE;
+	
+	SimPattern_cnt = new int[tasks_num];
+	for(int i = 0; i < tasks_num; i++) SimPattern_cnt[i] = 0;
 }
 
 Task_Scheduler::~Task_Scheduler(void)
@@ -534,13 +537,14 @@ void Task_Scheduler::dispatcher(void)
 		new_task_start_flag = true;
 		inter_intra_bus -> start_new_task_config(
 					running_task_id, 
-					rand() % ((int) patterns_num),
+					SimPattern_cnt[running_task_id] % ((int) patterns_num),//rand() % ((int) patterns_num),
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
 					task_list[running_task_id].start_time, 
 					task_list[running_task_id].rel_dline, 
-					(char) DVFS_ENABLE
+					inter_intra_bus -> intra_tasks[running_task_id].dvfs_en
 				);
+		SimPattern_cnt[running_task_id] += 1; 
 		new_task_start_flag = false;
 		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
 		//printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
@@ -563,13 +567,14 @@ void Task_Scheduler::dispatcher(void)
 		new_task_start_flag = true;
 		inter_intra_bus -> start_new_task_config(
 					running_task_id, 
-					rand() % ((int) patterns_num), 
+					SimPattern_cnt[running_task_id] % ((int) patterns_num),//rand() % ((int) patterns_num), 
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
 					task_list[running_task_id].start_time, 
 					task_list[running_task_id].rel_dline, 
-					(char) DVFS_ENABLE
+					inter_intra_bus -> intra_tasks[running_task_id].dvfs_en
 				);
+		SimPattern_cnt[running_task_id] += 1; 
 		new_task_start_flag = false;
 		time_management -> ExecutedTime_Accumulator((unsigned char) START_TIME, (int) running_task_id);
 		//printf("running_task_id for ExecutedTime Updating is: %d\r\n", running_task_id);
@@ -617,4 +622,9 @@ void Task_Scheduler::list_task_state(void)
         ready_queue -> list_sched_point();
         cout << "===================================" << endl;
 
+}
+
+int Task_Scheduler::show_SimPatternCnt(int TskID)
+{
+	return SimPattern_cnt[TskID];
 }

@@ -11,8 +11,6 @@
 #include "cfg_info.h"
 #include "main.h"
 
-using namespace std;
-
 #define CPU_IDLE 0x7FFFFFFF
 #define NO_PREEMPTION 0x7FFFFFFF
 
@@ -124,12 +122,14 @@ class RT_Analyser {
 		float RM_Analysis(int task_id, float wcrt_pre);		
 };
 
+typedef std::vector<task_info_t> TCB_set;
+typedef std::vector<Src_CFG> CFG_set;
 class Task_State_Bus;
 class Task_Scheduler {
 	private:		
-	
+		int *SimPattern_cnt;	
 	public:  
-		Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue &queue, char policy, Task_State_Bus *&msg_bus);
+		Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue *queue, char policy, Task_State_Bus *msg_bus);
 		~Task_Scheduler(void);
 		
 		void context_switch(int &cur_task, int &new_task);
@@ -140,6 +140,7 @@ class Task_Scheduler {
 		void dispatcher(void);
 		bool IsIdle(void); // Checking is processor at idle state
 		void list_task_state(void);
+		int show_SimPatternCnt(int TskID);
 
 		Time_Management *time_management;
 		task_info_t *task_list;	
@@ -164,15 +165,15 @@ class Task_State_Bus {
 	private:
 		int timeline_curBlock;
 	public:
-		Task_State_Bus(Time_Management *&timer, task_info_t *src_inter, vector<Src_CFG> &src_intra);
+		Task_State_Bus(Time_Management *timer, task_info_t *src_inter, std::vector<Src_CFG> &src_intra);
 		~Task_State_Bus(void);
 	
 		void scheduling_point_assign(int task_id, int case_t, char dvfs_en);
 
 		// #(Interface)
 		Time_Management *time_management;
-		vector<Src_CFG> intra_tasks;
-		task_info_t     *inter_tasks;
+		std::vector<Src_CFG> intra_tasks;
+		task_info_t *inter_tasks;
 		
 		// Labelling the communicating task, in order to remark
 		// which task is utilising the communication bus

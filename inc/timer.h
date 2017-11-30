@@ -7,8 +7,6 @@
 #include <cstdlib>
 #include "main.h"
 
-using namespace std;
-
 class Time_Management {
 	private:
 	public:

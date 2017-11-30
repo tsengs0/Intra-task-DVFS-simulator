@@ -5,7 +5,6 @@
 #define PROCESSOR_AM335x
 #define DISCRETE_DVFS
 //#define CONTINUOUS_DVFS
-#define DVFS_EN
 
 #ifdef PROCESSOR_1
 	#define FREQ_CNT      4    // Four discrete set
@@ -23,6 +22,11 @@
 	#define FREQ_CNT      5    // Five discrete set(MPU OPP)
 	#define MAX_speed     1000    // 1000 MHz
 	#define MIN_speed     300 // 300 MHz
+	static int OverheadCycle_B = 50; // 50 execution cycle of performing B-type checkpoint
+	static int OverheadCycle_L = 60; // 60 execution cycle of performing L-type checkpoint
+	static int OverheadCycle_P = 60; // 60 execution cycle of performing P-type checkpoint
+	static float  OverheadTime = 0.01; // 0.01 us of delay during frequency/voltage scaling
+	static float  OverheadEnergy = 0.0001; // 0.0005 nJ of additional energy consumption during frequency/voltage scaling
 	enum { // The id of MPU OPP
 		OPP50  = 0,
 		OPP100 = 1,
