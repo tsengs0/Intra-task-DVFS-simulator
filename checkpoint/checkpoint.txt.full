@@ -1,0 +1,16 @@
+Task_Numbers: 3 
+Task_ID: 1
+Checkpoint_Numbers: 0 1 1
+L1: 2 3 7 2 3 1250 10 800 3 4 1050 5 1150  5 6 700 7 950 800
+P1: 1 2 7 1250 900
+Task_ID: 2
+Checkpoint_Numbers: 0 0 3
+P1: 2 3 150 30 7432
+P2: 5 6 100 35 3917
+P3: 8 9 130 30 19
+Task_ID: 3
+Checkpoint_Numbers: 1 1 1
+B1: 7 8 300 9 100
+L1: 3 2 5 3 4 270 7 400 4 5 260 6 60 400 
+P1: 2 3 5 270 410
+#
