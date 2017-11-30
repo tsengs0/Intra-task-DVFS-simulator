@@ -1,0 +1,3 @@
+1. I copied the website's tutorial sample code (as shown in below link) directly, and modify it:
+http://thispointer.com/how-to-write-data-in-a-csv-file-in-c/
+

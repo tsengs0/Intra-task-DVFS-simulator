@@ -1,0 +1,3 @@
+Tutorial of how to implement a read/write .CSV file in C++
+1. futurismo.biz/archives/1782
+2. http://thispointer.com/how-to-write-data-in-a-csv-file-in-c/
