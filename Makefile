@@ -4,13 +4,13 @@ PARSER_DIR:= ./Parser
 INC_DIR:= ./inc
 OBJ_DIR:= ./obj
 BIN_DIR:= ./bin
-CFLAG:= -std=c++11 -Wall 
+CFLAG:= -std=c++11 #-Wall 
 SRCEXT:= cpp
 #LIB=-lm -H -c -Wall
 
 APP= mul
 
-all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o pattern_gen.o parser.o 
+all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o pattern_gen.o result_export.o parser.o
 	
 	g++ $(CFLAG) -g -o $(APP) \
 			$(OBJ_DIR)/main.o \
@@ -20,6 +20,7 @@ all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o pattern_gen.o pars
 			$(OBJ_DIR)/tick_cfg.o \
 			$(OBJ_DIR)/timer.o \
 			$(OBJ_DIR)/pattern_gen.o \
+			$(OBJ_DIR)/result_export.o \
 			$(OBJ_DIR)/parser.o 
 			
 
@@ -33,6 +34,7 @@ main.o: $(SRC_DIR)/main.$(SRCEXT) \
 	$(INC_DIR)/timer.h \
 	$(INC_DIR)/inter_bus.h \
 	$(INC_DIR)/checkpoint_info.h \
+	$(INC_DIR)/result_export.h \
 	$(PARSER_DIR)/parser.h \
 	$(INC_DIR)/pattern_gen.h 
 
@@ -74,8 +76,14 @@ parser.o : $(PARSER_DIR)/parser.$(SRCEXT) $(PARSER_DIR)/parser.h $(INC_DIR)/chec
 	g++ $(INC_DIR) $(CFLAG) -g -c $(PARSER_DIR)/parser.$(SRCEXT)
 	mv *.o obj/
 
+result_export.o : $(SRC_DIR)/result_export.$(SRCEXT) $(INC_DIR)/result_export.h 
+
+	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/result_export.$(SRCEXT)
+	mv *.o obj/
+
 clean:
 	clear
 	rm  obj/*.o
 	rm  bin/*
 	rm  inc/*.h.gch
+	rm -rf result/*

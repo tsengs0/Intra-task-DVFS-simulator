@@ -325,7 +325,7 @@ void Src_CFG::global_param_eval(void)
 	printf("Sample Standard Deviation: %.05f us(%.02f%%)\r\n", sqrt(response_SampleVariance), (sqrt(response_SampleVariance) / jitter_config.fin_jitter_bound) * 100);
 	printf("Relative finishing time jitter(RFJ): %.05f us.\r\n", RFJ);
 	printf("Absolute finishing time jitter(AFJ): %.05f us.\r\n", AFJ);
-	printf("Energy consumption: %.05f uJ(%.02f%% Energy-Saving)\r\n", energy_acc * 1000, ((energy_ref - energy_acc) / energy_ref) * 100);
+	printf("Energy consumption: %.05fuuJ(%.02f%% Energy-Saving)\r\n", energy_acc, ((energy_ref - energy_acc) / energy_ref));
 #endif	
 		//if(dline_miss != 0) {cout << "# Missing Deadline!" << endl; while(1);}
 		//jitter_config.fin_time_target = exe_acc / exe_case.size();
@@ -334,17 +334,25 @@ void Src_CFG::global_param_eval(void)
 }
 
 void Src_CFG::output_result(char* case_msg) {
-	char ExeVar_msg[152];
+	char ExeVar_msg[152], csv_msg[152];
 	
 	sprintf(ExeVar_msg, "echo \"Task_%d: Alpha:%.05f, RFJ:%.05f(us), AFJ:%.05f(us), Energy:%.05f(uJ)\" >> test_result_%s.txt", 
 		TskID,
 		in_alpha,
 		RFJ,
 		AFJ,
-		energy_acc * 1000,
+		energy_acc,
 		case_msg
 	);
 	system((char*) ExeVar_msg); 
+
+	sprintf(csv_msg, "echo \"%.05f\,%.05f\,%.05f\" >> %s.csv", 
+		RFJ,
+		AFJ,
+		energy_acc,
+		case_msg
+	);
+	system((char*) csv_msg);
 }
 
 void Src_CFG::power_init(void)
@@ -360,7 +368,7 @@ void Src_CFG::power_eval(void)
 	
 #ifdef DISCRETE_DVFS
 	for(i = 0; time_management -> sys_clk -> cur_freq != freq_vol[i][0]; i++);
-	energy_acc += ((time_management -> sys_clk -> cur_time - pre_eval_time) * (MPU_POWER[i] / 1000000));
+	energy_acc += ((time_management -> sys_clk -> cur_time - pre_eval_time) * (MPU_POWER[i] * 1000));
 #endif
 	pre_eval_time = time_management -> sys_clk -> cur_time;
 	

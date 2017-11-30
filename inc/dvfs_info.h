@@ -26,7 +26,7 @@
 	static int OverheadCycle_L = 60; // 60 execution cycle of performing L-type checkpoint
 	static int OverheadCycle_P = 60; // 60 execution cycle of performing P-type checkpoint
 	static float  OverheadTime = 0.01; // 0.01 us of delay during frequency/voltage scaling
-	static float  OverheadEnergy = 0.0001; // 0.0005 nJ of additional energy consumption during frequency/voltage scaling
+	static float  OverheadEnergy = 50.0; // 50.0 uJ of additional energy consumption during frequency/voltage scaling
 	enum { // The id of MPU OPP
 		OPP50  = 0,
 		OPP100 = 1,

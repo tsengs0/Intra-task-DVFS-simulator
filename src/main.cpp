@@ -13,6 +13,7 @@
 #include "../inc/checkpoint_info.h"
 #include "../Parser/parser.h"
 #include "../inc/pattern_gen.h"
+#include "../inc/result_export.h"
 
 using std::cout;
 using std::cin;
@@ -65,6 +66,7 @@ vector<Src_CFG> src_intra_overhead;
 task_info_t *src_inter_NonDVFS;
 task_info_t *src_inter;
 task_info_t *src_inter_overhead;
+CSVWriter **writer; // Creating an object of CSVWriter
 //-----------------------------------------------------------------------------------------//
 //Temporary test cases
 typedef vector<int> ExePath_case;
@@ -299,6 +301,20 @@ void system_init(void)
 //--------------------------------------------------------------------------------//        
         checkpoint_config();
         wcet_info_config();
+/*
+// Pre-create the .CSV file for each Task's experimental result
+	writer = new CSVWriter*[tasks_num];
+	for(int i = 0; i < tasks_num; i++) {
+		writer[i] = new CSVWriter[3];
+	  	char in_msg[30], in_msg1[30], in_msg2[30];
+		sprintf(in_msg, "NonDVFS.%d.csv", i);
+	  	sprintf(in_msg1, "DVFS.NonOverhead.%d.csv", i);
+	  	sprintf(in_msg2, "DVFS.Overhead.%d.csv", i);
+		writer[i][0].ExportFile_config(in_msg);
+		writer[i][1].ExportFile_config(in_msg1);
+		writer[i][2].ExportFile_config(in_msg2);
+	}
+*/
 }
 
 void checkpoint_config() {
@@ -383,19 +399,37 @@ void array_int_cpy(vector<int> &Dst, int *Src)
 
 void export_result(int env)
 {
+	float csv_col_temp[3]; // RFJ, AFJ, Energy
 	for(int i = 0; i < tasks_num; i++) {
 	  char in_msg[50];
 	  if(env == (int) NonDVFS_sim) {
 		sprintf(in_msg, "NonDVFS.%d", i);
 	  	inter_intra_bus_NonDVFS -> intra_tasks[i].output_result(in_msg);
+		/*csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
+		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
+		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
+		writer[i][0].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
+	  	*/
 	  }
 	  else if(env == (int) DVFS_sim) {
 	  	sprintf(in_msg, "DVFS.NonOverhead.%d", i);
 	  	inter_intra_bus -> intra_tasks[i].output_result(in_msg);
+		/*
+		csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
+		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
+		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
+		writer[i][1].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
+		*/
 	  }
 	  else if(env == (int) DVFSOverhead_sim) {
 	  	sprintf(in_msg, "DVFS.Overhead.%d", i);
 	  	inter_intra_bus_overhead -> intra_tasks[i].output_result(in_msg);
+		/*
+		csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
+		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
+		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
+		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
+		*/
 	  }
 	  else {
 		cout << "There is no environment option match the demand" << endl;
