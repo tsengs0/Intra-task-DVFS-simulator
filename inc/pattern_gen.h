@@ -12,7 +12,9 @@ void rand_ExePath_gen(
 	void *TestPattern_inout,
 	void *Lookahead_LoopIteration1_inout,
 	void *Lookahead_LoopIteration2_inout,
-	void *Lookahead_LoopIteration3_inout
+	void *Lookahead_LoopIteration3_inout,
+	void *Lookahead_LoopIteration4_inout,
+	void *Lookahead_LoopIteration5_inout
 );
 	
 int isLoopEntry(int cur_NodeID, std::vector<Basic_block> &CFG_path, checkpoints_label &checkpointLabel);

@@ -5,11 +5,11 @@
 #include <vector>
 #include <cstdio>
 #include <cstdlib>
+#include <cmath>
 #include "main.h"
 #include "dvfs_info.h"
 #include "timer.h"
 #include "cfg_info.h"
-#include "main.h"
 
 #define CPU_IDLE 0x7FFFFFFF
 #define NO_PREEMPTION 0x7FFFFFFF
@@ -71,15 +71,17 @@ class Ready_Queue {
 };
 
 typedef struct Task_Info {
-	float release_time;
-	float start_time;
+	double release_time;
+	double start_time;
 	int prt;
-	float rel_dline;
-	float wcet; // unit: us
-	float period;
+	double rel_dline;
+	double wcet; // unit: us
+	double bcet; // unit: us
+	double period;
 	bool NRT_USED; // A flag used to label whether the polling of release_time have been detected/used or not
 	char state;
-	float wcrt;
+	double wcrt;
+	double bcrt;
 	unsigned int completion_cnt;
 //	Task_Info(int r, int pr, int rd, int wc, int p, char st)
 //	: release_time(r), prt(pr), rel_dline(rd), wcet(wc), period(p), state(st) {}
@@ -87,7 +89,8 @@ typedef struct Task_Info {
 
 typedef struct Context {
 	int task_id;
-	float rwcet; // unit: us
+	double rwcet; // unit: us
+	double cur_freq;
 	bool isr_flag;
 	struct Context *next; // For stacking
 } context_t;
@@ -109,7 +112,7 @@ class Preemption_Stack {
 		int show_StackCnt(void);
 };
 
-float ceiling(float x);
+double ceiling(double x);
 class RT_Analyser {
 	private:
 
@@ -118,8 +121,9 @@ class RT_Analyser {
 		
 		RT_Analyser(task_info_t *tasks_list);
 		~RT_Analyser(void);
-
-		float RM_Analysis(int task_id, float wcrt_pre);		
+		
+		double RM_WCRT(int task_id, double wcrt_pre);		
+		double RM_BCRT(int task_id, double bcrt_pre);		
 };
 
 typedef std::vector<task_info_t> TCB_set;
@@ -132,22 +136,31 @@ class Task_Scheduler {
 		Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready_Queue *queue, char policy, Task_State_Bus *msg_bus);
 		~Task_Scheduler(void);
 		
-		void context_switch(int &cur_task, int &new_task);
+		void context_switch(int cur_task, int new_task);
 		void resume(void);
-		void sched_arbitration(float sched_tick);
+		void sched_arbitration(double sched_tick);
 		bool RM_sched(int &task_new);
 		bool EDF_sched(int &task_new);
 		void dispatcher(void);
 		bool IsIdle(void); // Checking is processor at idle state
 		void list_task_state(void);
 		int show_SimPatternCnt(int TskID);
+		void completion_config(void);
 
 		Time_Management *time_management;
 		task_info_t *task_list;	
 		Ready_Queue *ready_queue;
 		RT_Analyser *rta;	
 		char sched_policy;
-		float rwcet; // unit: us
+		double rwcet; // unit: us
+		double slack;
+		double worst_interference[tasks_num]; // worst-case interference time 
+		double avg_interference[tasks_num];    // average-case interference time
+		double acrt[tasks_num]; // average-case response time
+		double acet[tasks_num]; // average-case execution time
+		double acet_acc[tasks_num];
+		double hyperperiod; // By LCM among tasks' periods
+		double NRT_nearest;
 
 		// The dedicated stack for preemption		
 		Preemption_Stack isr_stack;
@@ -163,12 +176,12 @@ class Task_Scheduler {
 
 class Task_State_Bus {
 	private:
-		int timeline_curBlock;
+	
 	public:
 		Task_State_Bus(Time_Management *timer, task_info_t *src_inter, std::vector<Src_CFG> &src_intra);
 		~Task_State_Bus(void);
 	
-		void scheduling_point_assign(int task_id, int case_t, char dvfs_en);
+		void scheduling_point_assign(int task_id, int case_t, int dvfs_en);
 
 		// #(Interface)
 		Time_Management *time_management;
@@ -184,14 +197,16 @@ class Task_State_Bus {
 			int new_task_id, 
 			int case_id, 
 			int case_t, 
-			float release_time_new, 
-			float start_time_new, 
-			float Deadline, 
-			char DVFS_en
+			double release_time_new, 
+			double slack,
+			double worst_interference,
+			double avg_interference,
+			double Deadline, 
+			int DVFS_en
 		);
 
 		// Command 2
-		void time_driven_cfg(int new_task_id);
+		void time_driven_cfg(int new_task_id, int case_t);
 		
 };
 

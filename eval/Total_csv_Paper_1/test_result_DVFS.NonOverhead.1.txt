@@ -1,0 +1,1 @@
+Task_00000001: Alpha:       1.00000, RFJ: 10668.00000(ns), AFJ: 16197.00000(ns), TargetResponse: 28940.00000(ns), AverageResponse:  2415.10034(ns), SampleStandardDeviation:  4020.99219(ms), Energy:    483249.90625(nJ), DeadlineMiss: 00

@@ -1,0 +1,10 @@
+digraph task3 {
+	subgraph Basic_Block {
+		proc1 [label = "{<f0> B1|<f1> 100}" shape = Mrecord];
+		proc2 [label = "{<f0> B2|<f1> 100}" shape = Mrecord];
+		proc10 [label = "{<f0> B10|<f1> 800}" shape = Mrecord];
+	}
+	proc1 -> proc2;
+	proc2 -> proc10;
+	proc10 -> end;
+}

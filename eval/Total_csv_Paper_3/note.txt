@@ -1,0 +1,5 @@
+With utilisation of 0.41899%
+selective checkpoint annotation
+Tsk0: 10.89% jitter reduction
+Tsk2: 44.77% jitter reduction
+

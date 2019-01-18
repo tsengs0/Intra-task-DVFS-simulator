@@ -4,14 +4,13 @@ PARSER_DIR:= ./Parser
 INC_DIR:= ./inc
 OBJ_DIR:= ./obj
 BIN_DIR:= ./bin
-CFLAG:= -std=c++11 #-Wall 
+CFLAG:= -std=c++0x #-Wall
 SRCEXT:= cpp
 #LIB=-lm -H -c -Wall
 
 APP= mul
 
 all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o pattern_gen.o result_export.o parser.o
-	
 	g++ $(CFLAG) -g -o $(APP) \
 			$(OBJ_DIR)/main.o \
 			$(OBJ_DIR)/cfg_info.o \
@@ -22,8 +21,6 @@ all: main.o cfg_info.o inter_bus.o sched.o tick_cfg.o timer.o pattern_gen.o resu
 			$(OBJ_DIR)/pattern_gen.o \
 			$(OBJ_DIR)/result_export.o \
 			$(OBJ_DIR)/parser.o 
-			
-
 	mv $(APP) $(BIN_DIR)
 
 main.o: $(SRC_DIR)/main.$(SRCEXT) \
@@ -37,53 +34,45 @@ main.o: $(SRC_DIR)/main.$(SRCEXT) \
 	$(INC_DIR)/result_export.h \
 	$(PARSER_DIR)/parser.h \
 	$(INC_DIR)/pattern_gen.h 
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/main.$(SRCEXT)
 	mv *.o obj/ 	
 
 cfg_info.o: $(SRC_DIR)/cfg_info.$(SRCEXT) $(INC_DIR)/cfg_info.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h 
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/cfg_info.$(SRCEXT) 
 	mv *.o obj/
 
 inter_bus.o : $(SRC_DIR)/inter_bus.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/main.h
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/inter_bus.$(SRCEXT)
 	mv *.o obj/
 
 sched.o : $(SRC_DIR)/sched.$(SRCEXT) $(INC_DIR)/sched.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h 
-
-	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/sched.$(SRCEXT)
+	g++ $(INC_DIR) $(CFLAG) -lm -g -c $(SRC_DIR)/sched.$(SRCEXT)
 	mv *.o obj/
 
 tick_cfg.o : $(SRC_DIR)/tick_cfg.$(SRCEXT) $(INC_DIR)/cfg_info.h $(INC_DIR)/dvfs_info.h $(INC_DIR)/main.h
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/tick_cfg.$(SRCEXT)
 	mv *.o obj/
 
 timer.o : $(SRC_DIR)/timer.$(SRCEXT) $(INC_DIR)/timer.h
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/timer.$(SRCEXT)
 	mv *.o obj/
 
 pattern_gen.o : $(SRC_DIR)/pattern_gen.$(SRCEXT) $(INC_DIR)/pattern_gen.h $(INC_DIR)/cfg_info.h $(INC_DIR)/checkpoint_info.h
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/pattern_gen.$(SRCEXT)
 	mv *.o obj/
 
 parser.o : $(PARSER_DIR)/parser.$(SRCEXT) $(PARSER_DIR)/parser.h $(INC_DIR)/checkpoint_info.h
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(PARSER_DIR)/parser.$(SRCEXT)
 	mv *.o obj/
 
 result_export.o : $(SRC_DIR)/result_export.$(SRCEXT) $(INC_DIR)/result_export.h 
-
 	g++ $(INC_DIR) $(CFLAG) -g -c $(SRC_DIR)/result_export.$(SRCEXT)
 	mv *.o obj/
 
 clean:
 	clear
 	rm  obj/*.o
-	rm  bin/*
+#	rm  bin/*
 	rm  inc/*.h.gch
 	rm -rf result/*
+

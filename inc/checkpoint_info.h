@@ -8,6 +8,7 @@ typedef std::vector<int> P_checkpoints_label;
 typedef std::vector<int> L_loop_bound_t;
 typedef std::vector<int> P_loop_bound_t;
 typedef std::vector<int> P_loop_entry_t;
+typedef std::vector<int> P_loop_dummy_t;
 typedef struct Checkpoints_Label {
 	B_checkpoints_label B_checkpoints;
 	L_checkpoints_label L_checkpoints;
@@ -15,6 +16,7 @@ typedef struct Checkpoints_Label {
 	L_loop_bound_t L_loop_bound; // Recording the number of iteration every loop nest have run so far
 	P_loop_bound_t P_loop_bound;
 	P_loop_entry_t P_loop_entry;
+	P_loop_dummy_t P_loop_dummy;
 } checkpoints_label;
 
 typedef int B_type[4];

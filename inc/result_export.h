@@ -29,7 +29,7 @@ public:
 	 */
 	//template<typename T>
 	//void addDatainRow(T first, T last);
-	void addDatainRow(float *first, float *last);
+	void addDatainRow(double *first, double *last);
 };
 
 #endif // __RESULT_EXPORT_H

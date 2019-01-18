@@ -14,6 +14,11 @@ typedef std::vector<int> array_int_element;
 typedef std::vector<int> ExePath_case;
 typedef std::vector<ExePath_case> ExePath_set;
 
+enum {
+	LOWER_BOUND = 1,
+	UPPER_BOUND = 2
+};
+
 class Basic_block {
 	private:
 		int block_index; 
@@ -34,7 +39,7 @@ class Basic_block {
 };	
 
 typedef struct isr_context{
-	float act_exe_time;
+	double act_exe_time;
 	int act_cycles;
 } isr_context_t;
 
@@ -53,15 +58,17 @@ class Src_CFG {
 	public:
 		std::vector<Basic_block> CFG_path;
 		int execution_cycles[3]; // index_0 : WCEC, index_1 : ACEC, index_3 : BCEC
-		float max_freq_t;
-		float min_freq_t;
-		float default_freq_t;
-		char dvfs_en;
+		double max_freq_t;
+		double min_freq_t;
+		double default_freq_t;
+		int dvfs_en;
+		int sys_mode;
 
 // Multitask scheduling information
-		float response_time;
-		float max_response;  // For evaluating the finish time jitter
-		float min_response;  // For evaluating the finish time jitter
+		double response_time;
+		double max_response;  // For evaluating the finish time jitter
+		double min_response;  // For evaluating the finish time jitter
+		double max_response_fb, min_response_fb;
 		double response_acc; // For evaluating the finish time jitter 
 		double exe_acc;      // For evaluating the finish time jitter 	
 		Src_CFG *next_task;
@@ -69,23 +76,31 @@ class Src_CFG {
 		ExePath_set exe_path;
 		
 		int cycle_acc;
-		std::vector<float> exe_case;
-		std::vector<float> response_case;
-		float response_SampleVariance;
-		float RFJ, AFJ; // Relative finishing time jitter; Absolute finishing time jitter
-		float exe_var;  // Recording variation on actual execution time
-		float tar_diff; // The difference between actual execution time and target execution time
+		std::vector<double> exe_case;
+		std::vector<double> response_case;
+		double response_SampleVariance;
+		double response_SampleVarianceDeviation;
+		double average_response;
+		double AvgResp_ref[2]; // Just a temporary reference for exporting the log file: [0]: Minimum among all instances, [1]: Maximum among all instances
+		double RFJ, AFJ; // Relative finishing time jitter; Absolute finishing time jitter
+		double exe_var;  // Recording variation on actual execution time
+		double tar_diff; // The difference between actual execution time and target execution time
 		jitter_constraint jitter_config;
 		std::vector<B_mining_table_t> B_mining_table;
 		std::vector<L_mining_table_t> L_mining_table;
 		std::vector<P_mining_table_t> P_mining_table;
 
+// Jitter Margin
+		double in_alpha;	
+		double constant_delay;
+		double var_delay;
+
 	//public:
-		void traverse_spec_path(int case_id, int case_t, float releast_time_new, float start_time_new, float Deadline, char DVFS_en);
-		float get_cur_speed(void);
+		void traverse_spec_path(int case_id, int case_t, double releast_time_new, double start_time_new, double Deadline, int DVFS_en);
+		double get_cur_speed(void);
 
 		// Configuratoin of DVFS environment
-		void dvfs_config(char env);
+		void dvfs_config(int env);
 
 		// Intra-task DVFS attributes
 		void checkpoints_placement(checkpoints_label *&checkpoint_label_temp);
@@ -97,15 +112,18 @@ class Src_CFG {
 		void L_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		void P_Intra_task_checkpoint(int cur_block_index, int succ_block_index);
 		
-		float discrete_handle(float new_freq, int rwcec, float local_deadline);
+		double discrete_handle(double new_freq, int rwcec, double AvailableTime, double local_deadline);
+		double discrete_handle_SelectBound(double new_freq, int sele_bound);
 		void checkpoint_operation(int block_index, int case_t);
 		void exe_speed_config(void); // For determining all DVFS availability firstly
 		void jitter_init(void); // Configuration of jitter constraints
-		void exe_speed_scaling(float new_speed);
+		void SysMode_reconfig(int SysMode);
+		void exe_speed_scaling(double new_speed);
 		void global_param_init(void);
 		void constraint_update(void);
 		void power_init(void);
 		void power_eval(void);
+		void show_TskMode(void);
 
 		// The functions for final evaluation
 		void global_param_eval(void);
@@ -124,14 +142,18 @@ class Src_CFG {
 
 		// Interrupt Timer and Preemption
 		// Context register for interrupt timer and preemption
-		isr_context_t isr_driven_cfg(int case_t, char DVFS_en);
-		void dispatch_cfg(int &case_id, int case_t, float release_time_new, float start_time_new, float Deadline, char DVFS_en);
+		isr_context_t isr_driven_cfg(int case_t, int DVFS_en);
+		void dispatch_cfg(int &case_id, int case_t, double release_time_new, double start_time_new, double Deadline, int DVFS_en);
 		int rem_wcec;		
 		int executed_cycles;
 		int cur_block_cycles;
 		int cur_block_index;
 		int cur_case_id;
 		isr_context_t context_reg;
+
+		// Show Error Message for Debugging
+		void ErrMsg(int case_t);
+		int timeline_curBlock;
 
 		// target control flow information
 		Src_CFG(
@@ -141,6 +163,8 @@ class Src_CFG {
 			RWCEC_Trace_in *cycle_in_temp,
 			checkpoint_num *checkpointNum_temp,
 			exeTime_info WCET_INFO,
+			double in_alpha,
+			int SysMode_in,
 			int TskID_in
 		);
 		~Src_CFG(void);
@@ -150,44 +174,54 @@ class Src_CFG {
 		checkpoint_num *checkpointNum;
 	
 	/*Since Lookahead Actual Loop iteration have been declared, so this two variables maybe no need*/	
-	/*Note*/	std::vector< std::vector<int> > L_loop_iteration; // The counter of L-type iteration
+	/*Note*/	std::vector<int> L_loop_iteration; // The counter of L-type iteration
+	/*Note*/	std::vector< std::vector<int> > L_loop_iteration_preload; // The Preloading parameter for counter of L-type iteration
 	/*Note*/	std::vector<int> P_loop_iteration; // The counter of P-type iteration
 		std::vector<int> L_loop_exit;
 
 // Multitask scheduling information
 		void completion_config(void);
-		float start_time;
-		float release_time;
+		double start_time;
+		double release_time;
 		/*Perhaps no need*/char  state; // READY, WAIT, IDLE, RUN, TERMINATE
-		float abs_dline; // Absolute Deadline
-		float rel_dline; // Relative Deadline
+		double abs_dline; // Absolute Deadline
+		double rel_dline; // Relative Deadline
 		int dline_miss;
-		float wcet;
-		float wcrt; 
-		float bcet;
+		double wcet;
+		double bcet;
+		double acet;
+		double wcrt; 
+		double bcrt; 
 		bool completion_flag; // True: just completed; False: haven't completed or arrived yet	
-		/*Perhaps no need*/float period;
+		/*Perhaps no need*/double period;
 		/*Perhaps no need*/char  prt; // Task Priority
+		double slack;
+		double interference;
 
 // Energy/Power Evaluation parameters
-		float energy_acc;
-		float pre_eval_time;
+		double energy_acc;
+		double pre_eval_time;
+		double pre_eval_UpdatePoint;
+		int pre_eval_time_cnt;
 };
 
 /*
 Sample Variance
 (s^2) = sum from {i = 1} to {n} { [(x_i - x')^2] / (n - 1) }
 */
-static float sample_variance(std::vector<float> &a) 
+static double sample_variance(std::vector<double> &a) 
 {
-	unsigned int i; float acc = 0.0, acc_1 = 0.0; 
+	unsigned int i; 
+	double acc = 0.0;
+	double acc_1 = 0.0; 
+	double mean, SampleVariance;
 
 	for(i = 0; i < a.size(); i++) acc += a[i]; 
-	acc = acc / a.size(); 
-	for(i = 0; i < a.size(); i++) acc_1 += ((a[i] - acc) * (a[i] - acc));
-	acc_1 = acc_1 / (a.size() - 1);
+	mean = acc / a.size(); 
+	for(i = 0; i < a.size(); i++) acc_1 += ((a[i] - mean) * (a[i] - mean));
+	SampleVariance = acc_1 / (a.size() - 1);
 
-	return acc_1; 
+	return SampleVariance; 
 }
 
 #endif // __CFG_INFO_H

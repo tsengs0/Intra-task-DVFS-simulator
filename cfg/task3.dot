@@ -13,7 +13,7 @@ digraph task3 {
 		proc8 -> proc9;
 		proc9 -> proc2;
 		A [
-		 label="Loop#1\nLoop Bound:7"
+		 label="Loop#1\nStatic Loop Bound:7"
 		 width = 1
 		 shape = box
 		 style = dashed

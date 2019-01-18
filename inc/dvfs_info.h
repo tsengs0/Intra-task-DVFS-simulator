@@ -5,12 +5,13 @@
 #define PROCESSOR_AM335x
 #define DISCRETE_DVFS
 //#define CONTINUOUS_DVFS
+//#ifdef DVFS_OVERHEAD // take transition overhead into account
 
 #ifdef PROCESSOR_1
 	#define FREQ_CNT      4    // Four discrete set
 	#define MAX_speed     1.0    // 1k Hz
 	#define MIN_speed     0.25 // 0.25k Hz
-	static float freq_vol[][2] = {
+	static double freq_vol[][2] = {
 		{0.250, 2000},  // 0.250k Hz, 2000 mV
 		{0.500, 3000},  // 0.500k Hz, 3000 mV
 		{0.750, 4000},  // 0.750k Hz, 4000 mV
@@ -22,11 +23,11 @@
 	#define FREQ_CNT      5    // Five discrete set(MPU OPP)
 	#define MAX_speed     1000    // 1000 MHz
 	#define MIN_speed     300 // 300 MHz
-	static int OverheadCycle_B = 50; // 50 execution cycle of performing B-type checkpoint
-	static int OverheadCycle_L = 60; // 60 execution cycle of performing L-type checkpoint
-	static int OverheadCycle_P = 60; // 60 execution cycle of performing P-type checkpoint
-	static float  OverheadTime = 0.01; // 0.01 us of delay during frequency/voltage scaling
-	static float  OverheadEnergy = 50.0; // 50.0 uJ of additional energy consumption during frequency/voltage scaling
+	static int OverheadCycle_B = 0;//50; // 50 execution cycle of performing B-type checkpoint
+	static int OverheadCycle_L = 0;//60; // 60 execution cycle of performing L-type checkpoint
+	static int OverheadCycle_P = 0;//60; // 60 execution cycle of performing P-type checkpoint
+	static double  OverheadTime = 0;//1; // 1 ns of delay during frequency/voltage scaling
+	static double  OverheadEnergy = 0;//50.0; // 50.0 uJ of additional energy consumption during frequency/voltage scaling
 	enum { // The id of MPU OPP
 		OPP50  = 0,
 		OPP100 = 1,
@@ -34,20 +35,32 @@
 		TURBO  = 3,
 		NITRO  = 4
 	};
-	static float freq_vol[][2] = {
+	static double freq_vol[][2] = {
 		{300 , 950},  // 300 MHz ,  950 mV
 		{600 , 1100}, // 600 MHz , 1100 mV
 		{720 , 1200}, // 720 MHz , 1200 mV
 		{800 , 1260}, // 800 MHz , 1260 mV
 		{1000, 1325} // 1000 MHz, 1325 mV 
 	};
-	static float MPU_POWER[] = {
+
+	// Power proportional to freq and Vol^2
+	static double MPU_POWER[] = {
+		270.75,//114.38, // 114.38 mW
+		726.0,//303.15, // 303.15 mW
+		1036.8,//437.49, // 437.49 mW
+		1270.1,//542.73, // 542.73 mW
+		1755.6//736.08  // 736.08 mW
+	};
+/*
+	// Real Spec.
+	static double MPU_POWER[] = {
 		114.38, // 114.38 mW
 		303.15, // 303.15 mW
 		437.49, // 437.49 mW
 		542.73, // 542.73 mW
 		736.08  // 736.08 mW
 	};
+*/
 #endif
 
 #endif // __DVFS_INFO_H

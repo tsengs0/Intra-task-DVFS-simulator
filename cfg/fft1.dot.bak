@@ -1,0 +1,168 @@
+digraph fft1 {
+	subgraph cluster0 {
+		style = filled;
+		color = lightgrey;
+		proc4 -> proc5;
+		proc5 -> proc4;
+		A [
+		 label="Loop#1\nLoop Bound:4"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+		//{rank=same; proc5, proc6}
+
+	}
+	subgraph cluster1 {
+		style = filled;
+		color = lightgrey;
+		proc16 -> proc11;
+		proc11 -> proc12;
+		proc12 -> proc14;
+		B [
+		 label="Loop#2\nLoop Bound:4"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph cluster2 {
+		style = filled;
+		color = lightgrey;
+		proc19 -> proc14;
+		proc14 -> proc15;
+		proc14 -> proc16;
+		proc15 -> proc17;
+		C [
+		 label="Loop#3\nLoop Bound:4"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph cluster3 {
+		style = filled;
+		color = lightgrey;
+		proc17 -> proc18;
+		proc17 -> proc19;
+		proc18 -> proc17;
+		C [
+		 label="Loop#3\nLoop Bound:4"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph cluster4 {
+		style = filled;
+		color = lightgrey;
+		proc32 -> proc20;
+		proc20 -> proc22;
+		proc22 -> proc27;
+		proc22 -> proc28;
+		proc27 -> proc28;
+		proc28 -> proc30;
+		C [
+		 label="Loop#3\nLoop Bound:7"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph cluster5 {
+		style = filled;
+		color = lightgrey;
+		proc30 -> proc31;
+		proc30 -> proc32;
+		proc31 -> proc30;
+		C [
+		 label="Loop#3\nLoop Bound:2"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph cluster6 {
+		style = filled;
+		color = lightgrey;
+		proc25 -> proc26;
+		proc26 -> proc25;
+		C [
+		 label="Loop#3\nLoop Bound:8"
+		 width = 1
+		 shape = box
+		 style = dashed
+		 color = red
+		 size = 5
+		];
+	}
+	subgraph Basic_Block {
+		proc1 [label = "{<f0> B1|<f1> 12}" shape = Mrecord];
+		proc2 [label = "{<f0> B2|<f1> 3}" shape = Mrecord];
+		proc3 [label = "{<f0> B3|<f1> 2}" shape = Mrecord];
+		proc4 [label = "{<f0> B4|<f1> 27}" shape = Mrecord];
+		proc5 [label = "{<f0> B5|<f1> 5}" shape = Mrecord];
+		proc6 [label = "{<f0> B6|<f1> 10}" shape = Mrecord];
+		proc7 [label = "{<f0> B7|<f1> 25}" shape = Mrecord];
+		proc8 [label = "{<f0> B8|<f1> 3}" shape = Mrecord];
+		proc9 [label = "{<f0> B9|<f1> 4}" shape = Mrecord];
+		proc10 [label = "{<f0> B10|<f1> 26}" shape = Mrecord];
+		proc11 [label = "{<f0> B11|<f1> 12}" shape = Mrecord];
+		proc12 [label = "{<f0> B12|<f1> 3}" shape = Mrecord];
+		proc13 [label = "{<f0> B13|<f1> 2}" shape = Mrecord];
+		proc14 [label = "{<f0> B14|<f1> 27}" shape = Mrecord];
+		proc15 [label = "{<f0> B15|<f1> 5}" shape = Mrecord];
+		proc16 [label = "{<f0> B16|<f1> 10}" shape = Mrecord];
+		proc17 [label = "{<f0> B17|<f1> 25}" shape = Mrecord];
+		proc18 [label = "{<f0> B18|<f1> 3}" shape = Mrecord];
+		proc19 [label = "{<f0> B19|<f1> 4}" shape = Mrecord];
+		proc20 [label = "{<f0> B20|<f1> 26}" shape = Mrecord];
+		proc21 [label = "{<f0> B21|<f1> 12}" shape = Mrecord];
+		proc22 [label = "{<f0> B22|<f1> 3}" shape = Mrecord];
+		proc23 [label = "{<f0> B23|<f1> 2}" shape = Mrecord];
+		proc24 [label = "{<f0> B24|<f1> 27}" shape = Mrecord];
+		proc25 [label = "{<f0> B25|<f1> 5}" shape = Mrecord];
+		proc26 [label = "{<f0> B26|<f1> 10}" shape = Mrecord];
+		proc27 [label = "{<f0> B27|<f1> 25}" shape = Mrecord];
+		proc28 [label = "{<f0> B28|<f1> 3}" shape = Mrecord];
+		proc29 [label = "{<f0> B29|<f1> 4}" shape = Mrecord];
+		proc30 [label = "{<f0> B30|<f1> 26}" shape = Mrecord];
+		proc31 [label = "{<f0> B31|<f1> 26}" shape = Mrecord];
+		proc32 [label = "{<f0> B32|<f1> 26}" shape = Mrecord];
+		proc33 [label = "{<f0> B33|<f1> 26}" shape = Mrecord];
+	}
+	proc1  -> proc2;
+	proc1  -> proc3;
+	proc2  -> proc33;
+	proc3  -> proc4;
+	proc4  -> proc6;
+	proc6  -> proc7;
+	proc6  -> proc29;
+	proc29 -> 33;
+	proc7  -> proc8;
+	proc7  -> proc9;
+	proc8  -> proc10;
+	proc9  -> proc10;
+	proc10 -> proc11;
+	proc11 -> proc13;
+	proc13 -> proc20;
+	proc20 -> proc21;
+	proc21 -> proc23;
+	proc21 -> proc24;
+	proc23 -> proc25; 
+	proc24 -> proc33;
+	proc25 -> proc33;
+	proc33 -> end;
+}

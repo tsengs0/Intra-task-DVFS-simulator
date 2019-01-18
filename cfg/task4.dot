@@ -45,8 +45,8 @@ digraph task4 {
 	}
 	subgraph Basic_Block {
 		proc1 [label = "{<f0> B1|<f1> 12}" shape = Mrecord];
-		proc2 [label = "{<f0> B2|<f1> 2}" shape = Mrecord];
-		proc3 [label = "{<f0> B3|<f1> 2}" shape = Mrecord];
+		proc2 [label = "{<f0> B2|<f1> 3}" shape = Mrecord];
+		proc3 [label = "{<f0> B3|<f1> 3}" shape = Mrecord];
 		proc4 [label = "{<f0> B4|<f1> 27}" shape = Mrecord];
 		proc5 [label = "{<f0> B5|<f1> 5}" shape = Mrecord];
 		proc6 [label = "{<f0> B6|<f1> 10}" shape = Mrecord];

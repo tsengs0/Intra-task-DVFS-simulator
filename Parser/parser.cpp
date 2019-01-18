@@ -2,7 +2,7 @@
 
 using namespace std;
 
-const char *checkpoint_file = "../checkpoint/checkpoint.txt";
+// For Checkpoint File 
 const string checkpoint_id_1("Task_Numbers:");
 const string checkpoint_id_2("Task_ID:");
 const string checkpoint_id_3("Checkpoint_Numbers:");
@@ -11,6 +11,11 @@ const string checkpoint_id_5("L");
 const string checkpoint_id_6("P");
 const string checkpoint_id_end("#");
 
+// For Test Pattern File
+const string TestPattern_id_1("PATTERN_SET_SIZE:");
+const string TestPattern_id_2("CASE:");
+const string TestPattern_id_3("SIZE:");
+const string TestPattern_id_end("#");
 Parser::Parser(void)
 {
 }
@@ -19,9 +24,9 @@ Parser::~Parser(void)
 {
 }
 
-void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkpoint_numbers_inout, void *checkpoint_BlockID_inout)
+void Parser::checkpoint_in(char *checkpoint_file, int tsk_num_in, void *cycle_trace_inout, void *checkpoint_numbers_inout, void *checkpoint_BlockID_inout)
 {
-	int fsm = (int) TSK_NUM;
+	int fsm = (int) TSK_NUM, digit_t;
 	string path(checkpoint_file);
 	string read_line;
 	string read_id;
@@ -135,9 +140,10 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 	
 			case (int) CH:
 				cstr = (char*) malloc(sizeof(char) * read_id.length() - 1);
+				digit_t = read_id.length() - 2;
 				read_id.copy(cstr, read_id.length() - 2, 0); cstr[read_id.length() - 1] = '\0';
-				read_id_1.assign(cstr, read_id.length() - 2); free(cstr);
-				
+				read_id_1.assign(cstr, read_id.length() - digit_t - 1); free(cstr);
+				cout << read_id << " " << read_id_1 << endl; 
 				if(!read_id_1.compare(checkpoint_id_4)) { // B-type Checkpoint
 						int digit = read_id.length() - read_id_1.length() - 1;
 						char temp[digit + 1]; 
@@ -220,6 +226,8 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 						cycle_trace[task_id - 1].P_RWCEC_t[P_id][1] = char_int(read_int.c_str()); 
 						read_content >> read_int;  
 						cycle_trace[task_id - 1].P_RWCEC_t[P_id][2] = char_int(read_int.c_str()); 
+						if(cycle_trace[task_id - 1].P_RWCEC_t[P_id][2] == 0) // Dummy checkpoint for just generating Test Pattern
+						 checkpoint_BlockID[task_id - 1].P_loop_dummy.push_back(checkpoint_BlockID[task_id - 1].P_checkpoints.back());
 				}
 				else {
 					cout << "Wrong syntax(1) \"" << read_id << "\"" << endl;
@@ -273,6 +281,265 @@ void Parser::checkpoint_in(int tsk_num_in, void *cycle_trace_inout, void *checkp
 		}
 	}
 	cout << "========================================" << endl;
+}
+
+void Parser::TestPattern_in(char *TestPattern_file, int pattern_num_in, void *TestPatternSet_inout)
+{
+
+	int fsm = (int) SET_SIZE, digit_t;
+	string path(TestPattern_file);
+	string read_line;
+	string read_id;
+	string read_id_1;
+	string read_int;
+	int TestPatternNum_check = 0, TestPatternCaseNum_check = 0;
+	int TestPattern_id;
+	char *cstr;
+	int TestPattern_num = 0;
+	TestPatternNum_check = 0;
+	ExePath_set &TestPatternSet_t = *(ExePath_set*) TestPatternSet_inout;
+	ExePath_case TestPatternCase_t;
+	ifstream file_in(path);
+
+	if(!file_in) {
+		cout << "There no test pattern file in current directory, expecting " 
+		     << TestPattern_file << endl;
+		exit(1);
+	}
+
+	//while(!file_in.eof()) {
+	while(1) {
+		getline(file_in, read_line);
+		stringstream read_content(read_line);		
+		read_content >> read_id;
+		if(!read_id.compare(TestPattern_id_end)) {
+			if((TestPatternNum_check - 0) > TestPattern_num) {
+				cout << "The input Test Pattern numbers("
+				     << TestPatternNum_check << " tasks)"
+				     << " exceed the pre-defined Number of Test Patterns(" 
+				     << TestPattern_num << " tasks)" << endl;
+				exit(1);
+			}
+			else if((TestPatternNum_check - 0) < TestPattern_num) {
+				cout << "The pre-defined number of Test Patterns is "
+				     << TestPattern_num << ", but only "
+				     <<	TestPatternNum_check << " Test Patterns have been configured" << endl;
+				exit(1);
+			}
+			else break;
+		}
+		switch(fsm) {
+			case (int) SET_SIZE:
+				if(!read_id.compare(TestPattern_id_1)) {
+					read_content >> read_int;
+					TestPattern_num = char_int(read_int.c_str());
+					if(TestPattern_num == pattern_num_in) {
+		
+					}
+					else {
+						cout << "According to the TestPattern-defined file, the number of test patterns suppose be " 
+						     << pattern_num_in << "." << endl 
+						     << "However, there are only " 
+						     << TestPattern_num << " number of test pattern defined in TestPattern-defined file." << endl;
+						exit(1);
+					}
+				}
+				else {
+					cout << "Wrong syntax \"" << read_id << "\"" << endl;
+					cout << "The number of test patterns ought to be defined" << endl;
+					exit(1);
+				}
+				cout << checkpoint_id_1 << " " << TestPattern_num << endl;
+				fsm = (int) CASE_ID;
+				break;
+
+			case (int) CASE_ID:
+				if(!read_id.compare(TestPattern_id_2)) {
+					read_content >> read_int;
+					TestPattern_id = char_int(read_int.c_str());
+					TestPatternNum_check += 1;
+				}
+				else {
+					cout << "Wrong syntax \"" << read_id << "\"" << endl;
+					cout << "The Test Pattern ID (every single case) ought to be defined" << endl;
+					exit(1);
+				}		
+				cout << TestPattern_id_2 << " " << TestPattern_id << endl;	
+				fsm = (int) CASE_SIZE;
+				break;
+ 
+			case (int) CASE_SIZE:
+				if(!read_id.compare(TestPattern_id_3)) {
+					read_content >> read_int;
+					TestPatternCaseNum_check = char_int(read_int.c_str());
+				}
+				else {
+					cout << "Wrong syntax \"" << read_id << "\"" << endl;
+					cout << "The size of Test Pattern Case (every single case) ought to be defined" << endl;
+					exit(1);
+				}		
+				cout << TestPattern_id_3 << " " << TestPattern_id << endl;	
+				fsm = (int) BB_CASE;
+				break;
+	
+			case (int) BB_CASE:
+				//ExePath_set *TestPatternSet_t = (ExePath_set*) TestPatteirnSet_inout;
+				int BB_id_t;
+				BB_id_t = char_int(read_id.c_str());
+				TestPatternCase_t.push_back(BB_id_t);
+
+				if(
+					//TestPatternNum_check != TestPattern_num && 
+					TestPatternCaseNum_check == TestPatternCase_t.size()
+				) {
+					fsm = (int) CASE_ID;
+					TestPatternSet_t.push_back(TestPatternCase_t);
+					TestPatternCase_t.clear();
+					//vector<ExePath_case>().swap(TestPatternCase_t);
+				}
+				else {
+					fsm = fsm;
+				}
+				break;
+			
+			default:
+				cout << "The TestPattern-Defined file with wrong format was read" << endl;
+				exit(1);
+				break;
+		}
+	}
+}
+
+void Parser::LaIterationPattern_in(char *TestPattern_file, int pattern_num_in, int **TestPatternSet_inout, checkpoints_label PChNumSet_in)
+{
+
+	int fsm = (int) SET_SIZE, digit_t;
+	unsigned int LaIterationCase_PChID;
+	string path(TestPattern_file);
+	string read_line;
+	string read_id;
+	string read_id_1;
+	string read_int;
+	int TestPatternNum_check = 0, TestPatternCaseNum_check = 0;
+	int TestPattern_id;
+	char *cstr;
+	int TestPattern_num = 0;
+	TestPatternNum_check = 0;
+	//int **TestPatternSet_t = TestPatternSet_inout;
+	int *TestPatternCase_t;
+
+	//TestPatternSet_t =  new int* [pattern_num_in];
+	//for(int i = 0; i < pattern_num_in; i++) 
+	//	TestPatternSet_t[i] = new int [ PChNumSet_in.P_checkpoints.size() ]; // Allocate the size of LaIteration annotations in light of the value of PChNumSet[i]
+
+	ifstream file_in(path);
+	if(!file_in) {
+		cout << "There no test pattern file in current directory, expecting " 
+		     << TestPattern_file << endl;
+		exit(1);
+	}
+
+	//while(!file_in.eof()) {
+	while(1) {
+		getline(file_in, read_line);
+		stringstream read_content(read_line);		
+		read_content >> read_id;
+		if(!read_id.compare(TestPattern_id_end)) {
+			if((TestPatternNum_check - 0) > TestPattern_num) {
+				cout << "The input Test Pattern numbers("
+				     << TestPatternNum_check << " tasks)"
+				     << " exceed the pre-defined Number of Test Patterns(" 
+				     << TestPattern_num << " tasks)" << endl;
+				exit(1);
+			}
+			else if((TestPatternNum_check - 0) < TestPattern_num) {
+				cout << "The pre-defined number of Test Patterns is "
+				     << TestPattern_num << ", but only "
+				     <<	TestPatternNum_check << " Test Patterns have been configured" << endl;
+				exit(1);
+			}
+			else break;
+		}
+		switch(fsm) {
+			case (int) SET_SIZE:
+				if(!read_id.compare(TestPattern_id_1)) {
+					read_content >> read_int;
+					TestPattern_num = char_int(read_int.c_str());
+					if(TestPattern_num == pattern_num_in) {
+		
+					}
+					else {
+						cout << "According to the TestPattern-defined file, the number of test patterns suppose be " 
+						     << pattern_num_in << "." << endl 
+						     << "However, there are only " 
+						     << TestPattern_num << " number of test pattern defined in TestPattern-defined file." << endl;
+						exit(1);
+					}
+				}
+				else {
+					cout << "Wrong syntax \"" << read_id << "\"" << endl;
+					cout << "The number of test patterns ought to be defined" << endl;
+					exit(1);
+				}
+				cout << checkpoint_id_1 << " " << TestPattern_num << endl;
+				fsm = (int) CASE_ID;
+				break;
+
+			case (int) CASE_ID:
+				LaIterationCase_PChID = 0;
+				if(!read_id.compare(TestPattern_id_2)) {
+					read_content >> read_int;
+					TestPattern_id = char_int(read_int.c_str());
+					TestPatternNum_check += 1;
+				}
+				else {
+					cout << "Wrong syntax \"" << read_id << "\"" << endl;
+					cout << "The Test Pattern ID (every single case) ought to be defined" << endl;
+					exit(1);
+				}		
+				cout << TestPattern_id_2 << " " << TestPattern_id << endl;	
+				fsm = (int) CASE_SIZE;
+				break;
+ 
+			case (int) CASE_SIZE:
+				if(!read_id.compare(TestPattern_id_3)) {
+					read_content >> read_int;
+					TestPatternCaseNum_check = char_int(read_int.c_str());
+					// The number of LaIteration annotations (corresponding to the number of P-type checkpoints in current case) 
+					TestPatternSet_inout[TestPattern_id] = new int [TestPatternCaseNum_check];
+					TestPatternCase_t = new int [TestPatternCaseNum_check];	 
+				}
+				else {
+					cout << "Wrong syntax \"" << read_id << "\"" << endl;
+					cout << "The size of Test Pattern Case (every single case) ought to be defined" << endl;
+					exit(1);
+				}		
+				cout << TestPattern_id_3 << " " << TestPattern_id << endl;	
+				fsm = (int) BB_CASE;
+				break;
+	
+			case (int) BB_CASE:
+				int BB_id_t;
+				BB_id_t = char_int(read_id.c_str());
+			        TestPatternSet_inout[TestPattern_id][LaIterationCase_PChID++] = BB_id_t;
+
+				if(
+					//TestPatternNum_check != TestPattern_num && 
+					LaIterationCase_PChID == TestPatternCaseNum_check
+				) {
+					fsm = (int) CASE_ID;
+				}
+				else {
+					fsm = fsm;
+				}
+				break;
+			
+			default:
+				cout << "The TestPattern-Defined file with wrong format was read" << endl;
+				exit(1);
+				break;
+		}
+	}
 }
 
 int char_int(const char *in) {
