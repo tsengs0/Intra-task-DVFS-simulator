@@ -43,12 +43,13 @@ int main(int argc, char **argv){
 	ofstream ofs(output_FileName); //ファイル出力ストリーム
 
 while(file_index < 100 + (short) FileIndexDuration) {
-	rfj = (float) 0.0; afj = (float) 0.0; TargetResponse  = (float) 0.0; AverageResponse = (float) 0.0;
-	StandardDeviation = (float) 0.0; energy = (float) 0.0;
-	rfj_acc.clear(); afj_acc.clear();
-	TargetResponse_acc.clear(); AverageResponse_acc.clear();
-	StandardDeviation_acc.clear(); miss_dline_acc.clear(); energy_acc.clear(); 
-	
+	float rfj_min, afj_min, ssd_min, energy_min;
+	float rfj_max, afj_max, ssd_max, energy_max;
+	rfj_min = 999999.0; rfj_max = 0.0; 
+	afj_min = 999999.0; afj_max = 0.0; 
+	ssd_min = 999999.0; ssd_max = 0.0; 
+	energy_min = 999999.0; energy_max = 0.0; 
+
 	sprintf(filename,"../result/csv/Experiment_%s/Alpha_%d/%s.%s.csv", argv[3], (int) file_index, argv[1], argv[2]);
 	cout << "Reading " << filename << endl;
 	//ファイルの読み込み
@@ -68,8 +69,9 @@ while(file_index < 100 + (short) FileIndexDuration) {
         while(getline(stream,token,',')) {
             //すべて文字列として読み込まれるため
             //数値は変換が必要
-            if(state == (short) RFJ_col) {
+            if(state == (short) RFJ_col) {	
 		rfj_acc.push_back(stof(token));
+		if(rfj_acc.back() < rfj_min && rfj_acc.back())
 		cout << stof(token) << ",";
 	    }
             else if(state == (short) AFJ_col) {
@@ -114,15 +116,13 @@ while(file_index < 100 + (short) FileIndexDuration) {
 		energy += energy_acc[i];
 		miss_dline += miss_dline_acc[i];
 	}
-	//for(unsigned int i = 0; i < energy_acc.size(); i++) 
-	//	energy += energy_acc[i];
-	rfj = rfj / rfj_acc.size(); //cout << "£"<< rfj << ",";
-	afj = afj / afj_acc.size(); //cout << afj << ",";
-	TargetResponse = TargetResponse / TargetResponse_acc.size(); //cout << TargetResponse << ",";
-	AverageResponse = AverageResponse / AverageResponse_acc.size(); //cout << AverageResponse << ",";
-	StandardDeviation = StandardDeviation / StandardDeviation_acc.size(); //cout << StandardDeviation << ",";
-	energy = energy / energy_acc.size(); //cout << energy << ",";
-	miss_dline = miss_dline / miss_dline_acc.size(); //cout << miss_dline << endl;
+	rfj = rfj / rfj_acc.size();
+	afj = afj / afj_acc.size();
+	TargetResponse = TargetResponse / TargetResponse_acc.size();
+	AverageResponse = AverageResponse / AverageResponse_acc.size();
+	StandardDeviation = StandardDeviation / StandardDeviation_acc.size();
+	energy = energy / energy_acc.size();
+	miss_dline = miss_dline / miss_dline_acc.size();
 
 	ofs << file_index << ","  
 	    << rfj << ","

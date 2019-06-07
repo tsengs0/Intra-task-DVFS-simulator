@@ -27,40 +27,17 @@ void wcet_info_config(void);
 void checkpoint_config(char *FileName);
 void TestPattern_config(void);
 void array_int_cpy(vector<int> &Dst, int *Src);
-void simulation_exe_path(Src_CFG &task, int path, double release_time, double start_time, int dvfs_en);
+void simulation_exe_path(Src_CFG &task, int path, float release_time, float start_time, int dvfs_en);
 void func_gen(void *inout);
 void export_result(void);
 void verify_TestPattern_Consistency(void);
-void export_TestPattern(unsigned int i);
-void export_TestPattern_LaIteration(unsigned int i);
 void SimSchedule(char env);
 double show_minNRT(void* TskSched_in);
-void verify_ParsedTestPattern(int tsk_id);
-void verify_ParsedLaIterationPattern(int tsk_id);
-//void priority_assignment(void);
+void priority_assignment(void);
 //-----------------------------------------------------------------------------------------//
 //Input parameters
-#define TSK_SET_SIM 1
-double PeriodSet_TskSet_1[TSK_SET_1_COM_NUM][TSK_SET_1_TSK_NUM] = {
-	// {bs.c, compress.c, cfg_1, matmul.c, ludcmp.c}
-	{75582.0, 173189.0, 164546.0, 9110699.0, 84239.0},
-	{162500, 35949, 35951, 37807900, 121349},		
-	{84239.0, 75582.0, 164546.0, 9110699.0, 173189.0}
-};
-
-int PrtSet_TskSet_1[TSK_SET_1_COM_NUM][TSK_SET_1_TSK_NUM] = {
-	{0, 3, 2, 4, 1},
-	{3, 0, 1, 4, 2},
-	{1, 0, 2, 4, 3}
-};
-double in_alpha[tasks_num];
-double *in_default_speed;
-double TskSet_default_speed[TSK_SET_1_COM_NUM][TSK_SET_1_TSK_NUM] = {
-	// {bs.c, compress.c, cfg_1, matmul.c, ludcmp.c}
-	 {1000.0, 1000.0, 1000.0, 1000.0, 1000.0},
-	 {1000.0, 1000.0, 1000.0, 1000.0, 1000.0},
-	 {720.0, 800.0, 600.0, 1000.0, 1000.0}
-};
+float in_alpha[tasks_num];
+float in_default_speed;
 //double energy_ref;
 //double energy_ref_overhead;
 char msg[41];
@@ -68,8 +45,6 @@ Parser parsing;
 const char *Checkpoint_FileName = "../checkpoint/checkpoint.txt";
 //-----------------------------------------------------------------------------------------//
 //Parameters for simulation
-ExePath_set TestPatternSet_inout;
-int **LaIterationPatternSet_inout;
 int sim_cnt;
 sys_clk_t Sys_Clk_NonDVFS;
 sys_clk_t Sys_Clk;
@@ -107,12 +82,18 @@ task_info_t *src_inter_AlphaBound;
 task_info_t *src_inter_AvgResp;
 CSVWriter **writer; // Creating an object of CSVWriter
 int Tsk_SysMode_NonDVFS_sim[tasks_num] = {(int) NORMAL, (int) NORMAL, (int) NORMAL, (int) NORMAL, (int) NORMAL/*, (int) NORMAL, (int) NORMAL*/};
-int Tsk_SysMode_DVFS_sim[tasks_num] = {(int) H_PREDICT, (int) H_PREDICT, (int) NORMAL, (int) L_POWER, (int) NORMAL/*, (int) h_PREDICT, (int) H_PREDICT*/};
-int Tsk_SysMode_overhead_sim[tasks_num] = {(int) L_JITTER, (int) L_JITTER, (int) NORMAL, (int) L_POWER, (int) NORMAL/*, (int) NORMAL, (int) NORMAL*/};
+int Tsk_SysMode_DVFS_sim[tasks_num] = {(int) H_PREDICT, (int) NORMAL, (int) NORMAL, (int) NORMAL, (int) NORMAL/*, (int) h_PREDICT, (int) H_PREDICT*/};
+int Tsk_SysMode_overhead_sim[tasks_num] = {(int) H_PREDICT, (int) NORMAL, (int) NORMAL, (int) NORMAL, (int) H_PREDICT/*, (int) NORMAL, (int) NORMAL*/};
 int Tsk_SysMode_AlphaBound_sim[tasks_num] = {(int) L_JITTER, (int) NORMAL, (int) NORMAL, (int) NORMAL, (int) NORMAL/*, (int) NORMAL, (int) NORMAL*/};
 int Tsk_SysMode_AvgResp_sim[tasks_num] = {(int) L_JITTER, (int) NORMAL, (int) NORMAL, (int) NORMAL, (int) NORMAL/*, (int) NORMAL, (int) NORMAL*/};
 int sim_mode; // For recognising what's the file name of each stage should be, according to different simulation environments
 
+double PeriodSet_TskSet1[2][5] = {
+	{75582.0, 173189.0, 164546.0, 9110699.0, 84239.0},
+	{}		
+};
+
+double PrtSet_TskSet1[2][5];
 //-----------------------------------------------------------------------------------------//
 //Temporary test cases
 typedef vector<int> ExePath_case;
@@ -176,21 +157,14 @@ int instance_case[2][3] = {
 //-----------------------------------------------------------------------------------------//
 int main(int argc, char **argv)
 {
-#ifndef PATTERN_GEN
 	if(argc != (2 + tasks_num)) {
 		cout << "Input Format: Task_1's alpha, Task_2's alpha, ... Task_N's alpha, default operating frequency" << endl;
 		exit(1);
 	}
 	else {
-		for(unsigned int i = 0; i < tasks_num; i++) in_alpha[i] = ((double) atoi(argv[1 + i])) / 100;
-		//in_default_speed = (double) atoi(argv[1 + tasks_num]);
+		for(unsigned int i = 0; i < tasks_num; i++) in_alpha[i] = ((float) atoi(argv[1 + i])) / 100;
+		in_default_speed = (float) atoi(argv[1 + tasks_num]);
 	}
-#else
-	system("rm ../TestPattern/*Pattern*.txt");
-	for(unsigned int i = 0; i < tasks_num; i++) in_alpha[i] = (double) 1.0; // dummy assignment
-	cout << "The number of Test Pattern is: " << patterns_num << endl;
-	//in_default_speed = (double) atoi(argv[1 + tasks_num]);
-#endif
 //=======================================================================================================================================================//
 // Settings of each task's CFG information
 	cout << "Preset 1) Starting to initialise system" << endl;
@@ -276,14 +250,9 @@ int main(int argc, char **argv)
 		(int) 6
 	); cout << "\tPreset 2.1) Finished configuring task3" << endl;
 */
-	//in_default_speed = (double) atoi(argv[1 + tasks_num]);
-	task1_cfg.global_param_init();
-	task2_cfg.global_param_init(); task3_cfg.global_param_init();
-	task4_cfg.global_param_init(); task5_cfg.global_param_init();
 	src_intra.push_back(task1_cfg); src_intra.push_back(task2_cfg); src_intra.push_back(task3_cfg);
 	src_intra.push_back(task4_cfg); src_intra.push_back(task5_cfg); 
 	
-	//in_default_speed = 800.0; 
 	task1_cfg.timer_config(time_management_NonDVFS); task1_cfg.global_param_init();  
 	task2_cfg.timer_config(time_management_NonDVFS); task2_cfg.global_param_init();  
 	task3_cfg.timer_config(time_management_NonDVFS); task3_cfg.global_param_init();  
@@ -292,7 +261,6 @@ int main(int argc, char **argv)
 	src_intra_NonDVFS.push_back(task1_cfg); src_intra_NonDVFS.push_back(task2_cfg); src_intra_NonDVFS.push_back(task3_cfg);
 	src_intra_NonDVFS.push_back(task4_cfg); src_intra_NonDVFS.push_back(task5_cfg); 
 	
-	//in_default_speed = (double) atoi(argv[1 + tasks_num]);
 	task1_cfg.timer_config(time_management_overhead); task1_cfg.global_param_init();  
 	task2_cfg.timer_config(time_management_overhead); task2_cfg.global_param_init();  
 	task3_cfg.timer_config(time_management_overhead); task3_cfg.global_param_init();  
@@ -301,7 +269,6 @@ int main(int argc, char **argv)
 	src_intra_overhead.push_back(task1_cfg); src_intra_overhead.push_back(task2_cfg); src_intra_overhead.push_back(task3_cfg);
 	src_intra_overhead.push_back(task4_cfg); src_intra_overhead.push_back(task5_cfg); 
 	
-	//in_default_speed = (double) atoi(argv[1 + tasks_num]);
 	task1_cfg.timer_config(time_management_AlphaBound); task1_cfg.global_param_init();  
 	task2_cfg.timer_config(time_management_AlphaBound); task2_cfg.global_param_init();  
 	task3_cfg.timer_config(time_management_AlphaBound); task3_cfg.global_param_init();  
@@ -310,7 +277,6 @@ int main(int argc, char **argv)
 	src_intra_AlphaBound.push_back(task1_cfg); src_intra_AlphaBound.push_back(task2_cfg); src_intra_AlphaBound.push_back(task3_cfg);
 	src_intra_AlphaBound.push_back(task4_cfg); src_intra_AlphaBound.push_back(task5_cfg); 
 
-	//in_default_speed = (double) atoi(argv[1 + tasks_num]);
 	task1_cfg.timer_config(time_management_AvgResp); task1_cfg.global_param_init();  
 	task2_cfg.timer_config(time_management_AvgResp); task2_cfg.global_param_init();  
 	task3_cfg.timer_config(time_management_AvgResp); task3_cfg.global_param_init();  
@@ -352,11 +318,11 @@ int main(int argc, char **argv)
 	task[0] = { // bs.c
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     PrtSet_TskSet_1[TSK_SET_SIM][0]  , // Priority
-			     PeriodSet_TskSet_1[TSK_SET_SIM][0], // Relative Deadline
+			     0  , // Priority
+			     75582.0, // Relative Deadline
 			     task1_cfg.wcet,//task1.wcet, // WCET
 			     task1_cfg.bcet,//task1.bcet, // BCET
-		             PeriodSet_TskSet_1[TSK_SET_SIM][0], // Period
+		             75582.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task1_cfg.wcet, // Default WCRT
@@ -367,11 +333,11 @@ int main(int argc, char **argv)
 	task[1] = { // compress.c
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     PrtSet_TskSet_1[TSK_SET_SIM][1]  , // Priority
-			     PeriodSet_TskSet_1[TSK_SET_SIM][1], // Relative Deadline
+			     3  , // Priority
+			     173189.0, // Relative Deadline
 			     task2_cfg.wcet, // WCET
 			     task2_cfg.bcet, // BCET
-		             PeriodSet_TskSet_1[TSK_SET_SIM][1], // Period
+		             173189.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task2_cfg.wcet, // Default WCRT
@@ -382,11 +348,11 @@ int main(int argc, char **argv)
 	task[2] = { // cfg_1
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     PrtSet_TskSet_1[TSK_SET_SIM][2]  , // Priority
-			     PeriodSet_TskSet_1[TSK_SET_SIM][2], // Relative Deadline
+			     2  , // Priority
+			     164546.0, // Relative Deadline
 			     task3_cfg.wcet, // WCET
 			     task3_cfg.bcet, // BCET
-		             PeriodSet_TskSet_1[TSK_SET_SIM][2], // Period
+		             164546.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task3_cfg.wcet, // Default WCRT
@@ -396,11 +362,11 @@ int main(int argc, char **argv)
 	task[3] = { // matmul.c
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     PrtSet_TskSet_1[TSK_SET_SIM][3]  , // Priority
-			     PeriodSet_TskSet_1[TSK_SET_SIM][3], // Relative Deadline
+			     4  , // Priority
+			     9110699.0, // Relative Deadline
 			     task4_cfg.wcet, // WCET
 			     task4_cfg.bcet, // BCET
-		             PeriodSet_TskSet_1[TSK_SET_SIM][3], // Period
+		             9110699.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task4_cfg.wcet, // Default WCRT
@@ -410,11 +376,11 @@ int main(int argc, char **argv)
 	task[4] = { // ludcmp.c
 			     0.0, // Release Time
 			     0.0, // Start Time 
-			     PrtSet_TskSet_1[TSK_SET_SIM][4]  , // Priority
-			     PeriodSet_TskSet_1[TSK_SET_SIM][4], // Relative Deadline
+			     1  , // Priority
+			     84239.0, // Relative Deadline
 			     task5_cfg.wcet, // WCET
 			     task5_cfg.bcet, // BCET
-		             PeriodSet_TskSet_1[TSK_SET_SIM][4], // Period
+		             84239.0, // Period
 			     false, 
 			     (char) ZOMBIE, // Default Task State
 			     task5_cfg.wcet, // Default WCRT
@@ -502,26 +468,13 @@ int main(int argc, char **argv)
 		inter_intra_bus_AvgResp    -> intra_tasks[i].SysMode_reconfig(Tsk_SysMode_AvgResp_sim[i]); 	
 	}
 	cout << "Finished setting jitter constraints" << endl;
-
-	//for(unsigned int i = 0; i < tasks_num; i++)
-	//		printf("WCRT(%d): %.05f ns, BCRT(%d): %.05f ns\r\n", i, inter_intra_bus -> intra_tasks[i].wcrt, i, inter_intra_bus -> intra_tasks[i].bcrt);
 //=======================================================================================================================================================//
-#ifndef PATTERN_GEN
-	// NonDVFS
-	//SimSchedule((char) NonDVFS_sim); cout << "Fininshed simulation of Non-DVFS environment" << endl;
-	
-	// StaticDVFS with user-specified target response times
-	//SimSchedule((char) DVFS_sim); cout << "Fininshed simulation of DVFS environment" << endl;
-	
-	// ProfileDVFS with profile-based target response times
+	SimSchedule((char) NonDVFS_sim); cout << "Fininshed simulation of Non-DVFS environment" << endl;
+	SimSchedule((char) DVFS_sim); cout << "Fininshed simulation of DVFS environment" << endl;
 	SimSchedule((char) DVFSOverhead_sim); cout << "Fininshed simulation of DVFS environment with consideration of Transition Overhead" << endl;
-	
-	// Reserved setting 1
 	//SimSchedule((char) DVFSAlphaBound_sim); cout << "Fininshed simulation of DVFS environment with bounded Alpha" << endl;
-
-	// Reserved setting 2
 	//SimSchedule((char) DVFSAvgResp_sim); cout << "Fininshed simulation of DVFS environment with average alpha" << endl;
-#endif
+
 	delete time_management_NonDVFS;
 	delete time_management;
 	delete time_management_overhead;
@@ -539,7 +492,6 @@ void func_gen(void *inout)
 }
 void system_init(void)
 {
-	in_default_speed = TskSet_default_speed[TSK_SET_SIM];
         srand((unsigned) time(0));
         //energy_ref = 0.0;
 
@@ -578,11 +530,11 @@ void system_init(void)
 	time_management_AlphaBound -> ExecutedTime = new double[tasks_num];
 	time_management_AvgResp    -> ExecutedTime = new double[tasks_num];
 	for(int i = 0; i < tasks_num; i++) {
-		time_management_NonDVFS    -> ExecutedTime[i] = (double) 0.0;
-		time_management            -> ExecutedTime[i] = (double) 0.0;
-		time_management_overhead   -> ExecutedTime[i] = (double) 0.0;
-		time_management_AlphaBound -> ExecutedTime[i] = (double) 0.0;
-		time_management_AvgResp    -> ExecutedTime[i] = (double) 0.0;
+		time_management_NonDVFS    -> ExecutedTime[i] = (float) 0.0;
+		time_management            -> ExecutedTime[i] = (float) 0.0;
+		time_management_overhead   -> ExecutedTime[i] = (float) 0.0;
+		time_management_AlphaBound -> ExecutedTime[i] = (float) 0.0;
+		time_management_AvgResp    -> ExecutedTime[i] = (float) 0.0;
 	}
 	time_management_NonDVFS    -> UpdatePoint = 0; 
 	time_management            -> UpdatePoint = 0;
@@ -658,7 +610,6 @@ void TestPattern_config()
           src_intra_AlphaBound[i].P_loop_LaIteration[j] = new int[patterns_num];
           src_intra_AvgResp[i].P_loop_LaIteration[j]    = new int[patterns_num];
 	 }
-#ifdef PATTERN_GEN // To generate set of test patterns only
          rand_ExePath_gen (
                  src_intra[i].CFG_path,         // Pass each task's corrsponding Src_CFG
                  patterns_num,                  // The number of test patterns demanded to be generated
@@ -670,39 +621,19 @@ void TestPattern_config()
                  (int**) src_intra_AlphaBound[i].P_loop_LaIteration,
                  (int**) src_intra_AvgResp[i].P_loop_LaIteration
          );
-	export_TestPattern(i);
-	export_TestPattern_LaIteration(i);
-
 	 vector<int> temp;
          for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
            for(unsigned int k = 0; k < patterns_num; k++) {
+#ifdef DEBUG            
+	    cout << "NonDVFS_Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra_NonDVFS[i].P_loop_LaIteration[j][k] << endl;
+            cout << "DVFS_Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra[i].P_loop_LaIteration[j][k] << endl;
+            cout << "DVFSOverhead_Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra_overhead[i].P_loop_LaIteration[j][k] << endl;
+            cout << "DVFSAlphaBound_Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra_AlphaBound[i].P_loop_LaIteration[j][k] << endl;
+            cout << "DVFSAvgResp_Task" << i << " " << j << "th's P-ch, case" << k << ": " << src_intra_AvgResp[i].P_loop_LaIteration[j][k] << endl;
+#endif             
 	    temp.push_back(src_intra[i].P_loop_LaIteration[j][k] + 1);
 	   } 
 	}
-	verify_TestPattern_Consistency();
-
-#else  // Instead of generating set of test patterns, reading the prior generated set of test patterns
-       // Read the generated Set of Test Patterns and configure it/them
-	vector<int> temp;
-	char msg_pattern1[300];
-	sprintf(msg_pattern1, "../TestPattern/TestPattern_Tsk%d.txt", i);
-	parsing.TestPattern_in(msg_pattern1, (int) patterns_num, (ExePath_set*) (&exe_path[i]));//&TestPatternSet_inout);
-	//verify_ParsedTestPattern(i);
-	TestPatternSet_inout.clear();
-
-	char msg_pattern2[300]; 
-	sprintf(msg_pattern2, "../TestPattern/LaIterationPattern_Tsk%d.txt", i);
-	LaIterationPatternSet_inout =  new int* [patterns_num];
-	for(int pattern_cnt = 0; pattern_cnt < patterns_num; pattern_cnt++) 
-		LaIterationPatternSet_inout[pattern_cnt] = new int [ checkpointLabel[i].P_checkpoints.size() ]; // Allocate the size of LaIteration annotations in light of the value of PChNumSet[i]
-	parsing.LaIterationPattern_in(msg_pattern2, (int) patterns_num, LaIterationPatternSet_inout, checkpointLabel[i]);
-	//verify_ParsedLaIterationPattern(i);
-         for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
-           for(unsigned int k = 0; k < patterns_num; k++) {
-	    temp.push_back(LaIterationPatternSet_inout[k][j] + 1);
-	   } 
-	  }
-#endif
 	 src_intra_NonDVFS[i].L_loop_iteration_preload.push_back(temp); 
 	 src_intra[i].L_loop_iteration_preload.push_back(temp); 
 	 src_intra_overhead[i].L_loop_iteration_preload.push_back(temp); 
@@ -724,34 +655,7 @@ void TestPattern_config()
          	src_intra_AvgResp[i].L_loop_iteration.push_back(0);
 	  }
         }
-
-#ifdef PATTERN_GEN
-for(unsigned int i = 0; i < tasks_num; i++) {
-       // Instead of generating set of test patterns, reading the prior generated set of test patterns
-       // Read the generated Set of Test Patterns and configure it/them
-	vector<int> temp;
-	char msg_pattern1[300];
-	sprintf(msg_pattern1, "../TestPattern/TestPattern_Tsk%d.txt", i);
-	parsing.TestPattern_in(msg_pattern1, (int) patterns_num, (ExePath_set*) &TestPatternSet_inout);
-	verify_ParsedTestPattern(i);
-	TestPatternSet_inout.clear();
-
-	char msg_pattern2[300]; 
-	sprintf(msg_pattern2, "../TestPattern/LaIterationPattern_Tsk%d.txt", i);
-	LaIterationPatternSet_inout =  new int* [patterns_num];
-	for(int pattern_cnt = 0; pattern_cnt < patterns_num; pattern_cnt++) 
-		LaIterationPatternSet_inout[pattern_cnt] = new int [ checkpointLabel[i].P_checkpoints.size() ]; // Allocate the size of LaIteration annotations in light of the value of PChNumSet[i]
-	parsing.LaIterationPattern_in(msg_pattern2, (int) patterns_num, LaIterationPatternSet_inout, checkpointLabel[i]);
-	verify_ParsedLaIterationPattern(i);
-         for(unsigned int j = 0; j < checkpointLabel[i].P_loop_bound.size(); j++) {
-           for(unsigned int k = 0; k < patterns_num; k++) {
-	    temp.push_back(LaIterationPatternSet_inout[k][j] + 1);
-	   } 
-	  }
-}
-	cout << "Verify Done (Parsing)" << endl;
-	exit(1);
-#endif
+	verify_TestPattern_Consistency();
 }
 
 void array_int_cpy(vector<int> &Dst, int *Src)
@@ -762,7 +666,7 @@ void array_int_cpy(vector<int> &Dst, int *Src)
 
 void export_result(int env)
 {
-	double csv_col_temp[3]; // RFJ, AFJ, Energy
+	float csv_col_temp[3]; // RFJ, AFJ, Energy
 	for(int i = 0; i < tasks_num; i++) {
 	  char in_msg[50];
 	  if(env == (int) NonDVFS_sim) {
@@ -771,7 +675,7 @@ void export_result(int env)
 		/*csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
 		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
 		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
-		writer[i][0].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(double));
+		writer[i][0].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
 	  	*/
 	  }
 	  else if(env == (int) DVFS_sim) {
@@ -781,7 +685,7 @@ void export_result(int env)
 		csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
 		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
 		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
-		writer[i][1].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(double));
+		writer[i][1].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
 		*/
 	  }
 	  else if(env == (int) DVFSOverhead_sim) {
@@ -791,7 +695,7 @@ void export_result(int env)
 		csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
 		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
 		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
-		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(double));
+		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
 		*/
 	  }
 	  else if(env == (int) DVFSAlphaBound_sim) {
@@ -801,7 +705,7 @@ void export_result(int env)
 		csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
 		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
 		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
-		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(double));
+		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
 		*/
 	  }
 	  else if(env == (int) DVFSAvgResp_sim) {
@@ -811,7 +715,7 @@ void export_result(int env)
 		csv_col_temp[0] = inter_intra_bus_NonDVFS -> intra_tasks[i].RFJ;
 		csv_col_temp[1] = inter_intra_bus_NonDVFS -> intra_tasks[i].AFJ;
 		csv_col_temp[2] = inter_intra_bus_NonDVFS -> intra_tasks[i].energy_acc;
-		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(double));
+		writer[i][2].addDatainRow(csv_col_temp, csv_col_temp + sizeof(csv_col_temp) / sizeof(float));
 		*/
 	  }
 	  else {
@@ -945,94 +849,7 @@ void verify_TestPattern_Consistency(void)
 	
 	}
 	cout << "Verify Done!" << endl;
-}
-
-void verify_ParsedTestPattern(int tsk_id)
-{
-// Verify that the Set of Test Pattern parsed from prior generated Set of Test Pattern is consistent
-	if(!(src_intra[tsk_id].exe_path.size() == TestPatternSet_inout.size() && src_intra[tsk_id].exe_path.size() == (unsigned int) patterns_num)) {
-		cout << "The size of generated TestPatternSet is not equal to the size of parsed TestPatternSet" << endl;
-		cout << "src_intra[0].exe_path.size(): " << src_intra[tsk_id].exe_path.size() << " "
-		     << "TestPatternSet_inout.size(): " << TestPatternSet_inout.size() << endl;
-		exit(1);
-	}
-	for(unsigned int i = 0; i < (unsigned int) patterns_num; i++) {
-		for(unsigned int j = 0; j < (unsigned int) TestPatternSet_inout[i].size(); j++) {
-			if(TestPatternSet_inout[i][j] != src_intra[tsk_id].exe_path[i][j]) {
-				cout << "TestPatternSet_inout[" << i << "][" << j << "]: " << TestPatternSet_inout[i][j] << "!= "
-				     << "src_intra[" << tsk_id << "].exe_path[" << i << "][" << j << "]: " << src_intra[tsk_id].exe_path[i][j] << endl;
-				exit(1);
-			}
-		}
-	}	 
-}
-
-
-void verify_ParsedLaIterationPattern(int tsk_id)
-{
-// Verify that the Set of LaIteration Pattern parsed from prior generated Set of LaIteration Pattern is consistent
-	/*if(!(src_intra[tsk_id].P_loop_LaIteration.size() == LaIterationPatternSet_inout.size() && src_intra[tsk_id].P_loop_LaIteration.size() == (unsigned int) patterns_num)) {
-		cout << "The size of generated LaIterationPatternSet is not equal to the size of parsed LaIterationPatternSet" << endl;
-		cout << "src_intra[0].exe_path.size(): " << src_intra[tsk_id].P_loop_LaIteration.size() << " "
-		     << "TestPatternSet_inout.size(): " << LaIterationPatternSet_inout.size() << endl;
-		exit(1);
-	}*/
-	for(unsigned int i = 0; i < (unsigned int) checkpointLabel[tsk_id].P_loop_bound.size(); i++) {
-		for(unsigned int j = 0; j < (unsigned int) patterns_num; j++) {
-			cout << "LaIterationPatternSet_inout[" << j << "][" << i << "]: " << LaIterationPatternSet_inout[j][i] << "=> "
-			     << "src_intra[" << tsk_id << "].P_loop_LaIteration[" << i << "][" << j << "]: " << src_intra[tsk_id].P_loop_LaIteration[i][j] << endl;
-			if(LaIterationPatternSet_inout[j][i] != src_intra[tsk_id].P_loop_LaIteration[i][j]) {
-				cout << "LaIterationPatternSet_inout[" << j << "][" << i << "]: " << LaIterationPatternSet_inout[j][i] << "!= "
-				     << "src_intra[" << tsk_id << "].P_loop_LaIteration[" << i << "][" << j << "]: " << src_intra[tsk_id].P_loop_LaIteration[i][j] << endl;
-				exit(1);
-			}
-		}
-	}	 
-}
-
-void export_TestPattern(unsigned int i)
-{
-	char *msg_TestPattern1 = new char[500];
-	unsigned int PatternSet_size = exe_path[i].size();
-	cout << "Tsk[" << i << "].size of exe_path_set: " << exe_path[i].size() << endl;
-	sprintf(msg_TestPattern1, "echo \"PATTERN_SET_SIZE: %d\" > ../TestPattern/TestPattern_Tsk%d.txt", PatternSet_size, i);
-	system(msg_TestPattern1); //delete [] msg_TestPattern1;
-	for(unsigned int j = 0; j < PatternSet_size; j++) {
-	  unsigned int PatternCase_size = exe_path[i][j].size();
-	  char *msg_TestPattern2 = new char[500];
-	  sprintf(msg_TestPattern2, "echo \"CASE: %d\r\nSIZE: %d\" >> ../TestPattern/TestPattern_Tsk%d.txt", j, PatternCase_size, i);
-	  system(msg_TestPattern2); //delete [] msg_TestPattern2;	
-	  for(unsigned int k = 0; k < PatternCase_size; k++) {
-	  	char *msg_TestPattern3 = new char[50];
-	  	sprintf(msg_TestPattern3, "echo \"%d\" >> ../TestPattern/TestPattern_Tsk%d.txt", exe_path[i][j][k], i);
-	  	system(msg_TestPattern3); //delete [] msg_TestPattern3;	
-	  }
-	}
-	char *msg_TestPattern_End = new char[50];
-	sprintf(msg_TestPattern_End, "echo \"#\" >> ../TestPattern/TestPattern_Tsk%d.txt", i);
-	system(msg_TestPattern_End); //delete [] msg_TestPattern_End;	
-}
-
-void export_TestPattern_LaIteration(unsigned int i)
-{
-	char *msg_TestPattern1 = new char[500];
-	unsigned int PatternSet_size = (unsigned int) patterns_num;
-	sprintf(msg_TestPattern1, "echo \"PATTERN_SET_SIZE: %d\" > ../TestPattern/LaIterationPattern_Tsk%d.txt", PatternSet_size, i);
-	system(msg_TestPattern1); //delete [] msg_TestPattern1;
-	for(unsigned int j = 0; j < PatternSet_size; j++) {
-	  unsigned int PatternCase_size = checkpointLabel[i].P_checkpoints.size(); // The number of LaIterations are all the same regardless which case it is
-	  char *msg_TestPattern2 = new char[500];
-	  sprintf(msg_TestPattern2, "echo \"CASE: %d\r\nSIZE: %d\" >> ../TestPattern/LaIterationPattern_Tsk%d.txt", j, PatternCase_size, i);
-	  system(msg_TestPattern2); //delete [] msg_TestPattern2;	
-	  for(unsigned int k = 0; k < PatternCase_size; k++) {
-	  	char *msg_TestPattern3 = new char[50];
-	  	sprintf(msg_TestPattern3, "echo \"%d\" >> ../TestPattern/LaIterationPattern_Tsk%d.txt", src_intra[i].P_loop_LaIteration[k][j], i);
-	  	system(msg_TestPattern3); //delete [] msg_TestPattern3;	
-	 }
-	}
-	char *msg_TestPattern_End = new char[50];
-	sprintf(msg_TestPattern_End, "echo \"#\" >> ../TestPattern/LaIterationPattern_Tsk%d.txt", i);
-	system(msg_TestPattern_End); //delete [] msg_TestPattern_End;	
+	//char in_temp; cout << "Please press any key to continue" << endl; cin >> in_temp; 
 }
 
 void SimSchedule(char env)
@@ -1054,7 +871,6 @@ void SimSchedule(char env)
 		//for(; isEndSim == false;) {
 		//for(; time_management_NonDVFS -> sys_clk -> cur_time <= task_sched_NonDVFS -> hyperperiod/*task_sched_NonDVFS -> task_list[2].completion_cnt < 20*/; ) {
 		for(; time_management_NonDVFS -> sys_clk -> cur_time <= 51770000*4/*task_sched_NonDVFS -> task_list[2].completion_cnt < 20*/; ) {
-		//for(; task_sched_NonDVFS -> task_list[3].completion_cnt < 5; ) {
 			task_sched_NonDVFS -> sched_arbitration(cur_time);
 			for(int i = 0; i < tasks_num; i++) { 
 				if(task_sched_NonDVFS -> task_list[i].state == (char) RUN) {
@@ -1093,7 +909,6 @@ void SimSchedule(char env)
 		//for(; isEndSim == false;) {
 		//for(; time_management -> sys_clk -> cur_time <= task_sched -> hyperperiod; ) {
 		for(; time_management -> sys_clk -> cur_time <= 51770000*4/*task_sched_NonDVFS -> task_list[2].completion_cnt < 20*/; ) {
-		//for(; task_sched -> task_list[3].completion_cnt < 5; ) {
 			task_sched -> sched_arbitration(cur_time);
 			for(int i = 0; i < tasks_num; i++) { 
 				if(task_sched -> task_list[i].state == (char) RUN) {
@@ -1131,7 +946,6 @@ void SimSchedule(char env)
 		//for(; isEndSim == false;) {
 		//for(; time_management_overhead -> sys_clk -> cur_time <= task_sched_overhead -> hyperperiod/*task_sched_NonDVFS -> task_list[2].completion_cnt < 20*/; ) {
 		for(; time_management_overhead -> sys_clk -> cur_time <= 51770000*4/*task_sched_NonDVFS -> task_list[2].completion_cnt < 20*/; ) {
-		//for(; task_sched_overhead -> task_list[3].completion_cnt < 5; ) {
 			task_sched_overhead -> sched_arbitration(cur_time);
 			for(int i = 0; i < tasks_num; i++) { 
 				if(task_sched_overhead -> task_list[i].state == (char) RUN) {
@@ -1239,7 +1053,7 @@ void SimSchedule(char env)
 double show_minNRT(void *TskSched_in)
 {
 	Task_Scheduler *TskSched = (Task_Scheduler*) TskSched_in;
-	double min_t;
+	float min_t;
 	min_t = TskSched -> hyperperiod;
 	for(unsigned int i = 0; i < tasks_num; i++) {
 		if(TskSched -> task_list[i].release_time < min_t)
@@ -1247,27 +1061,3 @@ double show_minNRT(void *TskSched_in)
 	}
 	return min_t;
 }
-
-/*
-void priority_assignment(void)
-{
-
-double PrtSet_TskSet1[TSK_SET_1_COM_NUM][TSK_SET_1_TSK_NUM];
-double PeriodSet_TskSet1[2][5] = {
-double PrtSet_TskSet1[2][5];
-	unsigned int prt = 0;
-	// Initialise all parameters 
-	for(unsigned int i = 0; i < (unsigned int) TSK_SET_1_COM_NUM; i++) {
-	  for(unsigned int j = 0; j < (unsigned int) TSK_SET_1_TSK_NUM; j++) {
-  	  	PrtSet_TskSet1[i][j] = (double) 0.0;
-	  }
-	}
-
-	// Assign Priority according to Rate-Monotonic scheduling policy
-	for(unsigned int i = 0; i < (unsigned int) TSK_SET_1_COM_NUM; i++) {
-	  for(unsigned int j = 0; j < (unsigned int) TSK_SET_1_TSK_NUM; j++) {
-  	  	
-	  }
-	}
-}
-*/

@@ -21,7 +21,9 @@ void rand_ExePath_gen(
 	void *TestPattern_inout,
 	void *Lookahead_LoopIteration1_inout, // For Non-DVFS environment
 	void *Lookahead_LoopIteration2_inout, // For DVFS enviroment
-	void *Lookahead_LoopIteration3_inout  // For DVFSOverhead enviroment
+	void *Lookahead_LoopIteration3_inout, // For DVFSOverhead enviroment
+	void *Lookahead_LoopIteration4_inout, // For DVFSAlphaBound enviroment
+	void *Lookahead_LoopIteration5_inout  // For DVFSAvgResp enviroment
 )
 {
 	ExePath_case path_temp;
@@ -29,6 +31,8 @@ void rand_ExePath_gen(
 	int **ActLoop_iteration1 = (int**) Lookahead_LoopIteration1_inout;
 	int **ActLoop_iteration2 = (int**) Lookahead_LoopIteration2_inout;
 	int **ActLoop_iteration3 = (int**) Lookahead_LoopIteration3_inout;
+	int **ActLoop_iteration4 = (int**) Lookahead_LoopIteration4_inout;
+	int **ActLoop_iteration5 = (int**) Lookahead_LoopIteration5_inout;
 	int ActLoop_iteration_cnt[checkpointLabel.P_checkpoints.size()][pattern_num];
 	int LoopID, cur_NodeID, succ_NodeID;
 	int cnt = pattern_num;
@@ -39,6 +43,8 @@ void rand_ExePath_gen(
 			ActLoop_iteration1[i][pattern_num - cnt] = rand() % checkpointLabel.P_loop_bound[i];
 			ActLoop_iteration2[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
 			ActLoop_iteration3[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
+			ActLoop_iteration4[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
+			ActLoop_iteration5[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
 			ActLoop_iteration_cnt[i][pattern_num - cnt] = ActLoop_iteration1[i][pattern_num - cnt];
 			//cout << "ActLoop_iteration[" << i << "][" << pattern_num - cnt << "]" << endl;
 			//cout << "[" << i << "][" << pattern_num - cnt << "]: " << ActLoop_iteration[i][pattern_num - cnt] 

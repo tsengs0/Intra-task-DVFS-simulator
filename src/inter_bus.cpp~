@@ -53,46 +53,27 @@ void Task_State_Bus::start_new_task_config(
 	int new_task_id, 
 	int case_id, 
 	int case_t, 
-	double release_time_new,  
-	double slack,
-	double worst_interference_in,
-	double avg_interference_in,
-	double Deadline, 
+	float release_time_new,  
+	float slack,
+	float interference_in,
+	float Deadline, 
 	int DVFS_en
 )
 {
-	double TimeAvailable_init, wcec_t, wcet_new, default_freq_new, f_new_lb, f_new_ub; 
-	bool DVFS_Disable_Start = false;	
+	float TimeAvailable_init, wcec_t, wcet_new, default_freq_new, f_new_lb, f_new_ub; 
+	
+	// Update interference time in average case
+	intra_tasks[new_task_id].interference = interference_in;
+
 	intra_tasks[new_task_id].cycles_cnt = 0;	
 	intra_tasks[new_task_id].cur_block_index = 0;
 	intra_tasks[new_task_id].dvfs_en = DVFS_en;
 	intra_tasks[new_task_id].exe_speed_config();
 	intra_tasks[new_task_id].slack = slack;
-/*
-#ifdef AVERAGE_INTERFERENCE_EVAL
-	intra_tasks[new_task_id].interference = avg_interference_in;
-#else
-	intra_tasks[new_task_id].interference = worst_interference_in - slack;
-#endif
-*/
-	if(intra_tasks[new_task_id].sys_mode == (int) L_JITTER)
-		intra_tasks[new_task_id].interference = (double) avg_interference_in;
-	else
-		intra_tasks[new_task_id].interference = (double) worst_interference_in;
-
-	// Disable the DVFS at start point of designated task(s)
-	for(unsigned int i = 0; i < (unsigned int) TSK_NONDVFS_FOR_START_NUM; i++) {
-		if(NonDVFS_For_Start[i] == (unsigned int) new_task_id) {
-			DVFS_Disable_Start = true;
-			break;
-		}
-	}		
-
+	
 	if(
-		(DVFS_Disable_Start == false) && (
 		(intra_tasks[new_task_id].sys_mode != (int) NORMAL && intra_tasks[new_task_id].sys_mode != (int) L_JITTER) ||
 		(intra_tasks[new_task_id].sys_mode == (int) L_JITTER && intra_tasks[new_task_id].response_case.size() >= (unsigned int) EVAL_CNT_START)
-		)
 	) { 
 		if(slack < 0) {
 			cout << "slack: " << slack << endl;	
@@ -101,12 +82,9 @@ void Task_State_Bus::start_new_task_config(
 		}
 
 		else if(slack == 0.0) {/*cout << "Previously preemption task didn't leave any slack time" << endl;*/}	
-
-		else if(intra_tasks[new_task_id].sys_mode == (int) H_PREDICT || intra_tasks[new_task_id].sys_mode == (int) L_POWER) { 
-			TimeAvailable_init = intra_tasks[new_task_id].jitter_config.fin_time_target - 
-					     intra_tasks[new_task_id].interference;
-					      
-			wcec_t = (double) (intra_tasks[new_task_id].execution_cycles[WORST - 1]);
+		else if(intra_tasks[new_task_id].sys_mode != (int) L_JITTER) { 
+			TimeAvailable_init = intra_tasks[new_task_id].jitter_config.fin_time_target - (intra_tasks[new_task_id].wcrt - intra_tasks[new_task_id].wcet) + slack; 
+			wcec_t = (float) (intra_tasks[new_task_id].execution_cycles[WORST - 1]);
 			default_freq_new = intra_tasks[new_task_id].discrete_handle(
 							// GHz -> MHz
 							((1000 * wcec_t) / TimeAvailable_init), 
@@ -114,9 +92,10 @@ void Task_State_Bus::start_new_task_config(
 							TimeAvailable_init,
 							(intra_tasks[new_task_id].wcrt + intra_tasks[new_task_id].release_time - time_management -> sys_clk -> cur_time)
 			);
-			double freq_temp = (double) intra_tasks[new_task_id].default_freq_t; // Only use for exporting log file
+			float freq_temp = (float) MAX_speed; // Only use for exporting log file
 			intra_tasks[new_task_id].default_freq_t = default_freq_new;
 			intra_tasks[new_task_id].exe_speed_scaling(default_freq_new);
+			time_management -> cur_freq_config(default_freq_new);
 #ifdef DEBUG		
 			char *msg_slack = new char[200];
 			sprintf(msg_slack, "echo \"(Start Point) curTime: %.05fns, TskID: %d, Slack:%.05f, PrevFreq: %.05f, UpdateFreq: %.05f\" >> slack_reclaim.start.sim_%d.txt", 
@@ -132,31 +111,27 @@ void Task_State_Bus::start_new_task_config(
 #endif
 		}
 		else { // intra_tasks[new_task_id].sys_mode == (int) L_JITTER) 
-			wcec_t = (double) (intra_tasks[new_task_id].execution_cycles[WORST - 1]);
-
-			double response_temp = (intra_tasks[new_task_id].response_case.size() == 0) ? inter_tasks[new_task_id].wcrt : intra_tasks[new_task_id].average_response;
-			//double response_temp = intra_tasks[new_task_id].interference + (wcec_t / intra_tasks[new_task_id].default_freq_t); 
-			if(response_temp < intra_tasks[new_task_id].min_response) { // To avoid slack time lead to newly minimal response time among all instances
-				f_new_ub = (1000 * wcec_t) / (intra_tasks[new_task_id].min_response - intra_tasks[new_task_id].interference);
-				//f_new_ub = (1000 * wcec_t) / (intra_tasks[new_task_id].min_response - interference_in + slack);
-				f_new_lb = (1000 * wcec_t) / (intra_tasks[new_task_id].max_response - intra_tasks[new_task_id].interference);
-				//f_new_lb = (1000 * wcec_t) / (intra_tasks[new_task_id].max_response - interference_in + slack);
-				/*default_freq_new = intra_tasks[new_task_id].discrete_handle(
+			wcec_t = (float) (intra_tasks[new_task_id].execution_cycles[WORST - 1]);
+			float avg_resp = (intra_tasks[new_task_id].response_case.size() == 0) ? inter_tasks[new_task_id].wcrt : intra_tasks[new_task_id].average_response;
+			if(avg_resp - slack < intra_tasks[new_task_id].min_response) { // To avoid slack time lead to newly minimal response time among all instances
+				f_new_ub = (1000 * wcec_t) / (intra_tasks[new_task_id].min_response - interference_in + slack);
+				f_new_lb = (1000 * wcec_t) / (intra_tasks[new_task_id].max_response - interference_in + slack);
+				default_freq_new = intra_tasks[new_task_id].discrete_handle(
 								// GHz -> MHz
 								f_new_ub,
 								(int) wcec_t, 
 								intra_tasks[new_task_id].min_response - interference_in + slack,
 								(intra_tasks[new_task_id].average_response + intra_tasks[new_task_id].release_time - time_management -> sys_clk -> cur_time)
-				);*/
-				default_freq_new = intra_tasks[new_task_id].discrete_handle_SelectBound(f_new_ub, (int) LOWER_BOUND);
+				);
 				
 			}
 			else {
-				default_freq_new = (double) intra_tasks[new_task_id].default_freq_t; 
+				default_freq_new = (float) MAX_speed;		
 			}
-			double freq_temp = (double) intra_tasks[new_task_id].default_freq_t; // Only use for exporting log file
+			float freq_temp = (float) MAX_speed; // Only use for exporting log file
 			intra_tasks[new_task_id].default_freq_t = default_freq_new;
 			intra_tasks[new_task_id].exe_speed_scaling(default_freq_new);
+			time_management -> cur_freq_config(default_freq_new);
 #ifdef DEBUG		
 			char *msg_slack = new char[200];
 			sprintf(msg_slack, "echo \"(Start Point) curTime: %.05fns, TskID: %d(inst.:%d), Slack:%.05f, PrevFreq: %.05f, UpdateFreq: %.05f(LB: %.05f, UB: %.05f)\" >> slack_reclaim.start.sim_%d.txt", 
@@ -233,7 +208,7 @@ void Task_State_Bus::start_new_task_config(
 
 void Task_State_Bus::time_driven_cfg(int new_task_id, int case_t)
 {
-	double time_temp;
+	float time_temp;
 	int case_id = intra_tasks[new_task_id].cur_case_id;
 	int cur_block_index = intra_tasks[new_task_id].cur_block_index; 
 	if(intra_tasks[new_task_id].exe_path[case_id][cur_block_index] != intra_tasks[new_task_id].exe_path[case_id].back()) {

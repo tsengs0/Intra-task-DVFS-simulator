@@ -11,9 +11,8 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-extern double in_alpha;
-//extern double in_default_speed[tasks_num];
-extern double *in_default_speed;
+extern float in_alpha;
+extern float in_default_speed;
 extern int sim_cnt;
 //extern double energy_ref;
 extern double ISR_TIME_SLICE;
@@ -37,7 +36,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, int DVFS_en)
 //----------------------------------------------------------------------------------------------------------------//
 	// Canonical number of execution cycles which will be taken within one period of interrupt timer
 	// us -> ns	
-	isr_time_cycles = (int) INST_UNIT;//(int) (((double) ISR_TIME_SLICE) * ((double) (time_management -> sys_clk -> cur_freq))) / 1000;
+	isr_time_cycles = (int) INST_UNIT;//(int) (((float) ISR_TIME_SLICE) * ((float) (time_management -> sys_clk -> cur_freq))) / 1000;
 	context_reg.act_cycles = isr_time_cycles; 
 	context_reg.act_exe_time = ((double) isr_time_cycles * 1000) / time_management -> sys_clk -> cur_freq;
 	//printf("ISR_TIME_SLICE: %.05fns, act_exe_time: %.05fns, isr_time_cycles: %d\r\n", ISR_TIME_SLICE, context_reg.act_exe_time, isr_time_cycles);
@@ -66,7 +65,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, int DVFS_en)
 			//cycles_cnt += context_reg.act_cycles;
 			time_temp = time_management -> time_unit_config(
 				// us -> ns
-	                	((double) context_reg.act_cycles * 1000) / time_management -> sys_clk -> cur_freq   
+	                	((float) context_reg.act_cycles * 1000) / time_management -> sys_clk -> cur_freq   
        		        );
 
 			//printf("(%.05f + %.05f) = ", time_temp, time_management -> sys_clk -> cur_time);
@@ -83,7 +82,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, int DVFS_en)
 			cycles_cnt += CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t); // Accumulate the cycles count as soon as current BB just run out
 	                time_temp = time_management -> time_unit_config(
 				// us -> ns
-	                	((double) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles) * 1000) / time_management -> sys_clk -> cur_freq   
+	                	((float) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles) * 1000) / time_management -> sys_clk -> cur_freq   
        		        );
                	
 			time_temp += time_management -> sys_clk -> cur_time;
@@ -92,7 +91,7 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, int DVFS_en)
 			
 			context_reg.act_cycles -= (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles); 
 			// us -> ns
-			context_reg.act_exe_time -= (((double) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles)) * 1000 / time_management -> sys_clk -> cur_freq);
+			context_reg.act_exe_time -= (((float) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles)) * 1000 / time_management -> sys_clk -> cur_freq);
 
 			// After checkpoint, going to next successive Basic Block according to the given Test Pattern set
 			rem_cycles_timer -= (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles);
@@ -181,13 +180,13 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, int DVFS_en)
 			cycles_cnt += CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t); // Accumulate the cycles count as soon as current BB just run out
 	                time_temp = time_management -> time_unit_config(
 				// us -> ns
-	                	((double) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles) * 1000) / time_management -> sys_clk -> cur_freq   
+	                	((float) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles) * 1000) / time_management -> sys_clk -> cur_freq   
        		        );
 			time_temp += time_management -> sys_clk -> cur_time;
                		time_management -> update_cur_time(time_temp); 
                 	// (abolish) power_eval();
 			context_reg.act_cycles -= (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles); 
-			context_reg.act_exe_time -= ((double) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles) * 1000 / time_management -> sys_clk -> cur_freq);
+			context_reg.act_exe_time -= ((float) (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles) * 1000 / time_management -> sys_clk -> cur_freq);
 			
 			// After checkpoint, going to next successive Basic Block according to the given Test Pattern set
 			rem_cycles_timer -= (CFG_path[ exe_path[cur_case_id][cur_block_index] - 1 ].get_cycles(case_t) - executed_cycles);
@@ -291,9 +290,9 @@ isr_context_t Src_CFG::isr_driven_cfg(int case_t, int DVFS_en)
 /**
   * @brief For temporal test of function isr_driven_cfg() 
 **/
-void Src_CFG::dispatch_cfg(int &case_id, int case_t, double release_time_new, double start_time_new, double Deadline, int DVFS_en)
+void Src_CFG::dispatch_cfg(int &case_id, int case_t, float release_time_new, float start_time_new, float Deadline, int DVFS_en)
 {
-	double time_temp;
+	float time_temp;
 	dvfs_en = DVFS_en;
 	isr_context_t context_reg;
 	exe_speed_config();

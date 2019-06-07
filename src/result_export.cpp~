@@ -6,7 +6,7 @@
  */
 //template<typename T>
 //void CSVWriter::addDatainRow(T first, T last)
-void CSVWriter::addDatainRow(double *first, double *last)
+void CSVWriter::addDatainRow( *first,  *last)
 {
 	std::fstream file;
 	// Open the file in truncate mode if first line else in Append Mode

@@ -11,8 +11,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-//extern double in_default_speed[tasks_num];
-extern double *in_default_speed;
+extern float in_default_speed;
 extern int sim_cnt;
 extern int sim_mode;
 //extern double energy_ref;
@@ -74,7 +73,7 @@ Src_CFG::Src_CFG(
 	RWCEC_Trace_in *cycle_trace_temp,
 	checkpoint_num *checkpointNum_temp,
 	exeTime_info WCET_INFO,
-	double alpha,
+	float alpha,
 	int SysMode_in,
 	int TskID_in
 )
@@ -237,16 +236,16 @@ void Src_CFG::global_param_init(void)
 	AFJ = 0.0;
 	RFJ = 0.0;
 	average_response = 0.0;
-	AvgResp_ref[0] = (double) 0.0;
-	AvgResp_ref[1] = (double) 0.0;
+	AvgResp_ref[0] = (float) 0.0;
+	AvgResp_ref[1] = (float) 0.0;
 	response_acc = 0.0;
 	exe_acc = 0.0;
 	cycle_acc = 0;
 
 	// The unit of frequency is "MHz", in order to get the unit of time as "ns", 
 	// Multiplying the result by 1000: us -> ns
-	wcet = (double) ((1000 * execution_cycles[WORST - 1]) / default_freq_t);  
-	bcet = (double) ((1000 * execution_cycles[BEST - 1]) / max_freq_t);
+	wcet = (float) ((1000 * execution_cycles[WORST - 1]) / default_freq_t);  
+	bcet = (float) ((1000 * execution_cycles[BEST - 1]) / max_freq_t);
 #ifdef DEBUG
 	printf("Intra-Task_%d Global Parameter Configuration:\r\n", TskID);
 	printf("WCET: %.05f ns\r\nBCET: %.05f ns\r\n\r\n", wcet, bcet);
@@ -255,7 +254,7 @@ void Src_CFG::global_param_init(void)
 	completion_flag = false;
 	rem_wcec = 0;
 	cycles_cnt = 0;
-	slack = (double) 0.0;
+	slack = (float) 0.0;
 	
 /* Abolish, jitter concept ought to depend on multitasking instead of single task      ---- 13 FEB, 2018
 	// Setting the Jitter constraints
@@ -275,9 +274,9 @@ void Src_CFG::global_param_init(void)
 void Src_CFG::exe_speed_config(void)
 {
 	// DVFS setting
-	max_freq_t     = (double) MAX_speed;
-	min_freq_t     = (double) MIN_speed;
-	default_freq_t = (in_default_speed[TskID] > max_freq_t) ? max_freq_t : (in_default_speed[TskID] < min_freq_t) ? min_freq_t : in_default_speed[TskID];
+	max_freq_t     = (float) MAX_speed;
+	min_freq_t     = (float) MIN_speed;
+	default_freq_t = (in_default_speed > max_freq_t) ? max_freq_t : (in_default_speed < min_freq_t) ? min_freq_t : in_default_speed;
 	//default_freq_t = (default_freq_t != max_freq_t && default_freq_t != min_freq_t) ? discrete_handle(default_freq_t) : default_freq_t;
 	time_management -> cur_freq_config(default_freq_t);
 }
@@ -299,7 +298,7 @@ void Src_CFG::pattern_init(ExePath_set test_case)
 
 void Src_CFG::global_param_eval(void)
 {
-	double Act_CET, response_pre, response_cur, response_diff;
+	float Act_CET, response_pre, response_cur, response_diff;
  
 	dline_miss = (time_management -> sys_clk -> cur_time > abs_dline) ? dline_miss + 1 : dline_miss;
 	if(dline_miss != 0) {
@@ -317,10 +316,9 @@ void Src_CFG::global_param_eval(void)
 		system(msg_dline);
 		delete [] msg_dline;
 #endif
-		printf("Task_%d missed deadline, Current Time is %fns, but absolute deadline is %fns\r\n", TskID, time_management -> sys_clk -> cur_time, abs_dline);
 		//exit(1);
 	}
-/*Need to be modified*/	Act_CET = (double) (time_management -> sys_clk -> cur_time - start_time); // Regardless of preemption
+/*Need to be modified*/	Act_CET = (float) (time_management -> sys_clk -> cur_time - start_time); // Regardless of preemption
 	cycle_acc += cycles_cnt;
 	exe_acc += Act_CET;
 	exe_case.push_back(Act_CET);
@@ -340,9 +338,6 @@ void Src_CFG::global_param_eval(void)
 	exe_var  = (((exe_acc / exe_case.size()) - bcet) / jitter_config.fin_jitter_bound) * 100;
 	max_response = (max_response < response_cur) ? response_cur : max_response;
 	min_response = (min_response > response_cur) ? response_cur : min_response;
-	//printf("(Tsk_%d) Max_Respons: %f ns, Min_Respons: %f ns, AFJ: %f ns\r\n", TskID, max_response, min_response, max_response - min_response);
-	//char aa; cin >> aa;
-
 	if(response_case.size() > (unsigned int) (EVAL_CNT_START + 1) && sys_mode == (int) L_JITTER) {
 		max_response_fb = (max_response_fb < response_cur) ? response_cur : max_response_fb;
 		min_response_fb = (min_response_fb > response_cur) ? response_cur : min_response_fb;
@@ -352,8 +347,8 @@ void Src_CFG::global_param_eval(void)
 	else if(response_case.size() == (unsigned int) (EVAL_CNT_START + 1) && sys_mode == (int) L_JITTER) {
 		max_response = average_response;
 		min_response = average_response;
-		AFJ = (double) 0.0; //max_response - min_response;
-		RFJ = (double) 0.0; //max_response - min_response;
+		AFJ = max_response - min_response;
+		RFJ = max_response - min_response;
 	}
 	else { // For NORMAL mode
 		AFJ = max_response - min_response;
@@ -511,16 +506,21 @@ void Src_CFG::completion_config(void)
 	cur_block_cycles = 0;
 	cur_case_id = 0;
 	cur_block_index = 0;
-
-	// Because the default speed may be change after frequency scaling operation of start point 
-	// thus the default frequency have to be reset again
-	exe_speed_config();
+#ifdef DEBUG
+	cout << "sys_mode: " << sys_mode << endl;
+#endif
+	if(sys_mode == (int) H_PREDICT) {
+		jitter_init();
+#ifdef DEBUG
+		cout << "Target Response Time has been updated to " << jitter_config.fin_time_target << endl;
+#endif
+	}
 }
 
-void Src_CFG::traverse_spec_path(int case_id, int case_t, double release_time_new, double start_time_new, double Deadline, int DVFS_en)
+void Src_CFG::traverse_spec_path(int case_id, int case_t, float release_time_new, float start_time_new, float Deadline, int DVFS_en)
 {
 	int cur_index;
-	double time_temp;
+	float time_temp;
 	dvfs_en = DVFS_en;
 	exe_speed_config();
 	cur_case_id = case_id; // Information for Lookahead P-type checkpoint test pattern 
@@ -646,7 +646,7 @@ if(
 
 void Src_CFG::constraint_update(void)
 {
-	double bcet_limit, wcet_limit, middle_t;
+	float bcet_limit, wcet_limit, middle_t;
 
 	if(sys_mode == (int) NORMAL) {
 		jitter_config.alpha = 0.0;
@@ -726,7 +726,7 @@ void Src_CFG::show_TskMode(void)
 		exit(1);
 	}
 }
-void Src_CFG::exe_speed_scaling(double new_speed)
+void Src_CFG::exe_speed_scaling(float new_speed)
 {
 #ifdef  PROCESSOR_AM335x
         bool freq_verify;
@@ -745,14 +745,12 @@ void Src_CFG::exe_speed_scaling(double new_speed)
 	time_management -> cur_freq_config(new_speed);
 	// us -> ns
 	ISR_TIME_SLICE = ((1000 * INST_UNIT) / time_management -> sys_clk -> cur_freq);
-
 	
-#ifdef DVFS_OVERHEAD
 // Conducting Transition Overhead
 	if(dvfs_en == (int) DVFSOverhead_sim && sys_mode != (int) NORMAL) {
 		time_management -> update_cur_time(
 			sys_clk -> cur_time +  // The base of current time
-			((double) OverheadTime) // The overhead of frequency-voltage scaling
+			((float) OverheadTime) // The overhead of frequency-voltage scaling
 		);	
 		//cout << "power eval 5" << endl;
 		// overhead_power_eval();
@@ -763,28 +761,26 @@ void Src_CFG::exe_speed_scaling(double new_speed)
 	// Accumulate the energy consumption with previous VF transition period
 	//power_eval();
 	time_management -> ExecutedTime_Accumulator((unsigned char) FREQ_SCALING_POINT, (int) TskID);
-#endif
-
 #ifdef DEBUG
 	printf("Current speed: %.02f MHz\r\n\r\n", time_management -> sys_clk -> cur_freq);
 	printf("The period of interrupt timer has been changed to %.08f ns\r\n", ISR_TIME_SLICE);	
 #endif
 }
 
-double Src_CFG::get_cur_speed(void)
+float Src_CFG::get_cur_speed(void)
 {
 	return time_management -> sys_clk -> cur_freq;
 }
 
 void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 {
-	double new_freq;
-	double rep_time_target, resp_time_act;
-/*For debugging*/	double elapsed_time; 
-	double executed_time, time_available, local_deadline;
+	float new_freq;
+	float rep_time_target, resp_time_act;
+/*For debugging*/	float elapsed_time; 
+	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int branch_addr = CFG_path[cur_block_index - 1].B_checkpoint_en;
-	double time_temp;
+	float time_temp;
 	int temp;
 	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
@@ -829,7 +825,7 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 #endif	
 		if(resp_time_act < min_response) {
 			// MHz -> GHz
-			double f_new_ub = (1000 * rwcec) / (min_response - executed_time - interference);
+			float f_new_ub = (1000 * rwcec) / (min_response - executed_time - interference);
 			new_freq = (f_new_ub < 0.0) ? max_freq_t : f_new_ub;
 			new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 			           (new_freq < min_freq_t) ? min_freq_t : 
@@ -848,7 +844,7 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		}
 		else if(resp_time_act > max_response) {
 			// MHz -> GHz
-			double f_new_lb = (1000 * rwcec) / (max_response - executed_time - interference);
+			float f_new_lb = (1000 * rwcec) / (max_response - executed_time - interference);
 			new_freq = (f_new_lb < 0.0) ? max_freq_t : f_new_lb;
 			new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 			           (new_freq < min_freq_t) ? min_freq_t : 
@@ -893,7 +889,6 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		}
 #endif
 	}
-#ifdef DVFS_OVERHEAD
 // Conducting Transition Overhead
 	if(dvfs_en == (int) DVFSOverhead_sim) {
 		temp = (int) OverheadCycle_B;
@@ -906,9 +901,8 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 			sys_clk -> cur_time + // The base of current time
 			time_temp             // The overhead of checkpoint operation
 		);		
-		energy_acc += ((double) OverheadEnergy);
+		energy_acc += ((float) OverheadEnergy);
 	}
-#endif
 #ifdef DEBUG
 	if(new_freq != time_management -> sys_clk -> cur_freq) {
 		char *dvfs_msg = new char[200];
@@ -929,14 +923,14 @@ void Src_CFG::B_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 
 void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 {
-	double new_freq;
-	double rep_time_target, resp_time_act;
-/*For debugging*/	double elapsed_time; 	
-	double executed_time, time_available, local_deadline;
+	float new_freq;
+	float rep_time_target, resp_time_act;
+/*For debugging*/	float elapsed_time; 	
+	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_index = CFG_path[cur_block_index - 1].L_checkpoint_en[0];
 	int loop_addr  = CFG_path[cur_block_index - 1].L_checkpoint_en[1];
-	double time_temp;
+	float time_temp;
 	int temp;
 	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
@@ -997,7 +991,7 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 #endif	
 		if(resp_time_act < min_response) {
 			// MHz -> GHz
-			double f_new_ub = (1000 * rwcec) / (min_response - executed_time - interference);
+			float f_new_ub = (1000 * rwcec) / (min_response - executed_time - interference);
 			new_freq = (f_new_ub < 0.0) ? max_freq_t : f_new_ub;
 			new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 			           (new_freq < min_freq_t) ? min_freq_t : 
@@ -1016,7 +1010,7 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		}
 		else if(resp_time_act > max_response) {
 			// MHz -> GHz
-			double f_new_lb = (1000 * rwcec) / (max_response - executed_time - interference);
+			float f_new_lb = (1000 * rwcec) / (max_response - executed_time - interference);
 			new_freq = (f_new_lb < 0.0) ? max_freq_t : f_new_lb;
 			new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 			           (new_freq < min_freq_t) ? min_freq_t : 
@@ -1061,7 +1055,6 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		}
 #endif
 	}
-#ifdef DVFS_OVERHEAD
 // Conducting Transition Overhead
 	if(dvfs_en == (int) DVFSOverhead_sim) {
 		temp = (int) OverheadCycle_B;
@@ -1074,9 +1067,8 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 			sys_clk -> cur_time + // The base of current time
 			time_temp             // The overhead of checkpoint operation
 		);		
-		energy_acc += ((double) OverheadEnergy);
+		energy_acc += ((float) OverheadEnergy);
 	}
-#endif
 #ifdef DEBUG
 	if(new_freq != time_management -> sys_clk -> cur_freq) {
 		char *dvfs_msg = new char[200];
@@ -1097,13 +1089,13 @@ void Src_CFG::L_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 
 void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 {
-	double new_freq;
-	double rep_time_target, resp_time_act;
-/*For debugging*/	double elapsed_time; 
-	double executed_time, time_available, local_deadline;
+	float new_freq;
+	float rep_time_target, resp_time_act;
+/*For debugging*/	float elapsed_time; 
+	float executed_time, time_available, local_deadline;
 	int rwcec; // Remaining worst-case execution cycles from current basic block
 	int loop_addr  = CFG_path[cur_block_index - 1].P_checkpoint_en;
-	double time_temp;
+	float time_temp;
 	int temp;
 	local_deadline = wcrt + release_time - time_management -> sys_clk -> cur_time;
 //===============================================================================================================//
@@ -1142,7 +1134,7 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 #endif	
 		if(resp_time_act < min_response) {
 			// MHz -> GHz
-			double f_new_ub = (1000 * rwcec) / (min_response - executed_time - interference);
+			float f_new_ub = (1000 * rwcec) / (min_response - executed_time - interference);
 			new_freq = (f_new_ub < 0.0) ? max_freq_t : f_new_ub;
 			new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 			           (new_freq < min_freq_t) ? min_freq_t :
@@ -1161,7 +1153,7 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		}
 		else if(resp_time_act > max_response) {
 			// MHz -> GHz
-			double f_new_lb = (1000 * rwcec) / (max_response - executed_time - interference);
+			float f_new_lb = (1000 * rwcec) / (max_response - executed_time - interference);
 			new_freq = (f_new_lb < 0.0) ? max_freq_t : f_new_lb;
 			new_freq = (new_freq > max_freq_t) ? max_freq_t : 
 			           (new_freq < min_freq_t) ? min_freq_t : 
@@ -1207,8 +1199,6 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 		}
 #endif
 	}
-
-#ifdef DVFS_OVERHEAD
 // Conducting Transition Overhead
 	if(dvfs_en == (int) DVFSOverhead_sim) {
 		temp = (int) OverheadCycle_B;
@@ -1221,9 +1211,8 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 			sys_clk -> cur_time + // The base of current time
 			time_temp             // The overhead of checkpoint operation
 		);		
-		energy_acc += ((double) OverheadEnergy); 
+		energy_acc += ((float) OverheadEnergy); 
 	}
-#endif
 #ifdef DEBUG
 	if(new_freq != time_management -> sys_clk -> cur_freq) {
 		char *dvfs_msg = new char[200];
@@ -1242,10 +1231,10 @@ void Src_CFG::P_Intra_task_checkpoint(int cur_block_index, int succ_block_index)
 	exe_speed_scaling(new_freq);
 }
 
-double Src_CFG::discrete_handle(double new_freq, int rwcec, double AvailableTime, double local_deadline)
+float Src_CFG::discrete_handle(float new_freq, int rwcec, float AvailableTime, float local_deadline)
 {
 	int i;
-	double max_diff, min_diff;
+	float max_diff, min_diff;
 
 	if(new_freq <= min_freq_t) return min_freq_t;
 	else if(new_freq >= max_freq_t) return max_freq_t;
@@ -1265,13 +1254,13 @@ double Src_CFG::discrete_handle(double new_freq, int rwcec, double AvailableTime
 	}
 }
 
-double Src_CFG::discrete_handle_SelectBound(double new_freq, int sel_bound) {
+float Src_CFG::discrete_handle_SelectBound(float new_freq, int sele_bound) {
 	int i;
 	if(new_freq <= min_freq_t) return min_freq_t;
 	else if(new_freq >= max_freq_t) return max_freq_t;
 	else {	
 		for(i = 0; new_freq >= freq_vol[i+1][0]; i++);
-		return (sel_bound == (int) UPPER_BOUND) ? freq_vol[i+1][0] : freq_vol[i][0];
+		return (sele_bound == (int) UPPER_BOUND) ? freq_vol[i+1][0] : freq_vol[i][0];
 	}
 }
 

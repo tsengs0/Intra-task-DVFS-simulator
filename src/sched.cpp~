@@ -177,7 +177,7 @@ void Ready_Queue::list_sched_point(void)
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-double ceiling(double x)
+float ceiling(float x)
 {
 	return   ((x - (int) x) > 0) ? (int) (x + 1) : (int) x;
 }
@@ -192,9 +192,9 @@ RT_Analyser::RT_Analyser(task_info_t *tasks_list)
  *  @param task_id: the task which is demanded to be analysed
  *  @param wcrt_cur: passing the WCRT of previous iteration
 **/
-double RT_Analyser::RM_WCRT(int task_id, double wcrt_pre)		
+float RT_Analyser::RM_WCRT(int task_id, float wcrt_pre)		
 {
-	double wcrt_t;
+	float wcrt_t;
 	wcrt_t = tasks[task_id].wcet;
 	for(int i = 0; i < tasks_num; i++) {
 		//Task's priority is greater than analysed task's and current iteration is not equal to indicated task index
@@ -210,14 +210,14 @@ double RT_Analyser::RM_WCRT(int task_id, double wcrt_pre)
  *  @param task_id: the task which is demanded to be analysed
  *  @param wcrt_cur: passing the BCRT of previous iteration
 **/
-double RT_Analyser::RM_BCRT(int task_id, double bcrt_pre)		
+float RT_Analyser::RM_BCRT(int task_id, float bcrt_pre)		
 {
-	double bcrt_t;
+	float bcrt_t;
 	bcrt_t = tasks[task_id].bcet;
 	for(int i = 0; i < tasks_num; i++) {
 		//Task's priority is greater than analysed task's and current iteration is not equal to indicated task index
 		if(tasks[i].prt < tasks[task_id].prt && i != task_id)
-			bcrt_t += (ceiling(bcrt_pre / tasks[i].period) - 0) * tasks[i].bcet; 
+			bcrt_t += ceiling((bcrt_pre / tasks[i].period) - 1) * tasks[i].bcet; 
 	}
 	if(bcrt_t == bcrt_pre) return bcrt_t;
 	return RM_BCRT(task_id, bcrt_t);
@@ -249,23 +249,23 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready
 	pre_task = running_task_id;
 	new_task_start_flag = false;
 	inter_intra_bus = msg_bus;
-	rwcet = (double) 0.0;
+	rwcet = (float) 0.0;
 	cur_context.task_id = (int) NO_PREEMPTION;
-	cur_context.rwcet = (double) 0.0;
+	cur_context.rwcet = (float) 0.0;
 	cur_context.isr_flag = false;	
-	slack = (double) 0.0;
+	slack = (float) 0.0;
 
 	// To calculate the Hyperperiod
 	double period_temp[tasks_num];
 	for(int i = 0; i < tasks_num; i++) period_temp[i] = (double) task_list[i].period;
 	hyperperiod = (double) std::accumulate(period_temp + 1, period_temp + tasks_num, period_temp[0], lcm);
-	NRT_nearest = (double) hyperperiod; // Initial value;
+	NRT_nearest = (float) hyperperiod; // Initial value;
 	
 	// Creating Response-Time-Analyser module
 	rta = new RT_Analyser(task_list);
 	for(int i = 0; i < tasks_num; i++) {
-		double wcrt_t = rta -> RM_WCRT(i, task_list[i].wcrt);
-		double bcrt_t = rta -> RM_BCRT(i, wcrt_t); // According to the RTA, the BCRT in the first iteration is input its WCRT
+		float wcrt_t = rta -> RM_WCRT(i, task_list[i].wcrt);
+		float bcrt_t = rta -> RM_BCRT(i, task_list[i].bcrt);
 		task_list[i].wcrt = wcrt_t;
 		task_list[i].bcrt = bcrt_t;
 		inter_intra_bus -> intra_tasks[i].wcrt = wcrt_t;
@@ -281,11 +281,9 @@ Task_Scheduler::Task_Scheduler(Time_Management *timer, task_info_t *tasks, Ready
 	}
 	for(int i = 0; i < tasks_num; i++) {
 		acrt[i] = task_list[i].wcrt;
-		acet[i] = (double) 0.0;
-		acet_acc[i] = (double) 0.0;
-		// Analyse the worst-case interference time for every task 
-		worst_interference[i] = (double) task_list[i].wcrt - task_list[i].wcet;
-		avg_interference[i] = worst_interference[i];
+		acet[i] = (float) 0.0;
+		acet_acc[i] = (float) 0.0;
+		interference[i] = (float) task_list[i].wcrt - task_list[i].wcet;
 	} 
 
 	// Initially, all tasks' state are set to 'IDLE'
@@ -305,26 +303,9 @@ void Task_Scheduler::resume(void)
 	int TskID = cur_context.task_id;
 	isr_stack.pop((Preemption_Stack*) (&cur_context));
 	rwcet = cur_context.rwcet;
-	double rwcec_t = (int) (inter_intra_bus -> intra_tasks[TskID].rem_wcec);
 	//time_management -> cur_freq_config(cur_context.cur_freq);
 	inter_intra_bus -> intra_tasks[running_task_id].exe_speed_scaling(cur_context.cur_freq);
 	time_management -> ExecutedTime_Accumulator((unsigned char) RESUME_POINT, (int) TskID);
-/*
-#ifdef AVERAGE_INTERFERENCE_EVAL	
-	double interference_temp = avg_interference[TskID];
-#else
-	double interference_temp = inter_intra_bus -> intra_tasks[TskID].interference - slack;
-#endif
-*/
-	double interference_temp;
-	if(inter_intra_bus -> intra_tasks[TskID].sys_mode == (int) L_JITTER)
-		interference_temp = avg_interference[TskID];
-	else
-		interference_temp = inter_intra_bus -> intra_tasks[TskID].interference - slack;
-		
-	// In the mean time, the interference from Intra-task context also need to be synchronised referring to just updated speculative/actual interference time
-	inter_intra_bus -> intra_tasks[TskID].interference = interference_temp;
-
 // Before resuming back to certain task's execution, check if previously preemption task left some slack time
 	if(
 		(inter_intra_bus -> intra_tasks[TskID].sys_mode != (int) NORMAL && inter_intra_bus -> intra_tasks[TskID].sys_mode != (int) L_JITTER) ||
@@ -339,33 +320,31 @@ void Task_Scheduler::resume(void)
 		}
 		else if(slack == 0.0) {/*cout << "Previously preemption task didn't leave any slack time" << endl;*/}
 		else {
-			if(
-				// inter_intra_bus -> intra_tasks[TskID].sys_mode == (int) H_PREDICT || 
-				 inter_intra_bus -> intra_tasks[TskID].sys_mode == (int) L_JITTER   
-				// inter_intra_bus -> intra_tasks[TskID].sys_mode == (int) L_POWER  
-			) {
-				double resp_time_act = time_management -> ExecutedTime[TskID] + ((1000 * rwcec_t) / time_management -> sys_clk -> cur_freq) + interference_temp;
-				double new_freq;
+			float rwcec_t = (int) (inter_intra_bus -> intra_tasks[TskID].rem_wcec);
+			float interference_temp = interference[TskID] - slack;
+			float resp_time_act = time_management -> ExecutedTime[TskID] + ((1000 * rwcec_t) / time_management -> sys_clk -> cur_freq) + interference_temp;
+			if(inter_intra_bus -> intra_tasks[TskID].sys_mode == (int) L_JITTER) {
+				float new_freq;
 				if(resp_time_act < inter_intra_bus -> intra_tasks[TskID].min_response) {
-					double f_new_ub = rwcec_t / (inter_intra_bus -> intra_tasks[TskID].min_response - time_management -> ExecutedTime[TskID] - interference_temp);
+					float f_new_ub = rwcec_t / (inter_intra_bus -> intra_tasks[TskID].min_response - time_management -> ExecutedTime[TskID] - interference_temp);
 					new_freq = f_new_ub;
-					new_freq = (new_freq > (double) MAX_speed) ? (double) MAX_speed : 
-					           (new_freq < (double) MIN_speed) ? (double) MIN_speed : new_freq;
+					new_freq = (new_freq > (float) MAX_speed) ? (float) MAX_speed : 
+					           (new_freq < (float) MIN_speed) ? (float) MIN_speed : new_freq;
 #ifdef DISCRETE_DVFS
-					if(new_freq != (double) MAX_speed && new_freq != (double) MIN_speed) {
-						//printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
-						new_freq = inter_intra_bus -> intra_tasks[TskID].discrete_handle_SelectBound(new_freq, (int) LOWER_BOUND);
+					if(new_freq != (float) MAX_speed && new_freq != (float) MIN_speed) {
+						printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
+						new_freq = inter_intra_bus -> intra_tasks[TskID].discrete_handle_SelectBound(new_freq, (int) UPPER_BOUND);
 					}
 #endif
 				}
 				else if(resp_time_act > inter_intra_bus -> intra_tasks[TskID].max_response) {
-					double f_new_lb = rwcec_t / (inter_intra_bus -> intra_tasks[TskID].max_response - time_management -> ExecutedTime[TskID] - interference_temp);
+					float f_new_lb = rwcec_t / (inter_intra_bus -> intra_tasks[TskID].max_response - time_management -> ExecutedTime[TskID] - interference_temp);
 					new_freq = f_new_lb;
-					new_freq = (new_freq > (double) MAX_speed) ? (double) MAX_speed : 
-					           (new_freq < (double) MIN_speed) ? (double) MIN_speed : new_freq;
+					new_freq = (new_freq > (float) MAX_speed) ? (float) MAX_speed : 
+					           (new_freq < (float) MIN_speed) ? (float) MIN_speed : new_freq;
 #ifdef DISCRETE_DVFS
-					if(new_freq != (double) MAX_speed && new_freq != (double) MIN_speed) {
-						//printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
+					if(new_freq != (float) MAX_speed && new_freq != (float) MIN_speed) {
+						printf("Before Discrete Bound Handling: %f MHz, ", new_freq);
 						new_freq = inter_intra_bus -> intra_tasks[TskID].discrete_handle_SelectBound(new_freq, (int) UPPER_BOUND);
 					}
 #endif
@@ -373,59 +352,42 @@ void Task_Scheduler::resume(void)
 				else {
 					new_freq = time_management -> sys_clk -> cur_freq;
 				}
-				//inter_intra_bus -> intra_tasks[TskID].exe_speed_scaling(new_freq);
 #ifdef DEBUG
 				char *msg_slack = new char[300];
-//================================================================================================================================================================================================================//
-// Export specific log file containing different types of interference time, i.e., 1) worst-case interference time and 2) average-case interference time
-#ifdef AVERAGE_INTERFERENCE_EVAL	
-				sprintf(msg_slack, "echo \"(Resume Point) curTime: %.05fns, TskID: %d, Slack:%.05fns, RWCEC: %d cycle(s), ExecutedTime: %fns, Interference: %f, PrevFreq: %.05fMHz, UpdateFreq: %.05fMHz\" >> slack_reclaim.resume.sim_%d.txt", 
-						time_management -> sys_clk -> cur_time,
-						cur_context.task_id,
-						slack, 
-						(int) rwcec_t,
-						(double) time_management -> ExecutedTime[TskID],
-						(double) interference_temp,
-						cur_context.cur_freq, 
-						new_freq,
-						sim_mode
-				);
-#else
 				sprintf(msg_slack, "echo \"(Resume Point) curTime: %.05fns, TskID: %d, Slack:%.05fns, RWCEC: %d cycle(s), ExecutedTime: %fns, Interference: %f - %f = %f, PrevFreq: %.05fMHz, UpdateFreq: %.05fMHz\" >> slack_reclaim.resume.sim_%d.txt", 
 						time_management -> sys_clk -> cur_time,
 						cur_context.task_id,
 						slack, 
 						(int) rwcec_t,
-						(double) time_management -> ExecutedTime[TskID],
-						(double) worst_interference[TskID],
-						(double) slack,
-						(double) interference_temp,
+						(float) time_management -> ExecutedTime[TskID],
+						(float) interference[TskID],
+						(float) slack,
+						(float) interference_temp,
 						cur_context.cur_freq, 
 						new_freq,
 						sim_mode
 				);
-#endif
-//================================================================================================================================================================================================================//
 				system(msg_slack);
 				delete [] msg_slack;
 #endif
 			}
-
 			else {
 #ifdef DEBUG
 				cout << "Previously preemption task completed its work earlier than its WCRT, thus remaining " << slack << " ns of slack time" << endl;	
 #endif
-				double TimeAvailable_init = inter_intra_bus -> intra_tasks[TskID].jitter_config.fin_time_target - 
-							   interference_temp - 
-							   time_management -> ExecutedTime[TskID];
-				double new_freq = inter_intra_bus -> intra_tasks[TskID].discrete_handle(
+				float TimeAvailable_init = inter_intra_bus -> intra_tasks[TskID].jitter_config.fin_time_target - 
+							   (inter_intra_bus -> intra_tasks[TskID].wcrt - inter_intra_bus -> intra_tasks[TskID].wcet) -
+							   time_management -> ExecutedTime[TskID] + slack;
+				float default_freq_new = inter_intra_bus -> intra_tasks[TskID].discrete_handle(
 								// GHz -> MHz
 								((1000 * rwcec_t) / TimeAvailable_init), 
 								(int) rwcec_t, 
-								(double) TimeAvailable_init,
+								(float) TimeAvailable_init,
 								(inter_intra_bus -> intra_tasks[TskID].wcrt + inter_intra_bus -> intra_tasks[TskID].release_time - time_management -> sys_clk -> cur_time)
 				);
-				//inter_intra_bus -> intra_tasks[TskID].exe_speed_scaling(new_freq);
+				inter_intra_bus -> intra_tasks[TskID].default_freq_t = default_freq_new;
+				inter_intra_bus -> intra_tasks[TskID].exe_speed_scaling(default_freq_new);
+				time_management -> cur_freq_config(default_freq_new);
 #ifdef DEBUG		
 				char *msg_slack = new char[300];
 				sprintf(msg_slack, "echo \"(Resume Point) curTime: %.05fns, TskID: %d, Slack:%.05fns, RWCEC: %d cycle(s), ExecutedTime: %fns, AvailableTime: %fns, PrevFreq: %.05fMHz, UpdateFreq: %.05fMHz\" >> slack_reclaim.resume.sim_%d.txt", 
@@ -433,8 +395,8 @@ void Task_Scheduler::resume(void)
 						cur_context.task_id,
 						slack, 
 						(int) rwcec_t,
-						(double) time_management -> ExecutedTime[TskID],
-						(double) TimeAvailable_init,
+						(float) time_management -> ExecutedTime[TskID],
+						(float) TimeAvailable_init,
 						cur_context.cur_freq, 
 						default_freq_new,
 						sim_mode
@@ -622,21 +584,21 @@ void Task_Scheduler::completion_config(void)
 	
 	// Synchronise the ACET adn ACRT between Task Scheduler and CFG-base simulator
 	acet_acc[running_task_id] += time_management -> ExecutedTime[running_task_id];
-	acet[running_task_id] = (double) (acet_acc[running_task_id] / SimPattern_cnt[running_task_id]);
+	acet[running_task_id] = (float) (acet_acc[running_task_id] / SimPattern_cnt[running_task_id]);
 	acrt[running_task_id] = inter_intra_bus -> intra_tasks[running_task_id].average_response;
 
 	// Update interference time in average 
-	avg_interference[running_task_id] = acrt[running_task_id] - acet[running_task_id];
+	interference[running_task_id] = acrt[running_task_id] - acet[running_task_id];
 
 #ifdef DEBUG	
-	printf("TskID: %d, ACRT: %fns, ACET: %fns, ACRT - ACET = average-case interference: %fns\r\n", running_task_id, acrt[running_task_id], acet[running_task_id], avg_interference[running_task_id]);
+	printf("TskID: %d, ACRT: %fns, ACET: %fns, ACRT - ACET = interference: %fns\r\n", running_task_id, acrt[running_task_id], acet[running_task_id], interference[running_task_id]);
 	char *msg_interference = new char[200];
 	sprintf(msg_interference, "echo \"Tsk_%d, (inst.: %d), ACRT: %fns, ACET: %fns, Interference: %fns\" >> AvgInterference.Tsk_%d.sim_%d.txt", 
 		running_task_id,
 		inter_intra_bus -> intra_tasks[running_task_id].response_case.size(),
 		acrt[running_task_id],
 		acet[running_task_id],
-		avg_interference[running_task_id],
+		interference[running_task_id],
 		running_task_id,
 		sim_mode
 	);
@@ -645,27 +607,12 @@ void Task_Scheduler::completion_config(void)
 #endif
 //====================================================================================================================================================================//
 /*
- *  If take Average-case as reference/guideline
- *
-*/
-#ifdef AVERAGE_INTERFERENCE_EVAL
-		// Calculate the slack time arose from the difference between WCRT and actual response time
-		slack = (ready_queue -> IsEmpty() == true) ? (double) 0.0 :  // Since no body will come at this time, so such slack time cannot be utilised by any task
-							     acrt[running_task_id] - 
-							     (time_management -> sys_clk -> cur_time - task_list[running_task_id].release_time);
-#ifdef DEBUG	
-		cout << "ACRT - (curTime - Release): " 
-		     << acrt[running_task_id] << " - (" << time_management -> sys_clk -> cur_time
-		     << " - " << task_list[running_task_id].release_time << ") = "  << slack << endl;
-#endif
-
-#else
-/*
  *  If take Worst-case as reference/guideline
  *
 */
+	if(inter_intra_bus -> intra_tasks[running_task_id].sys_mode != (int) L_JITTER) {
 		// Calculate the slack time arose from the difference between WCRT and actual response time
-		slack = (ready_queue -> IsEmpty() == true) ? (double) 0.0 :  // Since no body will come at this time, so such slack time cannot be utilised by any task
+		slack = (ready_queue -> IsEmpty() == true) ? (float) 0.0 :  // Since no body will come at this time, so such slack time cannot be utilised by any task
 							     task_list[running_task_id].wcrt - 
 							     (time_management -> sys_clk -> cur_time - task_list[running_task_id].release_time);
 #ifdef DEBUG	
@@ -673,14 +620,29 @@ void Task_Scheduler::completion_config(void)
 		     << task_list[running_task_id].wcrt << " - (" << time_management -> sys_clk -> cur_time
 		     << " - " << task_list[running_task_id].release_time << ") = "  << slack << endl;
 #endif
-
+	}
+/*
+ *  If take Worst-case as reference/guideline
+ *
+*/
+	else if(inter_intra_bus -> intra_tasks[running_task_id].sys_mode == (int) L_JITTER) {
+		// Calculate the slack time arose from the difference between WCRT and actual response time
+		slack = (ready_queue -> IsEmpty() == true) ? (float) 0.0 :  // Since no body will come at this time, so such slack time cannot be utilised by any task
+							     acrt[running_task_id] - 
+							     (time_management -> sys_clk -> cur_time - task_list[running_task_id].release_time);
+#ifdef DEBUG	
+		cout << "ACRT - (curTime - Release): " 
+		     << acrt[running_task_id] << " - (" << time_management -> sys_clk -> cur_time
+		     << " - " << task_list[running_task_id].release_time << ") = "  << slack << endl;
 #endif
+	}
 //====================================================================================================================================================================//
 
 	// Since the latency from interrupt detection timer, even if the actual response time exceeded WCRT a little bit but still no deadline occur
+	// Since the latency from interrupt detection timer, even if the actual response time exceeded WCRT a little bit but still no deadline occur
 	// In this case, we still regard it as acceptable result 
 	if(slack < 0 && time_management -> sys_clk -> cur_time <= task_list[running_task_id].release_time + task_list[running_task_id].rel_dline) {
-		slack = (double) 0.0;
+		slack = (float) 0.0;
 	}
 	else if(slack > task_list[running_task_id].wcrt || slack < 0) {
 		cout << "Therefore, wrong calculation" << endl;
@@ -692,8 +654,8 @@ void Task_Scheduler::completion_config(void)
 	task_list[running_task_id].NRT_USED = false;
 	task_list[running_task_id].completion_cnt += 1;
 
-//	if(sim_mode != (int) NonDVFS_sim && running_task_id != 0 && inter_intra_bus -> intra_tasks[running_task_id].response_case.size() == (unsigned int) EVAL_CNT_START) 
-//		inter_intra_bus -> intra_tasks[running_task_id].SysMode_reconfig((int) L_JITTER); 	
+	if(sim_mode != (int) NonDVFS_sim && running_task_id != 0 && inter_intra_bus -> intra_tasks[running_task_id].response_case.size() == (unsigned int) EVAL_CNT_START) 
+		inter_intra_bus -> intra_tasks[running_task_id].SysMode_reconfig((int) L_JITTER); 	
 	
 	if(isr_stack.IsEmpty() == false) {
 		resume(); //isr_stack.stack_list(); 
@@ -702,7 +664,7 @@ void Task_Scheduler::completion_config(void)
 #endif	
 		/*if(isr_stack.show_StackCnt() == 0) {
 			cur_context.task_id = (int) NO_PREEMPTION;
-			cur_context.rwcet = (double) 0.0;
+			cur_context.rwcet = (float) 0.0;
 			cur_context.isr_flag = false;
 			cout << "Flush Preemption Stack" << endl;
 			//isr_stack.stack_list();
@@ -710,7 +672,7 @@ void Task_Scheduler::completion_config(void)
 	}
 	else {
 		cur_context.task_id = (int) NO_PREEMPTION;
-		cur_context.rwcet = (double) 0.0;
+		cur_context.rwcet = (float) 0.0;
 		cur_context.isr_flag = false;
 #ifdef DEBUG
 		cout << "Flush all redundant element(s) out of ISR Stack" << endl;
@@ -724,7 +686,7 @@ void Task_Scheduler::completion_config(void)
 	running_task_id = (int) CPU_IDLE;
 }
 
-void Task_Scheduler::sched_arbitration(double sched_tick)
+void Task_Scheduler::sched_arbitration(float sched_tick)
 {
 	bool sched_verify = true;
 	//cout << "d" << endl;
@@ -871,9 +833,8 @@ void Task_Scheduler::dispatcher(void)
 					SimPattern_cnt[running_task_id] % ((int) patterns_num),//rand() % ((int) patterns_num),
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
-					(double) slack,
-					(double) worst_interference[running_task_id] , // pass the worst-case interference time
-					(double) avg_interference[running_task_id], // pass the average-case interference time
+					(float) slack,
+					(float) interference[running_task_id], // pass the average-case interference time
 					task_list[running_task_id].rel_dline, 
 					inter_intra_bus -> intra_tasks[running_task_id].dvfs_en
 				);
@@ -913,9 +874,8 @@ void Task_Scheduler::dispatcher(void)
 					SimPattern_cnt[running_task_id] % ((int) patterns_num),//rand() % ((int) patterns_num), 
 					(int) WORST, 
 					task_list[running_task_id].release_time, 
-					(double) slack,
-					(double) worst_interference[running_task_id], // pass the worst-case interference time
-					(double) avg_interference[running_task_id], // pass the average-case interference time
+					(float) slack,
+					(float) interference[running_task_id], // pass the average-case interference time
 					task_list[running_task_id].rel_dline, 
 					inter_intra_bus -> intra_tasks[running_task_id].dvfs_en
 				);
