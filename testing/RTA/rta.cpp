@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 			0.0, // Start Time
 			0,   // Priority
 			7.0, // Relative Deadline 
-			3.0, // WCET
+			9750.0, // WCET
 			7.0, // Perio
 			false,
 			ZOMBIE,
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 			0.0, // Start Time
 			1,   // Priority
 			12.0, // Relative Deadline 
-			3.0, // WCET
+			53.0, // WCET
 			12.0, // Perio
 			false,
 			ZOMBIE,
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 			0.0, // Start Time
 			2,   // Priority
 			20.0, // Relative Deadline 
-			5.0, // WCET
+			1810.0, // WCET
 			20.0, // Perio
 			false,
 			ZOMBIE,
